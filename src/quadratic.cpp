@@ -97,53 +97,53 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
   }
   
   // check for data races. Shouldn't be an issue since iterator skips to the end if list empty
-  for (auto i1=q1.ints.begin(); i1 != q1.ints.end(); ++i1) {
-    for (auto i2=q2.ints.begin(); i2 != q2.ints.end(); ++i2) {
+  for (auto& i1:q1.ints) {
+    for (auto& i2:q2.ints) {
       
       // run only if the domain of the first is contained in the second
-      if (((*i2).l <= (*i1).l) && ((*i2).u >= (*i1).u)) {
+      if ((i2.l <= i1.l) && (i2.u >= i1.u)) {
         // check whether the left or right conditions are in range
         auto lCond = !std::isnan(std::get<0>(inters)) &&
-          inRange(std::get<0>(inters), *i1) &&
-          inRange(std::get<0>(inters), *i2);
+          inRange(std::get<0>(inters), i1) &&
+          inRange(std::get<0>(inters), i2);
         auto rCond = !std::isnan(std::get<1>(inters)) &&
-          inRange(std::get<1>(inters), *i1) &&
-          inRange(std::get<1>(inters), *i2);
+          inRange(std::get<1>(inters), i1) &&
+          inRange(std::get<1>(inters), i2);
         
         if ((lCond + rCond) == 2) {
           // both in range, we cut the coefficient of the line in two parts
-          q2.ints.push_back(I(std::get<1>(inters), (*i2).u));
-          (*i2).u = std::get<0>(inters);
-          *i1 = I(std::get<0>(inters), std::get<1>(inters));
+          q2.ints.push_back(I(std::get<1>(inters), i2.u));
+          i2.u = std::get<0>(inters);
+          i1 = I(std::get<0>(inters), std::get<1>(inters));
         } else if (lCond) {
           // left in range, we cut first the line and then the quad
-          if ((*i1).u < (*i2).u)
-            q2.ints.push_back(I((*i1).u, (*i2).u));
-          (*i2).u = std::get<0>(inters);
-          (*i1).l = std::get<0>(inters);
+          if (i1.u < i2.u)
+            q2.ints.push_back(I(i1.u, i2.u));
+          i2.u = std::get<0>(inters);
+          i1.l = std::get<0>(inters);
         } else if (rCond) {
           // right in range, we cut first the quad and then the line
-          if ((*i2).l < (*i1).l)
-            q2.ints.push_back(I((*i2).l, (*i1).l));
-          (*i2).l = std::get<1>(inters);
-          (*i1).u = std::get<1>(inters);
+          if (i2.l < i1.l)
+            q2.ints.push_back(I(i2.l, i1.l));
+          i2.l = std::get<1>(inters);
+          i1.u = std::get<1>(inters);
         } else {
           // here we don't have intersections and we have to figure out 
           // whether the line is highest, or the quadratic
-          auto interval = *i1;
+          auto interval = i1;
           if (std::get<0>(get_minimum(q1, interval)) > std::get<0>(get_minimum(q2, interval))) {
             // std::cout<<"******* erasing interval **********"<<std::endl;
             //i1 = q1.ints.erase(i1); // if line is highest we prune the quadratic
-            *i1 = I(std::nanf(""), std::nanf(""));
+            i1 = I(std::nanf(""), std::nanf(""));
           } else {
             // otherwise we have to trim the line
-            if ((*i2).l == interval.l)
-              (*i2).l = interval.u;
-            else if ((*i2).u == interval.u)
-              (*i2).u = interval.l;
+            if (i2.l == interval.l)
+              i2.l = interval.u;
+            else if (i2.u == interval.u)
+              i2.u = interval.l;
             else {
-              q2.ints.push_back(I(interval.u, (*i2).u));
-              (*i2).u = interval.l;
+              q2.ints.push_back(I(interval.u, i2.u));
+              i2.u = interval.l;
             }
           }
         }
