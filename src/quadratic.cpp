@@ -29,19 +29,8 @@ auto invert_quadratic(Quadratic q) {
 
 // finds the minimum of a quadratic on an interval
 std::tuple<double, double> get_minimum(const Quadratic& q, const Interval& i){
-  
-  // std::cout << "********* GET MINIMUM **********" << std::endl;
-  // std::cout << "Input quadratic: " << std::endl;
-  // print(q);
-  
-  // std::cout << "On interval: " << std::endl;
-  // std::cout << "(" << i.l << " " <<  i.u << std::endl;
-  
+
   if (q.a == 0) {
-    
-    
-    // std::cout << "Detected line. Returning" << q.c << " " << i.l << std::endl;
-    
     return std::make_tuple(q.c, i.l);
   }
   
@@ -51,17 +40,10 @@ std::tuple<double, double> get_minimum(const Quadratic& q, const Interval& i){
   } else if (at >= i.u) {
     at = i.u;
   }
-  
-  // std::cout << "At " << at << std::endl;
-  
+
   
   auto minim = evaluate_quadratic(q, at);
-  
-  // std::cout << "Minim " << minim << std::endl;
-  
-  // std::cout << "***********************" << std::endl;
-  
-  
+
   return std::make_tuple(minim, at);
 }
 
