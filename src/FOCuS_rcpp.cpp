@@ -4,9 +4,35 @@ using namespace Rcpp;
 
 // This is the script for exporting the C++ functions to R.
 
+// converting c++ list into R list
+std::list<List> convert_output_to_R(const auto& c_obj) {
+  std::list<List> output;
+  
+  //std::cout << "last Q1"<< std::endl;
+  for (auto& q:c_obj) {
+    // coversion of the data from c++ into R
+    // print(q);
+    
+    std::list<List> ints(q.ints.size());
+    std::transform(q.ints.begin(), q.ints.end(), ints.begin(),
+                   [](const auto &i){
+                     return List::create(Rcpp::Named("l") = i.l,
+                                         Rcpp::Named("u") = i.u);
+                   });
+    
+    auto l = List::create(Rcpp::Named("a") = q.a,
+                          Rcpp::Named("b") = q.b,
+                          Rcpp::Named("c") = q.c,
+                          Rcpp::Named("ints") = ints);
+    l.attr("class") = "Quadratic";
+    output.push_back(l);
+  }
+  return output;
+}
+
 
 // [[Rcpp::export]]
-int FOCuS_offline(NumericVector Y, double thres) {
+List FOCuS_offline(NumericVector Y, double thres) {
   long t = 0;
   long cp = -1;
   
@@ -22,23 +48,11 @@ int FOCuS_offline(NumericVector Y, double thres) {
       break;
     }
   }
-  std::cout << info.Q1.size() << std::endl;
-  std::cout << info.global_max << std::endl;
+  // std::cout << info.Q1.size() << std::endl;
+  // std::cout << info.global_max << std::endl;
+
+  auto last_Q1 = convert_output_to_R(info.Q1);
   
-  // last Q1
-  std::cout << "last Q1"<< std::endl;
-  for (auto& q:info.Q1)
-    print(q);
-  std::cout << std::endl;
-  
-  
-  return cp;
+  return List::create(Rcpp::Named("cp") = cp,
+                      Rcpp::Named("Q1") = last_Q1);
 }
-
-
-
-/*** R
-set.seed(42)
-Y <- rnorm(10)
-FOCuS_offline(Y, 10)
-*/

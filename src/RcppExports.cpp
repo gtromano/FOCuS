@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // FOCuS_offline
-int FOCuS_offline(NumericVector Y, double thres);
+List FOCuS_offline(NumericVector Y, double thres);
 RcppExport SEXP _FOCuS_FOCuS_offline(SEXP YSEXP, SEXP thresSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
