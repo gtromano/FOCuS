@@ -97,13 +97,13 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
         } else if (lCond) {
           // left in range, we cut first the line and then the quad
           if (i1.u < i2.u)
-            q2.ints.push_back(I(i1.u, i2.u));
+            q2.ints.push_back(std::move(I(i1.u, i2.u)));
           i2.u = std::get<0>(inters);
           i1.l = std::get<0>(inters);
         } else if (rCond) {
           // right in range, we cut first the quad and then the line
           if (i2.l < i1.l)
-            q2.ints.push_back(I(i2.l, i1.l));
+            q2.ints.push_back(std::move(I(i2.l, i1.l)));
           i2.l = std::get<1>(inters);
           i1.u = std::get<1>(inters);
         } else {
@@ -117,12 +117,12 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
           } else {
             // otherwise we have to trim the line
             if (i2.l == interval.l)
-              i2.l = interval.u;
+              i2.l = std::move(interval.u);
             else if (i2.u == interval.u)
-              i2.u = interval.l;
+              i2.u = std::move(interval.l);
             else {
-              q2.ints.push_back(I(interval.u, i2.u));
-              i2.u = interval.l;
+              q2.ints.push_back(std::move(I(interval.u, i2.u)));
+              i2.u = std::move(interval.l);
             }
           }
         }
