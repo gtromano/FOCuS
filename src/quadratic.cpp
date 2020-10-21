@@ -79,7 +79,6 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
         auto inters = get_intersections(q1, q2);
         auto n_inters = !std::isnan(std::get<0>(inters)) + !std::isnan(std::get<0>(inters)); // sum of non null intersections
         if (n_inters == 0 || (std::get<0>(inters) == std::get<1>(inters))) {
-          // std::cout<<"******* erasing all q1 intervals **********"<<std::endl;
           q1.ints = {}; // deleting the quadratic since the line always wins in this case (this might need some checks)
           return;
         }
@@ -158,15 +157,21 @@ std::list<Quadratic> get_min_of_cost(std::list<Quadratic> cost, Quadratic newq) 
 // add std::move()
 // this is simply get min_of_cost but with the inverted coefficients
 std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) {
-  std::for_each(cost.begin(), cost.end(), [](auto &q){
-    q = invert_quadratic(std::move(q)); // add std::move
-  });
+  // std::for_each(cost.begin(), cost.end(), [](auto &q){
+  //   q = invert_quadratic(std::move(q)); // add std::move
+  // });
+  
+  for (auto& q:cost)
+    q = invert_quadratic(std::move(q));
   
   cost = get_min_of_cost(std::move(cost), std::move(newq)); // add std::move
-  
-  std::for_each(cost.begin(), cost.end(), [](auto &q){
-    q = invert_quadratic(std::move(q)); // add std::move
-  });
+
+  for (auto& q:cost)
+    q = invert_quadratic(std::move(q));
+    
+  // std::for_each(cost.begin(), cost.end(), [](auto &q){
+  //   q = invert_quadratic(std::move(q)); // add std::move
+  // });
   
   return cost;
 }
