@@ -56,3 +56,32 @@ List FOCuS_offline(NumericVector Y, double thres) {
   return List::create(Rcpp::Named("cp") = cp,
                       Rcpp::Named("Q1") = last_Q1);
 }
+
+
+
+
+// [[Rcpp::export]]
+List FOCuS_offline_V1(NumericVector Y, double thres) {
+  long t = 0;
+  long cp = -1;
+  
+  Quadratic Q0, q1;
+  Info info = {Q0, {q1}, 0};
+  
+  for (auto& y:Y) {
+    t += 1;
+    FOCuS_step_V1(info, y);
+    
+    if (info.global_max >= thres) {
+      cp = t;
+      break;
+    }
+  }
+  // std::cout << info.Q1.size() << std::endl;
+  // std::cout << info.global_max << std::endl;
+  
+  auto last_Q1 = convert_output_to_R(info.Q1);
+  
+  return List::create(Rcpp::Named("cp") = cp,
+                      Rcpp::Named("Q1") = last_Q1);
+}

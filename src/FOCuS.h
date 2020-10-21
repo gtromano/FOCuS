@@ -13,5 +13,6 @@ typedef struct {
 
 
 Info FOCuS_step(Info, const double&);
+void FOCuS_step_V1(Info&, const double&);
 
 #endif

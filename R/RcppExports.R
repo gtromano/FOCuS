@@ -5,6 +5,10 @@ FOCuS_offline <- function(Y, thres) {
     .Call(`_FOCuS_FOCuS_offline`, Y, thres)
 }
 
+FOCuS_offline_V1 <- function(Y, thres) {
+    .Call(`_FOCuS_FOCuS_offline_V1`, Y, thres)
+}
+
 test <- function() {
     invisible(.Call(`_FOCuS_test`))
 }

@@ -32,4 +32,6 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2);
 void print(const Quadratic&);
 std::tuple<double, double> get_minimum(const Quadratic&, const Interval&);
 std::list<Quadratic> get_max_of_cost(std::list<Quadratic>, Quadratic);
+void get_max_of_cost_V1(std::list<Quadratic>&, Quadratic&);
+  
 #endif

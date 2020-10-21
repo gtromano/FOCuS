@@ -17,6 +17,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// FOCuS_offline_V1
+List FOCuS_offline_V1(NumericVector Y, double thres);
+RcppExport SEXP _FOCuS_FOCuS_offline_V1(SEXP YSEXP, SEXP thresSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< double >::type thres(thresSEXP);
+    rcpp_result_gen = Rcpp::wrap(FOCuS_offline_V1(Y, thres));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test
 void test();
 RcppExport SEXP _FOCuS_test() {
@@ -29,6 +41,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 2},
+    {"_FOCuS_FOCuS_offline_V1", (DL_FUNC) &_FOCuS_FOCuS_offline_V1, 2},
     {"_FOCuS_test", (DL_FUNC) &_FOCuS_test, 0},
     {NULL, NULL, 0}
 };
