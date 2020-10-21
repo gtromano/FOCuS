@@ -68,15 +68,6 @@ std::tuple<double, double> get_intersections (const Quadratic& q1, const Quadrat
 // careful, this function takes by reference and actually modifies the intervals
 // by finding on which domain the quadratics are smallest
 void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
-  auto inters = get_intersections(q1, q2);
-  
-  auto n_inters = !std::isnan(std::get<0>(inters)) + !std::isnan(std::get<0>(inters)); // sum of non null intersections
-  
-  if (n_inters == 0 || (std::get<0>(inters) == std::get<1>(inters))) {
-    // std::cout<<"******* erasing all q1 intervals **********"<<std::endl;
-    q1.ints = {}; // deleting the quadratic since the line always wins in this case (this might need some checks)
-    return;
-  }
   
   // check for data races. Shouldn't be an issue since iterator skips to the end if list empty
   for (auto& i1:q1.ints) {
@@ -84,6 +75,15 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
       
       // run only if the domain of the first is contained in the second
       if ((i2.l <= i1.l) && (i2.u >= i1.u)) {
+        
+        auto inters = get_intersections(q1, q2);
+        auto n_inters = !std::isnan(std::get<0>(inters)) + !std::isnan(std::get<0>(inters)); // sum of non null intersections
+        if (n_inters == 0 || (std::get<0>(inters) == std::get<1>(inters))) {
+          // std::cout<<"******* erasing all q1 intervals **********"<<std::endl;
+          q1.ints = {}; // deleting the quadratic since the line always wins in this case (this might need some checks)
+          return;
+        }
+        
         // check whether the left or right conditions are in range
         auto lCond = !std::isnan(std::get<0>(inters)) &&
           inRange(std::get<0>(inters), i1) &&

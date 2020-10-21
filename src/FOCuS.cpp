@@ -3,9 +3,10 @@
 
 // update a quadratic with a new observation. To be used with
 // std::move
-auto update_quad(Quadratic q, const double& new_point) {
+auto update_quad(Quadratic q, const double& new_point, const double& offset = 0.0) {
   q.a -= 0.5;
   q.b += new_point;
+  q.c += offset;
   return q;
 }
 
@@ -29,25 +30,7 @@ Info FOCuS_step(Info info, const double& new_point) {
   // update the quad for the null
   // add std::move after testing
   info.Q0 = update_quad(std::move(info.Q0), new_point);
-  
-  // std::cout << "q0 after update"<< std::endl;
-  // print(info.Q0);
-  // std::cout << std::endl;
-  
-  
-  // std::cout << "q0 after update "<< std::endl;
-  // print(info.Q0);
-  
-  // update the quad for the alternative
-  std::for_each(info.Q1.begin(), info.Q1.end(), [&new_point](auto &q){
-    q = update_quad(std::move(q), new_point);
-  });
 
-  // std::cout << "Q1 after update"<< std::endl;
-  // for (auto& q:info.Q1)
-  //   print(q);
-  // std::cout << std::endl;
-  
     
   // find the max of Q0
   double Q0_max = -INFINITY;
@@ -56,21 +39,19 @@ Info FOCuS_step(Info info, const double& new_point) {
     if (m > Q0_max)
       Q0_max = m;
   }
-  
-  // std::cout << "Q0_max is: "<< Q0_max << std::endl;
-  
-  
-  // lowering Q1 by the max Q0
-  std::for_each(info.Q1.begin(), info.Q1.end(), [&Q0_max](auto &q){
-    q.c -= Q0_max;
+
+  // update the quad for the alternative
+  std::for_each(info.Q1.begin(), info.Q1.end(), [&new_point, &Q0_max](auto &q){
+    q = update_quad(std::move(q), new_point, -Q0_max);
   });
+
   
-  // std::cout << "Q1 after lowering"<< std::endl;
-  // for (auto& q:info.Q1)
-  //   print(q);
-  // std::cout << std::endl;
+//  // lowering Q1 by the max Q0
+//  std::for_each(info.Q1.begin(), info.Q1.end(), [&Q0_max](auto &q){
+//    q.c -= Q0_max;
+//  });
   
-  
+
   // lowering Q0 by the max of Q0
   info.Q0.c -= Q0_max;
   
