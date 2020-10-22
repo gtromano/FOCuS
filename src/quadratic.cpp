@@ -19,11 +19,10 @@ auto evaluate_quadratic(const Quadratic& q, const double& x) {
 
 
 // to use with std::move() in order to speed up times
-auto invert_quadratic(Quadratic q) {
+void invert_quadratic(Quadratic& q) {
   q.a = - q.a;
   q.b = - q.b;
   q.c = - q.c;
-  return q;
 }
 
 
@@ -60,8 +59,8 @@ std::tuple<double, double> get_intersections (const Quadratic& q1, const Quadrat
   auto b = q1.b - q2.b;
   auto c = q1.c - q2.c;
   
-  auto z = (b * b) - (4 * a * c);
-  return std::make_tuple((- b - sqrt(z)) / (2 * a), (- b + sqrt(z)) / (2 * a));
+  auto sqrt_z = sqrt((b * b) - (4 * a * c));
+  return std::make_tuple((- b - sqrt_z) / (2 * a), (- b + sqrt_z) / (2 * a));
 }
 
 
@@ -139,7 +138,7 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
 // this function takes in a list of quadratics (cost) and a new line (newq)
 // and try to return the updated cost with a new line added in it
 // to be used with std::move() after testing
-std::list<Quadratic> get_min_of_cost(std::list<Quadratic> cost, Quadratic newq) {
+void get_min_of_cost(std::list<Quadratic>& cost, Quadratic& newq) {
   for (auto& q:cost)
     get_min_of_two_quadratics(q, newq);
   
@@ -148,28 +147,22 @@ std::list<Quadratic> get_min_of_cost(std::list<Quadratic> cost, Quadratic newq) 
   });
     
   cost.push_back(std::move(newq));
-  return cost;
 }
 
 
 // add std::move()
 // this is simply get min_of_cost but with the inverted coefficients
 std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) {
-  // std::for_each(cost.begin(), cost.end(), [](auto &q){
-  //   q = invert_quadratic(std::move(q)); // add std::move
-  // });
-  
-  for (auto& q:cost)
-    q = invert_quadratic(std::move(q));
-  
-  cost = get_min_of_cost(std::move(cost), std::move(newq)); // add std::move
 
+  
   for (auto& q:cost)
-    q = invert_quadratic(std::move(q));
-    
-  // std::for_each(cost.begin(), cost.end(), [](auto &q){
-  //   q = invert_quadratic(std::move(q)); // add std::move
-  // });
+    invert_quadratic(q);
+  
+  get_min_of_cost(cost, newq); // add std::move
+  
+  for (auto& q:cost)
+    invert_quadratic(q);
+
   
   return cost;
 }

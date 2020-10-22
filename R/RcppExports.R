@@ -9,6 +9,14 @@ FOCuS_offline_V1 <- function(Y, thres) {
     .Call(`_FOCuS_FOCuS_offline_V1`, Y, thres)
 }
 
+start_profiler <- function(str) {
+    .Call(`_FOCuS_start_profiler`, str)
+}
+
+stop_profiler <- function() {
+    .Call(`_FOCuS_stop_profiler`)
+}
+
 test <- function() {
     invisible(.Call(`_FOCuS_test`))
 }
