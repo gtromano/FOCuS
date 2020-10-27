@@ -17,39 +17,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// FOCuS_offline_V1
-List FOCuS_offline_V1(NumericVector Y, double thres);
-RcppExport SEXP _FOCuS_FOCuS_offline_V1(SEXP YSEXP, SEXP thresSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< double >::type thres(thresSEXP);
-    rcpp_result_gen = Rcpp::wrap(FOCuS_offline_V1(Y, thres));
-    return rcpp_result_gen;
-END_RCPP
-}
-// start_profiler
-SEXP start_profiler(SEXP str);
-RcppExport SEXP _FOCuS_start_profiler(SEXP strSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type str(strSEXP);
-    rcpp_result_gen = Rcpp::wrap(start_profiler(str));
-    return rcpp_result_gen;
-END_RCPP
-}
-// stop_profiler
-SEXP stop_profiler();
-RcppExport SEXP _FOCuS_stop_profiler() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(stop_profiler());
-    return rcpp_result_gen;
-END_RCPP
-}
 // test
 void test();
 RcppExport SEXP _FOCuS_test() {
@@ -62,9 +29,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 2},
-    {"_FOCuS_FOCuS_offline_V1", (DL_FUNC) &_FOCuS_FOCuS_offline_V1, 2},
-    {"_FOCuS_start_profiler", (DL_FUNC) &_FOCuS_start_profiler, 1},
-    {"_FOCuS_stop_profiler", (DL_FUNC) &_FOCuS_stop_profiler, 0},
     {"_FOCuS_test", (DL_FUNC) &_FOCuS_test, 0},
     {NULL, NULL, 0}
 };
