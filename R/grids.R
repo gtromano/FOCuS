@@ -5,7 +5,7 @@ find_grid <- function(h0_m, max_ints, smallest_mag) {
   for (i in 2:length(interval_lengths))
     interval_lengths[i] <- interval_lengths[i - 1] * 2
   
-  return(c(h0_m - interval_lengths[length(interval_lengths):1], h0_m, h0_m + interval_lengths))
+  return(c(h0_m - interval_lengths[length(interval_lengths):1], h0_m + interval_lengths))
 }
 
 
