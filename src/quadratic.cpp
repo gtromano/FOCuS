@@ -82,9 +82,11 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
       if ((i2.l <= i1.l) && (i2.u >= i1.u)) {
         // check whether the left or right conditions are in range
         auto lCond = !std::isnan(std::get<0>(inters)) &&
+          std::get<0>(inters) != i1.u &&
           inRange(std::get<0>(inters), i1) &&
           inRange(std::get<0>(inters), i2);
         auto rCond = !std::isnan(std::get<1>(inters)) &&
+          std::get<1>(inters) != i1.l &&
           inRange(std::get<1>(inters), i1) &&
           inRange(std::get<1>(inters), i2);
         
@@ -130,6 +132,7 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
   } // end q1 for
   
   q1.ints.remove_if([](auto& i){return std::isnan(i.l);});
+  q2.ints.remove_if([](auto& i){return i.l == i.u;});
   
 } // end function
 
