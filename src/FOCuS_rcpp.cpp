@@ -5,7 +5,7 @@ using namespace Rcpp;
 // This is the script for exporting the C++ functions to R.
 
 // converting c++ list into R list
-std::list<List> convert_output_to_R(const auto& c_obj) {
+std::list<List> convert_output_to_R(const std::list<Quadratic>& c_obj) {
   std::list<List> output;
   
   //std::cout << "last Q1"<< std::endl;
