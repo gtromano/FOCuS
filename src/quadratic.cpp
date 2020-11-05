@@ -98,20 +98,20 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
         } else if (lCond) {
           // left in range, we cut first the line and then the quad
           if (i1.u < i2.u)
-            q2.ints.push_back(std::move(I(i1.u, i2.u)));
+            q2.ints.push_back(I(i1.u, i2.u));
           i2.u = std::get<0>(inters);
           i1.l = std::get<0>(inters);
         } else if (rCond) {
           // right in range, we cut first the quad and then the line
           if (i2.l < i1.l)
-            q2.ints.push_back(std::move(I(i2.l, i1.l)));
+            q2.ints.push_back(I(i2.l, i1.l));
           i2.l = std::get<1>(inters);
           i1.u = std::get<1>(inters);
         } else {
           // here we don't have intersections and we have to figure out 
           // whether the line is highest, or the quadratic
           auto interval = i1;
-          if (std::get<0>(get_minimum(q1, interval)) > std::get<0>(get_minimum(q2, interval))) {
+          if (std::get<0>(get_minimum(q1, interval)) >= std::get<0>(get_minimum(q2, interval))) {
             // std::cout<<"******* erasing interval **********"<<std::endl;
             //i1 = q1.ints.erase(i1); // if line is highest we prune the quadratic
             i1 = I(std::nanf(""), std::nanf(""));
