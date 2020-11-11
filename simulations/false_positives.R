@@ -2,7 +2,7 @@
 
 source("simulations/set_simulations.R")
 
-output_file = "./simulations/results/fp1.RData"
+output_file = "./simulations/results/fp4.RData"
 
 sim_grid <- expand.grid(
   N = 1e5,
@@ -49,7 +49,7 @@ false_alarm_plot <- ggplot(summary_df,
   geom_hline(yintercept = .1, lty = 2, colour = "grey") +
   scale_color_manual(values = cbPalette) +
   ylab("False Alarm Rate") +
-  xlab("beta") +
+  xlab("threshold") +
   theme_idris()
 false_alarm_plot
 
@@ -63,9 +63,10 @@ avg_run_len_plot <- ggplot(summary_df,
   scale_color_manual(values = cbPalette) +
   geom_vline(xintercept = 16, lty = 2, colour = "grey") +
   ylab("Average Run Length") +
-  xlab("beta") +
+  xlab("threshold") +
   theme_idris()
 avg_run_len_plot
 
 
 tot_fp <- ggarrange(false_alarm_plot, avg_run_len_plot, labels = "AUTO", nrow = 2, common.legend = T, legend = "right")
+ggsave("simulations/results/fp.pdf", tot_fp, width = 10, height = 6)

@@ -1,7 +1,7 @@
 source("simulations/set_simulations.R")
 
 
-output_file = "./simulations/results/dr3.RData"
+output_file = "./simulations/results/dr4.RData"
 
 sim_grid <- expand.grid(
   N = 2e5,
@@ -21,7 +21,7 @@ if (F) {
   outDF <- Reduce(rbind, outDF)
 }
 
-#save(outDF, file = output_file)
+save(outDF, file = output_file)
 
 load(output_file)
 
@@ -67,5 +67,23 @@ detection_delay <- ggplot(summary_df %>% filter(true_positive == 1),
 
 detection_delay
 
+# this is to show that we do always as good as if not better than the Page-CUSUM
+# as proven in proposition 1
 
 tot_dr <- ggarrange(detection_delay, detection_delay + scale_y_continuous(trans = "log10") + ylab("log detection delay"), labels = "AUTO", nrow = 2, common.legend = T, legend = "right")
+ggsave("simulations/results/dr.pdf", tot_dr, width = 10, height = 6)
+
+detection_diff <- (summary_df %>% filter(algo == "FOCuS"))$est - (summary_df %>% filter(algo == "Page-CUSUM 50"))$est
+
+summary2 <- summary_df %>% filter(algo == "FOCuS") %>%
+  mutate(diff = detection_diff)
+
+
+ ggplot(summary2 %>% filter(true_positive == 1),
+                           aes(x = magnitude, y = diff)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  xlab("magnitude") +
+  ylab("Difference between FOCuS and Page-CUSUM") +
+  theme_idris()
