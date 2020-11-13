@@ -24,6 +24,8 @@ typedef struct {
     double b = 0; // b coefficient
     double c = 0; // c coefficient
     std::list<Interval> ints = {I}; // intervals list
+    double max = 0; // maximum of the quadratic
+
 } Quadratic;
 
 

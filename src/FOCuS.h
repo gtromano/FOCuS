@@ -1,7 +1,8 @@
 #ifndef ___FOCuS_H___
 #define ___FOCuS_H___
 
-#include <vector>
+//#include <vector>
+//#include <deque>
 #include <algorithm>
 #include "quadratic.h"
 
