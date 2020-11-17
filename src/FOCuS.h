@@ -13,7 +13,7 @@ typedef struct {
 } Info;
 
 
-Info FOCuS_step(Info, const double&);
+Info FOCuS_step(Info, const double&, const std::list<double>&);
 Info FOCuS_step_sim(Info, const double&);
 
 

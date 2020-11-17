@@ -32,7 +32,14 @@ std::list<List> convert_output_to_R(const std::list<Quadratic>& c_obj) {
 
 
 // [[Rcpp::export]]
-List FOCuS_offline(NumericVector Y, double thres) {
+List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid) {
+  
+  if (!std::isnan(grid.front())) {
+    grid.push_back(INFINITY);
+    grid.push_front(-INFINITY);
+  }
+    
+  
   long t = 0;
   long cp = -1;
   
@@ -41,7 +48,7 @@ List FOCuS_offline(NumericVector Y, double thres) {
   
   for (auto& y:Y) {
     t += 1;
-    info = FOCuS_step(std::move(info), y);
+    info = FOCuS_step(std::move(info), y, grid);
     
     if (info.global_max >= thres) {
       cp = t;

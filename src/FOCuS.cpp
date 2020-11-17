@@ -10,34 +10,10 @@ void update_quad(Quadratic& q, const double& new_point, const double& offset = 0
   
 }
 
-//function for the approximation
-// void approximation_grid (std::list<Quadratic>& Q, const std::vector<double>& grid) {
-//   auto max_quads = grid.size();
-//   if (Q.size() - grid.size() < 1) return;
-//   
-//   // remove quadratics if they do not contain any point of the grid
-//   Q.remove_if([&grid] (const auto& q) {
-//     for (auto& p:grid) {
-//       for (auto& i:q.ints) {
-//         if (inRange(p, i))
-//           return false;
-//       }
-//     }
-//     return true;
-//   }); // this will create a disjoint set of quadratics tough!
-//   
-//   // we need to figure out now which of those are disjoint and fill this
-//   // domain
-//   
-//   for (auto& q:Q) {
-//     
-//   }
-//   
-// }
 
 // takes the information from the past and updates it
 // to be used with std::move to avoid copy
-Info FOCuS_step(Info info, const double& new_point) {
+Info FOCuS_step(Info info, const double& new_point, const std::list<double>& grid) {
   
   // update the quad for the null
   // add std::move after testing
@@ -59,6 +35,8 @@ Info FOCuS_step(Info info, const double& new_point) {
   // trimming with the new line // add std::move
   info.Q1 = get_max_of_cost(std::move(info.Q1), std::move(line));
   
+  if (!std::isnan(grid.front()))
+    approximation_grid(info.Q1, grid);
 
   // getting the maximums for each piecewise quadratic
   double global_max = -INFINITY;

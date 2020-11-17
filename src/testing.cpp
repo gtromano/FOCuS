@@ -15,6 +15,7 @@ void test() {
   
   std::cout << static_cast<bool>(foo) << std::endl;
   
+  std::cout << (3 > std::nanf("")) << std::endl;
   
 
   // auto testf = [](auto& n) {n++;};
