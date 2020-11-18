@@ -62,7 +62,7 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
 // data are centered on zero under the null
 // takes the information from the past and updates it
 // to be used with std::move to avoid copy
-Info FOCuS_step_sim(Info info, const double& new_point) {
+Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>& grid) {
   
   for (auto& q:info.Q1)
     update_quad(q, new_point);
@@ -72,7 +72,10 @@ Info FOCuS_step_sim(Info info, const double& new_point) {
   
   // trimming with the new line // add std::move
   info.Q1 = get_max_of_cost(std::move(info.Q1), std::move(line));
-  
+
+   if (!std::isnan(grid.front()))
+    approximation_grid(info.Q1, grid);
+
   
   // getting the maximums for each piecewise quadratic
   double global_max = -INFINITY;

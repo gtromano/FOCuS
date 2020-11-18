@@ -212,10 +212,10 @@ void approximation_grid (std::list<Quadratic>& Q, const std::list<double>& grid)
                 // here we do the magic :)
                 auto inters = get_intersections(left, right); // we find the intersections of left and right
                 
-                if (get<1>(inters) > left.ints.front().l && get<1>(inters) < ri.u)
-                  left.ints.front().u = ri.l = get<1>(inters); // if the right intersection is in between you get that
+                if (std::get<1>(inters) > left.ints.front().l && std::get<1>(inters) < ri.u)
+                  left.ints.front().u = ri.l = std::get<1>(inters); // if the right intersection is in between you get that
                 else
-                  left.ints.front().u = ri.l = get<0>(inters); // otherwise you put the left
+                  left.ints.front().u = ri.l = std::get<0>(inters); // otherwise you put the left
                 
                 // all is left is to mark as to delete the interval in the middle, so our i
                 i = I(std::nanf(""), std::nanf(""));

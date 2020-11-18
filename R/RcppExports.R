@@ -5,8 +5,8 @@ FOCuS_offline <- function(Y, thres, grid) {
     .Call(`_FOCuS_FOCuS_offline`, Y, thres, grid)
 }
 
-FOCuS_offline_sim <- function(Y, thres) {
-    .Call(`_FOCuS_FOCuS_offline_sim`, Y, thres)
+FOCuS_offline_sim <- function(Y, thres, grid) {
+    .Call(`_FOCuS_FOCuS_offline_sim`, Y, thres, grid)
 }
 
 test <- function() {
