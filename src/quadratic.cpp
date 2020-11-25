@@ -169,3 +169,71 @@ std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) 
   
   return cost;
 }
+
+
+// function for the approximation
+void approximation_grid (std::list<Quadratic>& Q, const std::list<double>& grid) {
+  auto max_quads = grid.size();
+  if (Q.size() - grid.size() < 1) return;
+  
+  //std::cout << "running" << std::endl;
+  
+  for (auto& q:Q) { // iterate for each quadratic
+    for (auto& i:q.ints) { // and for each interval
+      
+      // check if we have to retain the quadratic (i.e. skip the process)
+      auto point_in_range = false;
+      for (auto p:grid) {
+        if (inRange(p, i)) {
+          point_in_range = true;
+          break;
+        } 
+      }
+      if (point_in_range)
+        continue; // go to next iteration since we do not have to do anything
+      
+      auto found = false;
+      for (auto& left:Q) { // left here search for the left interval
+
+        if (found)
+          break;
+        
+        if (left.ints.front().u == i.l) { // if the upper of left matches the lower of i, we found it
+          
+          // and now we look for the right
+          for (auto& right:Q) {
+            for (auto& ri:right.ints) {
+              
+              if (found)
+                break;
+              
+              if (i.u == ri.l) { // if the upper of i matches the lower of right
+                
+                // here we do the magic :)
+                auto inters = get_intersections(left, right); // we find the intersections of left and right
+                
+                if (std::get<1>(inters) > left.ints.front().l && std::get<1>(inters) < ri.u)
+                  left.ints.front().u = ri.l = std::get<1>(inters); // if the right intersection is in between you get that
+                else
+                  left.ints.front().u = ri.l = std::get<0>(inters); // otherwise you put the left
+                
+                // all is left is to mark as to delete the interval in the middle, so our i
+                i = I(std::nanf(""), std::nanf(""));
+                
+              } // end if for the right match
+            } // end right quad interval iteration
+          } // end right quad iteration
+        } // end if for the left match
+      } // end left quad iteration
+    } // end interval iteration
+  } // end quad iteration
+  
+  Q.remove_if([](auto& q){
+    for(auto& i:q.ints) {
+      if(std::isnan(i.l))
+        return true;
+    }
+    return false;
+  });
+
+} // end function

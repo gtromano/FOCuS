@@ -1,7 +1,8 @@
 #ifndef ___FOCuS_H___
 #define ___FOCuS_H___
 
-#include <vector>
+//#include <vector>
+//#include <deque>
 #include <algorithm>
 #include "quadratic.h"
 
@@ -12,8 +13,8 @@ typedef struct {
 } Info;
 
 
-Info FOCuS_step(Info, const double&);
-Info FOCuS_step_sim(Info, const double&);
+Info FOCuS_step(Info, const double&, const std::list<double>&);
+Info FOCuS_step_sim(Info, const double&, const std::list<double>&);
 
 
 #endif
