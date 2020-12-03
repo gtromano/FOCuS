@@ -4,8 +4,8 @@
 // update a quadratic with a new observation. To be used with
 // std::move
 void update_quad(Quadratic& q, const double& new_point, const double& offset = 0.0) {
-  q.a -= 0.5;
-  q.b += new_point;
+  q.a -= 1;
+  q.b += 2 * new_point;
   q.c += offset;
 }
 
@@ -44,19 +44,16 @@ Info FOCuS_step(Info info, const double& new_point) {
 
   // getting the maximums for each piecewise quadratic
   double global_max = -INFINITY;
-  std::for_each(info.Q1.begin(), info.Q1.end(), [&global_max](const auto& q){
-    double max = -INFINITY;
-    // iterating in the intervals of the piecewise quadratics
-    for(const auto& i:q.ints) {
-      auto m = std::get<0>(get_minimum(q, i));
-      if (m > max)
-        max = m;
-    }
-    if (max > global_max)
+  double time_offset; //how far in the past the most likely changepoint started
+  std::for_each(info.Q1.begin(), info.Q1.end(), [&](const auto& q){
+    double max = q.c - (q.b * q.b) / (4 *q.a);//the y-value of the turning point of quadratic q
+    if (max > global_max){
       global_max = max;
+      time_offset = q.a;
+    }
   });
-  
   info.global_max = std::move(global_max);
+  info.time_offset = std::move(time_offset);
   
   // and we're done!
   return info;
@@ -82,19 +79,16 @@ Info FOCuS_step_sim(Info info, const double& new_point) {
   
   // getting the maximums for each piecewise quadratic
   double global_max = -INFINITY;
-  std::for_each(info.Q1.begin(), info.Q1.end(), [&global_max](const auto& q){
-    double max = -INFINITY;
-    // iterating in the intervals of the piecewise quadratics
-    for(const auto& i:q.ints) {
-      auto m = std::get<0>(get_minimum(q, i));
-      if (m > max)
-        max = m;
-    }
-    if (max > global_max)
+  double time_offset; //how far in the past the most likely changepoint started
+  std::for_each(info.Q1.begin(), info.Q1.end(), [&](const auto& q){
+    double max = q.c - (q.b * q.b) / (4 *q.a);//the y-value of the turning point of quadratic q
+    if (max > global_max){
       global_max = max;
+      time_offset = q.a;
+    }
   });
-  
   info.global_max = std::move(global_max);
+  info.time_offset = std::move(time_offset);
   
   // and we're done!
   return info;
@@ -102,3 +96,4 @@ Info FOCuS_step_sim(Info info, const double& new_point) {
 
 
 // here we probably need the pruning function, to implement the pruning
+
