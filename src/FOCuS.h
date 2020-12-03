@@ -9,6 +9,7 @@ typedef struct {
   Quadratic Q0;
   std::list<Quadratic> Q1;
   double global_max;
+  double time_offset;
 } Info;
 
 
