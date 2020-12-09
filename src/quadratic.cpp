@@ -173,8 +173,8 @@ std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) 
 
 // function for the approximation
 void approximation_grid (std::list<Quadratic>& Q, const std::list<double>& grid) {
-  auto max_quads = grid.size();
-  if (Q.size() - grid.size() < 1) return;
+  
+  if (int(Q.size()) - int(grid.size()) < 1) {return;}
   
   //std::cout << "running" << std::endl;
   

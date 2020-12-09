@@ -2,7 +2,7 @@
 
 source("simulations/set_simulations.R")
 
-output_file = "./simulations/results/fp5.RData"
+output_file = "./simulations/results/fp6.RData"
 
 sim_grid <- expand.grid(
   N = 1e5,

@@ -1,7 +1,7 @@
 source("simulations/set_simulations.R")
 
 
-output_file = "./simulations/results/dr5.RData"
+output_file = "./simulations/results/dr6.RData"
 
 sim_grid <- expand.grid(
   N = 2e5,
@@ -15,7 +15,7 @@ if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
-    return(run_simulation(p, NREP))
+    return(run_simulation(p, NREP, diff_thres = T))
   })
 
   outDF <- Reduce(rbind, outDF)
@@ -34,9 +34,9 @@ summary_df <- outDF %>% mutate(
   )
 
 
-grouped = summary_df %>% group_by(algo, magnitude) %>%
+grouped <- summary_df %>% group_by(algo, magnitude) %>%
   summarise(tp_rate = mean(true_positive), det_del = mean(det_delay, na.rm = T))
-print(grouped, n = 50)
+print(grouped, n = 80)
 
 
 ### true positive rate ####
@@ -73,9 +73,16 @@ detection_delay
 tot_dr <- ggarrange(detection_delay, detection_delay + scale_y_continuous(trans = "log10") + ylab("log detection delay"), labels = "AUTO", nrow = 2, common.legend = T, legend = "right")
 ggsave("simulations/results/dr.pdf", tot_dr, width = 10, height = 6)
 
-detection_diff <- (summary_df %>% filter(algo == "FOCuS 5"))$est - (summary_df %>% filter(algo == "Page-CUSUM 50"))$est
 
-summary2 <- summary_df %>% filter(algo == "FOCuS 5") %>%
+
+
+#########################
+algo1 <- "FOCuS"
+algo2 <- "Page-CUSUM 50"
+
+detection_diff <- (summary_df %>% filter(algo == algo1))$est - (summary_df %>% filter(algo == algo2))$est
+
+summary2 <- summary_df %>% filter(algo == algo1) %>%
   mutate(diff = detection_diff)
 
 
@@ -88,3 +95,4 @@ summary2 <- summary_df %>% filter(algo == "FOCuS 5") %>%
   xlab("magnitude") +
   ylab("Detection delay between FOCuS 5 and Page-CUSUM") +
   theme_idris()
+

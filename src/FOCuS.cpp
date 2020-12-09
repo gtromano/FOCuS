@@ -35,6 +35,7 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
   // trimming with the new line // add std::move
   info.Q1 = get_max_of_cost(std::move(info.Q1), std::move(line));
   
+  // grid approximation
   if (!std::isnan(grid.front()))
     approximation_grid(info.Q1, grid);
 
@@ -73,9 +74,9 @@ Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>&
   // trimming with the new line // add std::move
   info.Q1 = get_max_of_cost(std::move(info.Q1), std::move(line));
 
-   if (!std::isnan(grid.front()))
+  // grid approximation
+  if (!std::isnan(grid.front()))
     approximation_grid(info.Q1, grid);
-
   
   // getting the maximums for each piecewise quadratic
   double global_max = -INFINITY;
