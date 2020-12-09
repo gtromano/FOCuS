@@ -24,4 +24,4 @@ CUSUM_offline <- function (Y, threshold, m = 0) {
 }
 
 
-CUSUM_offline(c(rnorm(100), rnorm(100, -2)), 15, 0)
+CUSUM_offline(c(rnorm(1e5), rnorm(100, -2)), 200, 0)
