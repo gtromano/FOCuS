@@ -2,19 +2,16 @@
 
 source("simulations/set_simulations.R")
 
-output_file = "./simulations/results/fp6.RData"
+output_file = "./simulations/results/fp7.RData"
 
 sim_grid <- expand.grid(
   N = 1e5,
   changepoint = 1e5,
   delta = 0,
-  threshold = c(1:10, seq(15, 30, by = 5))
+  threshold = c(1:10, seq(15, 35, by = 5))
+  #threshold = seq(200, 1000, by = 10)
 )
 
-
-library(compiler)
-compiler::enableJIT(3)
-pageCUSUM_offline <- compiler::cmpfun(pageCUSUM_offline)
 
 if (F) {
   NREP <- 100
@@ -47,6 +44,7 @@ false_alarm_plot <- ggplot(summary_df,
   stat_summary_bin(fun.data = "mean_se", geom = "line") +
   stat_summary_bin(fun.data = "mean_se", geom = "errorbar") +
   geom_hline(yintercept = .1, lty = 2, colour = "grey") +
+  geom_vline(xintercept = 27, lty = 2, colour = "grey") +
   scale_color_manual(values = cbPalette) +
   ylab("False Alarm Rate") +
   xlab("threshold") +
@@ -61,7 +59,6 @@ avg_run_len_plot <- ggplot(summary_df,
   stat_summary_bin(fun.data = "mean_se", geom = "line") +
   stat_summary_bin(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
-  geom_vline(xintercept = 16, lty = 2, colour = "grey") +
   ylab("Average Run Length") +
   xlab("threshold") +
   theme_idris()

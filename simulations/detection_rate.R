@@ -1,13 +1,13 @@
 source("simulations/set_simulations.R")
 
 
-output_file = "./simulations/results/dr6.RData"
+output_file = "./simulations/results/dr7.RData"
 
 sim_grid <- expand.grid(
   N = 2e5,
   changepoint = 1e5,
   delta = seq(.05, .6, by = 0.05),
-  threshold = c(16)
+  threshold = c(15)
 )
 
 
@@ -35,7 +35,7 @@ summary_df <- outDF %>% mutate(
 
 
 grouped <- summary_df %>% group_by(algo, magnitude) %>%
-  summarise(tp_rate = mean(true_positive), det_del = mean(det_delay, na.rm = T))
+  summarise(no_detection = mean(no_detection), false_alarm = mean(false_alarm), tp_rate = mean(true_positive), det_del = mean(det_delay, na.rm = T))
 print(grouped, n = 80)
 
 
@@ -78,7 +78,7 @@ ggsave("simulations/results/dr.pdf", tot_dr, width = 10, height = 6)
 
 #########################
 algo1 <- "FOCuS"
-algo2 <- "Page-CUSUM 50"
+algo2 <- "Page-CUSUM 5"
 
 detection_diff <- (summary_df %>% filter(algo == algo1))$est - (summary_df %>% filter(algo == algo2))$est
 
@@ -93,6 +93,6 @@ summary2 <- summary_df %>% filter(algo == algo1) %>%
   scale_color_manual(values = cbPalette) +
    geom_hline(yintercept = 0, lty = 2, colour = "grey") +
   xlab("magnitude") +
-  ylab("Detection delay between FOCuS 5 and Page-CUSUM") +
+  ylab("Detection delay between FOCuS 5 and Page-CUSUM 5") +
   theme_idris()
 

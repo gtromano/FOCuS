@@ -54,14 +54,14 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   # here put methods with different thresholds
   # CUSUM
   if (diff_thres)
-    p$threshold <- 300
+    p$threshold <- 650
   cp <- unlist(mclapply(data, function (y) CUSUM_offline(y, p$threshold, 0), mc.cores = 6))
   res_CUSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "CUSUM", est = cp, real = p$changepoint, N = p$N, threshold = p$threshold)
 
   # MOSUM
   if (diff_thres)
-    p$threshold <- 23
-  cp <- unlist(mclapply(data, function (y) MOSUM_offline(y, p$threshold, 20, 0), mc.cores = 6))
+    p$threshold <- 27
+  cp <- unlist(mclapply(data, function (y) MOSUM_offline(y, p$threshold, 30, 0), mc.cores = 6))
   res_MOSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "MOSUM", est = cp, real = p$changepoint, N = p$N, threshold = p$threshold)
 
 
