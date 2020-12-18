@@ -28,7 +28,8 @@ typedef struct {
 
 } Quadratic;
 
-
+Interval I(const double&, const double&);
+bool inRange(const double&, const Interval&);
 std::tuple<double, double> get_intersections (const Quadratic&, const Quadratic&);
 void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2);
 void print(const Quadratic&);

@@ -48,7 +48,7 @@ std::tuple<double, double> get_minimum(const Quadratic& q, const Interval& i){
 
 
 // check if a value is in range of an interval
-auto inRange = [](const auto& x, const Interval& i) { return i.l <= x && i.u >= x; };
+bool inRange(const double& x, const Interval& i) { return i.l <= x && i.u >= x; }
 
 
 // finds the intersection of two quadratics

@@ -66,7 +66,7 @@ List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid) {
 
 
 // [[Rcpp::export]]
-List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid) {
+List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid, const double& K = INFINITY) {
 
   if (!std::isnan(grid.front())) {
     grid.push_back(INFINITY);
@@ -81,7 +81,7 @@ List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid) {
 
   for (auto& y:Y) {
     t += 1;
-    info = FOCuS_step_sim(std::move(info), y, grid);
+    info = FOCuS_step_sim(std::move(info), y, grid, K);
 
     if (info.global_max >= thres) {
       cp = t;

@@ -1,6 +1,5 @@
 #include "FOCuS.h"
 
-
 // update a quadratic with a new observation. To be used with
 // std::move
 void update_quad(Quadratic& q, const double& new_point, const double& offset = 0.0) {
@@ -9,6 +8,8 @@ void update_quad(Quadratic& q, const double& new_point, const double& offset = 0
   q.c += offset;
   
 }
+
+
 
 
 // takes the information from the past and updates it
@@ -63,17 +64,21 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
 // data are centered on zero under the null
 // takes the information from the past and updates it
 // to be used with std::move to avoid copy
-Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>& grid) {
+Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>& grid, const double& K = INFINITY) {
   
-  for (auto& q:info.Q1)
-    update_quad(q, new_point);
-
+  if (std::isinf(K)) {
+    for (auto& q:info.Q1)
+      update_quad(q, new_point);
+  } else {
+    update_cost_biweight(info.Q1, new_point, K);
+  }
+  
   // get the new line
   Quadratic line; // remember that this is initialized at 0 0 0, for (-inf, inf)
   
   // trimming with the new line // add std::move
   info.Q1 = get_max_of_cost(std::move(info.Q1), std::move(line));
-
+  
   // grid approximation
   if (!std::isnan(grid.front()))
     approximation_grid(info.Q1, grid);
@@ -93,6 +98,7 @@ Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>&
   });
   
   info.global_max = std::move(global_max);
+  
   
   // and we're done!
   return info;

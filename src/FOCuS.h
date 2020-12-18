@@ -5,6 +5,7 @@
 //#include <deque>
 #include <algorithm>
 #include "quadratic.h"
+#include "biweight_loss.h"
 
 typedef struct {
   Quadratic Q0;
@@ -14,7 +15,6 @@ typedef struct {
 
 
 Info FOCuS_step(Info, const double&, const std::list<double>&);
-Info FOCuS_step_sim(Info, const double&, const std::list<double>&);
-
+Info FOCuS_step_sim(Info, const double&, const std::list<double>&, const double&);
 
 #endif
