@@ -1,9 +1,10 @@
 #include "biweight_loss.h"
 //#include "quadratic.h"
 
-void update_cost_biweight(std::list<Quadratic>& Q, const double& x, const double& K) {
+void update_cost_biweight(std::list<Quadratic>& Q, const double& x, const double& K, const double& m0 = 0.0) {
   auto k = sqrt(2 * K);
-  auto scaling = std::max(-.5 * (x * x), - k * k);
+  //auto scaling = std::max(-.5 * (x * x), - k * k);
+  auto scaling = std::max(-.5 * (m0 * m0 - 2 * m0 * x + x * x), - k * k);
   
   Quadratic new_q, new_l;
   new_q.a = - .5; new_q.b = x; new_q.c = -.5 * (x * x) - scaling;

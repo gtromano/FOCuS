@@ -10,22 +10,33 @@ void update_quad(Quadratic& q, const double& new_point, const double& offset = 0
 }
 
 
-
-
 // takes the information from the past and updates it
 // to be used with std::move to avoid copy
-Info FOCuS_step(Info info, const double& new_point, const std::list<double>& grid) {
+Info FOCuS_step(Info info, const double& new_point, const std::list<double>& grid, const double& K = INFINITY) {
   
   // update the quad for the null
   // add std::move after testing
-  update_quad(info.Q0, new_point);
+  if (std::isinf(K)) {
+    update_quad(info.Q0, new_point);
+  } else {
+    
+    auto m0 = - (info.Q0.b + new_point) / (2.0 * (info.Q0.a - 0.5)); // argmax of updated quad
+    if (-.5 * (m0 * m0 - 2 * m0 * new_point + new_point * new_point) > - 2 * K)
+      update_quad(info.Q0, new_point);
+    else
+      update_quad(info.Q0, - 2 * K);
+  }
     
   // find the max of Q0
   info.Q0.max = std::get<0>(get_minimum(info.Q0, info.Q0.ints.front()));
-
-  // update the quad for the alternative and lowering by the max of Q0
-  for (auto& q:info.Q1)
-    update_quad(q, new_point, -info.Q0.max);
+  
+  if (std::isinf(K)) {
+    // update the quad for the alternative and lowering by the max of Q0
+    for (auto& q:info.Q1)
+      update_quad(q, new_point, -info.Q0.max);
+  } else {
+    update_cost_biweight(info.Q1, new_point, K, std::get<1>(get_minimum(info.Q0, info.Q0.ints.front())));
+  }
   
   // lowering Q0 by the max of Q0
   info.Q0.c -= info.Q0.max;
@@ -70,7 +81,7 @@ Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>&
     for (auto& q:info.Q1)
       update_quad(q, new_point);
   } else {
-    update_cost_biweight(info.Q1, new_point, K);
+    update_cost_biweight(info.Q1, new_point, K, 0.0);
   }
   
   // get the new line

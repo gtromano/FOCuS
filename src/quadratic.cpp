@@ -71,7 +71,11 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
   auto inters = get_intersections(q1, q2);
   auto n_inters = !std::isnan(std::get<0>(inters)) + !std::isnan(std::get<0>(inters)); // sum of non null intersections
   if (n_inters == 0 || (std::get<0>(inters) == std::get<1>(inters))) {
-    q1.ints = {}; // deleting the quadratic since the line always wins in this case (this might need some checks)
+    
+    if (std::get<0>(get_minimum(q1, q1.ints.front())) >= std::get<0>(get_minimum(q2, q1.ints.front())))
+      q1.ints = {}; // deleting the quadratic since the line is better
+    else
+      q2.ints = {}; // deleting the line since the quad is better
     return;
   }
   

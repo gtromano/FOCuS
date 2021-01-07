@@ -6,15 +6,16 @@
 using namespace Rcpp;
 
 // FOCuS_offline
-List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid);
-RcppExport SEXP _FOCuS_FOCuS_offline(SEXP YSEXP, SEXP thresSEXP, SEXP gridSEXP) {
+List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const double& K);
+RcppExport SEXP _FOCuS_FOCuS_offline(SEXP YSEXP, SEXP thresSEXP, SEXP gridSEXP, SEXP KSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
     Rcpp::traits::input_parameter< double >::type thres(thresSEXP);
     Rcpp::traits::input_parameter< std::list<double>& >::type grid(gridSEXP);
-    rcpp_result_gen = Rcpp::wrap(FOCuS_offline(Y, thres, grid));
+    Rcpp::traits::input_parameter< const double& >::type K(KSEXP);
+    rcpp_result_gen = Rcpp::wrap(FOCuS_offline(Y, thres, grid, K));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -43,7 +44,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 3},
+    {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 4},
     {"_FOCuS_FOCuS_offline_sim", (DL_FUNC) &_FOCuS_FOCuS_offline_sim, 4},
     {"_FOCuS_test", (DL_FUNC) &_FOCuS_test, 0},
     {NULL, NULL, 0}

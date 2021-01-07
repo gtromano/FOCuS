@@ -3,6 +3,6 @@
 
 #include "FOCuS.h"
 
-void update_cost_biweight(std::list<Quadratic>&, const double&, const double&);
+void update_cost_biweight(std::list<Quadratic>&, const double&, const double&, const double&);
 
 //#endif
