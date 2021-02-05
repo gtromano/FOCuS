@@ -23,13 +23,67 @@ std::list<List> convert_output_to_R(const std::list<Quadratic>& c_obj) {
     auto l = List::create(Rcpp::Named("a") = q.a,
                           Rcpp::Named("b") = q.b,
                           Rcpp::Named("c") = q.c,
-                          Rcpp::Named("ints") = ints);
+                          Rcpp::Named("ints") = ints,
+                          Rcpp::Named("max") = q.max);
     l.attr("class") = "Quadratic";
     output.push_back(l);
   }
   return output;
 }
 
+
+/* ------------------------------------------------------------
+ 
+                  Online version - Rcpp wrapper
+ 
+ -------------------------------------------------------------- */
+
+// [[Rcpp::export(.FoCUS)]]
+List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::list<double>& grid, const double& K = INFINITY) {
+  if (!std::isnan(grid.front())) {
+    grid.push_back(INFINITY);
+    grid.push_front(-INFINITY);
+  }
+  
+  long t = 0;
+  long cp = -1;
+
+  Quadratic Q0, q1;
+  Info info = {Q0, {q1}, 0};  
+  
+  auto f = FOCuS_step; // base case of unknown pre-change mean
+
+  // if we know the pre-change mean then overwrite the f with a lambda  
+  if (!std::isnan(mu0)) {
+    auto f = [mu0](Info info_l, double& y_l, const std::list<double>& grid_l, const double& K_l) {
+      y_l -= mu0;
+      return(FOCuS_step_sim(info_l, y_l, grid_l, K_l));
+    };
+  }
+  
+  while(true) {
+    t++;
+    double y = Rcpp::as<double>(dataGen());
+    info = f(std::move(info), y, grid, K);
+    
+    if (info.global_max >= thres) {
+      cp = t;
+      break;
+    }
+  }
+  
+  auto last_Q1 = convert_output_to_R(info.Q1);
+  return List::create(Rcpp::Named("t") = cp,
+                      Rcpp::Named("Q1") = last_Q1);
+    
+} 
+
+
+/* ------------------------------------------------------------
+
+                OFFLINE VERSIONS OF FOCuS
+ 
+-------------------------------------------------------------- */
 
 // [[Rcpp::export]]
 List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const double& K = INFINITY) {
@@ -45,10 +99,13 @@ List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const
   
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};
+  std::list<double> max_at_time_t; 
   
   for (auto& y:Y) {
     t += 1;
     info = FOCuS_step(std::move(info), y, grid, K);
+    
+    max_at_time_t.push_back(info.global_max);
     
     if (info.global_max >= thres) {
       cp = t;
@@ -60,7 +117,7 @@ List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const
 
   auto last_Q1 = convert_output_to_R(info.Q1);
   
-  return List::create(Rcpp::Named("cp") = cp,
+  return List::create(Rcpp::Named("t") = cp,
                       Rcpp::Named("Q1") = last_Q1);
 }
 
@@ -91,6 +148,6 @@ List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid, c
 
   auto last_Q1 = convert_output_to_R(info.Q1);
 
-  return List::create(Rcpp::Named("cp") = cp,
+  return List::create(Rcpp::Named("t") = cp,
                       Rcpp::Named("Q1") = last_Q1);
 }
