@@ -21,7 +21,7 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
   } else {
     
     auto m0 = - (info.Q0.b + new_point) / (2.0 * (info.Q0.a - 0.5)); // argmax of updated quad
-    if (-.5 * (m0 * m0 - 2 * m0 * new_point + new_point * new_point) > - 2 * K)
+    if (-.5 * (m0 * m0 - 2 * m0 * new_point + new_point * new_point) > - 2 * K) // if max of new quad is greater than -2 * K
       update_quad(info.Q0, new_point);
     else
       update_quad(info.Q0, - 2 * K);

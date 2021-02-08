@@ -21,30 +21,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // FOCuS_offline
-List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const double& K);
-RcppExport SEXP _FOCuS_FOCuS_offline(SEXP YSEXP, SEXP thresSEXP, SEXP gridSEXP, SEXP KSEXP) {
+List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K);
+RcppExport SEXP _FOCuS_FOCuS_offline(SEXP YSEXP, SEXP thresSEXP, SEXP mu0SEXP, SEXP gridSEXP, SEXP KSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< double >::type thres(thresSEXP);
+    Rcpp::traits::input_parameter< const double >::type thres(thresSEXP);
+    Rcpp::traits::input_parameter< const double& >::type mu0(mu0SEXP);
     Rcpp::traits::input_parameter< std::list<double>& >::type grid(gridSEXP);
     Rcpp::traits::input_parameter< const double& >::type K(KSEXP);
-    rcpp_result_gen = Rcpp::wrap(FOCuS_offline(Y, thres, grid, K));
-    return rcpp_result_gen;
-END_RCPP
-}
-// FOCuS_offline_sim
-List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid, const double& K);
-RcppExport SEXP _FOCuS_FOCuS_offline_sim(SEXP YSEXP, SEXP thresSEXP, SEXP gridSEXP, SEXP KSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< double >::type thres(thresSEXP);
-    Rcpp::traits::input_parameter< std::list<double>& >::type grid(gridSEXP);
-    Rcpp::traits::input_parameter< const double& >::type K(KSEXP);
-    rcpp_result_gen = Rcpp::wrap(FOCuS_offline_sim(Y, thres, grid, K));
+    rcpp_result_gen = Rcpp::wrap(FOCuS_offline(Y, thres, mu0, grid, K));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -60,8 +47,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_FOCuS", (DL_FUNC) &_FOCuS_FOCuS, 5},
-    {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 4},
-    {"_FOCuS_FOCuS_offline_sim", (DL_FUNC) &_FOCuS_FOCuS_offline_sim, 4},
+    {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 5},
     {"_FOCuS_test", (DL_FUNC) &_FOCuS_test, 0},
     {NULL, NULL, 0}
 };

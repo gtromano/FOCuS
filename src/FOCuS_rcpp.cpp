@@ -39,7 +39,7 @@ std::list<List> convert_output_to_R(const std::list<Quadratic>& c_obj) {
  -------------------------------------------------------------- */
 
 // [[Rcpp::export(.FoCUS)]]
-List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::list<double>& grid, const double& K = INFINITY) {
+List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::list<double>& grid, const double& K) {
   if (!std::isnan(grid.front())) {
     grid.push_back(INFINITY);
     grid.push_front(-INFINITY);
@@ -51,9 +51,9 @@ List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};  
   
-  auto f = FOCuS_step; // base case of unknown pre-change mean
+  auto f = FOCuS_step; // base case of unknown pre-change mean (function pointer)
 
-  // if we know the pre-change mean then overwrite the f with a lambda  
+  // if we know the pre-change mean then replace the f with a lambda  
   if (!std::isnan(mu0)) {
     auto f = [mu0](Info info_l, double& y_l, const std::list<double>& grid_l, const double& K_l) {
       y_l -= mu0;
@@ -85,8 +85,8 @@ List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::
  
 -------------------------------------------------------------- */
 
-// [[Rcpp::export]]
-List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const double& K = INFINITY) {
+// [[Rcpp::export(.FoCUS_offline)]]
+List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K) {
   
   if (!std::isnan(grid.front())) {
     grid.push_back(INFINITY);
@@ -99,11 +99,22 @@ List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const
   
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};
-  std::list<double> max_at_time_t; 
+  std::list<double> max_at_time_t;
+  
+  
+  auto f = FOCuS_step; // base case of unknown pre-change mean (function pointer)
+  
+  // if we know the pre-change mean then replace the f with a lambda  
+  if (!std::isnan(mu0)) {
+    auto f = [mu0](Info info_l, double& y_l, const std::list<double>& grid_l, const double& K_l) {
+      y_l -= mu0;
+      return(FOCuS_step_sim(info_l, y_l, grid_l, K_l));
+    };
+  }
   
   for (auto& y:Y) {
     t += 1;
-    info = FOCuS_step(std::move(info), y, grid, K);
+    info = f(std::move(info), y, grid, K);
     
     max_at_time_t.push_back(info.global_max);
     
@@ -118,36 +129,36 @@ List FOCuS_offline(NumericVector Y, double thres, std::list<double>& grid, const
   auto last_Q1 = convert_output_to_R(info.Q1);
   
   return List::create(Rcpp::Named("t") = cp,
-                      Rcpp::Named("Q1") = last_Q1);
+                      Rcpp::Named("Q1") = last_Q1,
+                      Rcpp::Named("maxs") = max_at_time_t);
 }
 
-
-// [[Rcpp::export]]
-List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid, const double& K = INFINITY) {
-
-  if (!std::isnan(grid.front())) {
-    grid.push_back(INFINITY);
-    grid.push_front(-INFINITY);
-  }
-
-  long t = 0;
-  long cp = -1;
-
-  Quadratic Q0, q1;
-  Info info = {Q0, {q1}, 0};
-
-  for (auto& y:Y) {
-    t += 1;
-    info = FOCuS_step_sim(std::move(info), y, grid, K);
-
-    if (info.global_max >= thres) {
-      cp = t;
-      break;
-    }
-  }
-
-  auto last_Q1 = convert_output_to_R(info.Q1);
-
-  return List::create(Rcpp::Named("t") = cp,
-                      Rcpp::Named("Q1") = last_Q1);
-}
+// // [[Rcpp::export]]
+// List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid, const double& K = INFINITY) {
+// 
+//   if (!std::isnan(grid.front())) {
+//     grid.push_back(INFINITY);
+//     grid.push_front(-INFINITY);
+//   }
+// 
+//   long t = 0;
+//   long cp = -1;
+// 
+//   Quadratic Q0, q1;
+//   Info info = {Q0, {q1}, 0};
+// 
+//   for (auto& y:Y) {
+//     t += 1;
+//     info = FOCuS_step_sim(std::move(info), y, grid, K);
+// 
+//     if (info.global_max >= thres) {
+//       cp = t;
+//       break;
+//     }
+//   }
+// 
+//   auto last_Q1 = convert_output_to_R(info.Q1);
+// 
+//   return List::create(Rcpp::Named("t") = cp,
+//                       Rcpp::Named("Q1") = last_Q1);
+// }
