@@ -16,7 +16,8 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
   
   // update the quad for the null
   // add std::move after testing
-  if (std::isinf(K)) {
+  //if (std::isinf(K)) {
+  if (false) {
     update_quad(info.Q0, new_point);
   } else {
     
@@ -30,7 +31,8 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
   // find the max of Q0
   info.Q0.max = std::get<0>(get_minimum(info.Q0, info.Q0.ints.front()));
   
-  if (std::isinf(K)) {
+  //if (std::isinf(K)) {
+  if (false) {
     // update the quad for the alternative and lowering by the max of Q0
     for (auto& q:info.Q1)
       update_quad(q, new_point, -info.Q0.max);
@@ -77,6 +79,8 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
 // to be used with std::move to avoid copy
 Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>& grid, const double& K = INFINITY) {
   
+  //std::cout << "AAAA";
+  
   if (std::isinf(K)) {
     for (auto& q:info.Q1)
       update_quad(q, new_point);
@@ -96,16 +100,15 @@ Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>&
   
   // getting the maximums for each piecewise quadratic
   double global_max = -INFINITY;
-  std::for_each(info.Q1.begin(), info.Q1.end(), [&global_max](const auto& q){
-    double max = -INFINITY;
-    // iterating in the intervals of the piecewise quadratics
+  std::for_each(info.Q1.begin(), info.Q1.end(), [&global_max](auto& q){
+    double m = -INFINITY;
     for(const auto& i:q.ints) {
-      auto m = std::get<0>(get_minimum(q, i));
-      if (m > max)
-        max = m;
+      m = std::get<0>(get_minimum(q, i));
+      if (m > q.max)
+        q.max = m;
     }
-    if (max > global_max)
-      global_max = max;
+    if (q.max > global_max)
+      global_max = q.max;
   });
   
   info.global_max = std::move(global_max);

@@ -51,26 +51,31 @@ List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};  
   
-  auto f = FOCuS_step; // base case of unknown pre-change mean (function pointer)
 
-  // if we know the pre-change mean then replace the f with a lambda  
-  if (!std::isnan(mu0)) {
-    auto f = [mu0](Info info_l, double& y_l, const std::list<double>& grid_l, const double& K_l) {
-      y_l -= mu0;
-      return(FOCuS_step_sim(info_l, y_l, grid_l, K_l));
-    };
-  }
-  
-  while(true) {
-    t++;
-    double y = Rcpp::as<double>(dataGen());
-    info = f(std::move(info), y, grid, K);
-    
-    if (info.global_max >= thres) {
-      cp = t;
-      break;
+  // if we don't know the pre-change mean then replace the f with a lambda  
+  if (std::isnan(mu0)) {
+    while(true) {
+      t++;
+      double y = Rcpp::as<double>(dataGen());
+      info = FOCuS_step(std::move(info), y, grid, K);
+      if (info.global_max >= thres) {
+        cp = t;
+        break;
+      }
+    }
+  } else {
+    while(true) {
+      t++;
+      double y = Rcpp::as<double>(dataGen());
+      info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
+      if (info.global_max >= thres) {
+        cp = t;
+        break;
+      }
     }
   }
+  
+
   
   auto last_Q1 = convert_output_to_R(info.Q1);
   return List::create(Rcpp::Named("t") = cp,
@@ -101,28 +106,31 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
   Info info = {Q0, {q1}, 0};
   std::list<double> max_at_time_t;
   
-  
-  auto f = FOCuS_step; // base case of unknown pre-change mean (function pointer)
-  
-  // if we know the pre-change mean then replace the f with a lambda  
-  if (!std::isnan(mu0)) {
-    auto f = [mu0](Info info_l, double& y_l, const std::list<double>& grid_l, const double& K_l) {
-      y_l -= mu0;
-      return(FOCuS_step_sim(info_l, y_l, grid_l, K_l));
-    };
-  }
-  
-  for (auto& y:Y) {
-    t += 1;
-    info = f(std::move(info), y, grid, K);
-    
-    max_at_time_t.push_back(info.global_max);
-    
-    if (info.global_max >= thres) {
-      cp = t;
-      break;
+
+  // pre-change mean not known 
+  if (std::isnan(mu0)) {
+    for (auto& y:Y) {
+      t += 1;
+      info = FOCuS_step(std::move(info), y, grid, K);
+      max_at_time_t.push_back(info.global_max);
+      if (info.global_max >= thres) {
+        cp = t;
+        break;
+      }
+    }
+  } else { // pre change mean known
+    for (auto& y:Y) {
+      t += 1;
+      info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
+      max_at_time_t.push_back(info.global_max);
+      if (info.global_max >= thres) {
+        cp = t;
+        break;
+      }
     }
   }
+  
+
   // std::cout << info.Q1.size() << std::endl;
   // std::cout << info.global_max << std::endl;
 

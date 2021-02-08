@@ -9,18 +9,18 @@ FOCuS_offline <- function(y, thres, mu0 = NA, grid = NA, K = Inf) {
     stop("thres must be a positive numeric")
   
   # checks on the mu0
-  if(!is.na(NA))
+  if(!is.na(mu0))
     if(!is.numeric(mu0) | length(mu0) > 1)
       stop("mu0 must be a numeric value")
   
   # checks on the grid
-  if(!is.na(NA))
+  if(!is.na(grid[1]))
     if(!is.numeric(grid))
       stop("mu0 must be a numeric value")
   
   # checks on the K
-  if(!is.na(NA))
-    if(!is.numeric(K) | K > 0)
+  if(!is.na(K))
+    if(!is.numeric(K) | K <= 0)
       stop("K must be a positive numeric")
   
   
