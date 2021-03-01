@@ -59,6 +59,11 @@ std::tuple<double, double> get_intersections (const Quadratic& q1, const Quadrat
   auto b = q1.b - q2.b;
   auto c = q1.c - q2.c;
   
+  if (c == 0) { // to avoid the sqrt
+    auto inter = - b / a;
+    return std::make_tuple(std::min(0.0, inter), std::max(0.0, inter));
+  }
+
   auto sqrt_z = sqrt((b * b) - (4 * a * c));
   return std::make_tuple((- b - sqrt_z) / (2 * a), (- b + sqrt_z) / (2 * a));
 }
