@@ -77,6 +77,7 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
 // data are centered on zero under the null
 // takes the information from the past and updates it
 // to be used with std::move to avoid copy
+
 Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>& grid, const double& K = INFINITY) {
   
   //std::cout << "AAAA";
@@ -114,6 +115,76 @@ Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>&
   info.global_max = std::move(global_max);
   
   
+  // and we're done!
+  return info;
+}
+
+
+mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<double>& lgrid, const std::list<double>& rgrid, const double& K = INFINITY) {
+  
+  // info should have Qright and Qleft
+  // this is the update
+  if (std::isinf(K)) {
+    for (auto& q:info.Qleft)
+      update_quad(q, new_point);
+    for (auto& q:info.Qright)
+      update_quad(q, new_point);
+  } else {
+    update_cost_biweight(info.Qleft, new_point, K, 0.0);
+    update_cost_biweight(info.Qright, new_point, K, 0.0);
+  }
+  
+    if (new_point > 0) {
+      // get the new line
+      Quadratic rline; // remember that this is initialized at 0 0 0, for (-inf, inf)
+      rline.ints.front().l = 0;
+      
+      // trimming with the new line // add std::move
+      info.Qright = get_max_of_cost_melk_right(std::move(info.Qright), rline);
+      
+      // grid approximation
+      if (!std::isnan(rgrid.front()))
+        approximation_grid(info.Qright, rgrid);
+      
+      info.global_max = -INFINITY;
+      // getting the maximums for right
+      std::for_each(info.Qright.begin(), info.Qright.end(), [&info](auto& q){
+        double m = -INFINITY;
+        for(const auto& i:q.ints) {
+          m = std::get<0>(get_minimum(q, i));
+          if (m > q.max)
+            q.max = m;
+        }
+        if (q.max > info.global_max)
+          info.global_max = q.max;
+      });
+      
+    } else {
+      // get the new line
+      Quadratic lline; // remember that this is initialized at 0 0 0, for (-inf, inf)
+      lline.ints.front().u = 0;
+      
+      // trimming with the new line // add std::move
+      info.Qleft = get_max_of_cost_melk_left(std::move(info.Qleft), lline);
+      
+      // grid approximation
+      if (!std::isnan(lgrid.front()))
+        approximation_grid(info.Qleft, lgrid);
+      
+      // getting the maximums for left
+      info.global_max = -INFINITY;
+      std::for_each(info.Qleft.begin(), info.Qleft.end(), [&info](auto& q){
+        double m = -INFINITY;
+        for(const auto& i:q.ints) {
+          m = std::get<0>(get_minimum(q, i));
+          if (m > q.max)
+            q.max = m;
+        }
+        if (q.max > info.global_max)
+          info.global_max = q.max;
+      });
+    }
+    
   // and we're done!
   return info;
 }

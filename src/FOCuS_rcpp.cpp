@@ -141,6 +141,58 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
                       Rcpp::Named("maxs") = max_at_time_t);
 }
 
+// [[Rcpp::export]]
+List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K) {
+  
+  if (!std::isnan(grid.front())) {
+    grid.push_back(INFINITY);
+    grid.push_front(-INFINITY);
+  }
+  
+  
+  auto rgrid = grid;
+  auto lgrid = grid;
+  rgrid.remove_if([](auto& x){
+    return x < 0;
+  });
+  lgrid.remove_if([](auto& x){
+    return x > 0;
+  });
+  
+  
+  long t = 0;
+  long cp = -1;
+  
+  Quadratic q1;
+  mInfo info = {{q1}, {q1}, 0};
+  std::list<double> max_at_time_t;
+  
+  for (auto& y:Y) {
+    t += 1;
+    //std::cout << "\n time " << t << std::endl;
+    info = FOCuS_step_melk(std::move(info), y - mu0, lgrid, rgrid, K);
+    max_at_time_t.push_back(info.global_max);
+    if (info.global_max >= thres) {
+      cp = t;
+      break;
+    }
+    //std::cout << "__________________________________" << std::endl;
+  }
+  
+  
+  // std::cout << info.Q1.size() << std::endl;
+  // std::cout << info.global_max << std::endl;
+  
+  auto last_Qright = convert_output_to_R(info.Qright);
+  auto last_Qleft = convert_output_to_R(info.Qleft);
+  
+  return List::create(Rcpp::Named("t") = cp,
+                      Rcpp::Named("Qleft") = last_Qleft,
+                      Rcpp::Named("Qright") = last_Qright,
+                      Rcpp::Named("maxs") = max_at_time_t);
+}
+
+
 // // [[Rcpp::export]]
 // List FOCuS_offline_sim(NumericVector Y, double thres, std::list<double>& grid, const double& K = INFINITY) {
 // 

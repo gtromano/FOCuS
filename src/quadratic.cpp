@@ -120,7 +120,8 @@ void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2) {
           // here we don't have intersections and we have to figure out 
           // whether the line is highest, or the quadratic
           auto interval = i1;
-          if (std::get<0>(get_minimum(q1, interval)) >= std::get<0>(get_minimum(q2, interval))) {
+          //if (std::get<0>(get_minimum(q1, interval)) >= std::get<0>(get_minimum(q2, interval))) {
+          if (std::get<0>(get_minimum(q1, interval)) >= 0.0) { // here this is a particular case that only works in this scenario ***********************************
             // std::cout<<"******* erasing interval **********"<<std::endl;
             //i1 = q1.ints.erase(i1); // if line is highest we prune the quadratic
             i1 = I(std::nanf(""), std::nanf(""));
@@ -179,6 +180,118 @@ std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) 
   return cost;
 }
 
+
+// MELKMANS LIKE ALGORITHM ****   experimental crap   *****
+
+std::list<Quadratic> get_max_of_cost_melk_right(std::list<Quadratic> cost, Quadratic newq) {
+  
+  bool found = false;
+  //std::cout << "Break 2" << std::endl;
+  
+  for(auto it = cost.begin(); it != cost.end(); ++it) {
+    //std::cout << "Break 3. Len: " << cost.size() << std::endl;
+    //print((*it));
+    
+    if (found) {
+      (*it).ints = {}; // if we have found an intersection already we prune the remaining quadratics
+    } else {
+      auto nx = std::next(it, 1);
+      
+      //std::cout << "Break 4 " << (nx == cost.end()) << std::endl;
+      if (nx == cost.end()) {
+        //print(newq);
+        //print((*it));
+        auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
+          if (inter > 0)
+            (*it).ints.front().u = newq.ints.front().l = inter;
+          else
+            (*it).ints = {};
+        found = true;
+      } else {
+        auto a = (*it).a - (*nx).a;
+        auto b = (*it).b - (*nx).b;
+        auto inter = - b / a;
+        
+        if (evaluate_quadratic((*it), inter) > 0.0 && inter > 0.0) {
+            (*it).ints.front().u = (*nx).ints.front().l = inter; // in this case we intercept the quadratic
+        } else {
+            inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
+            if (inter > 0)
+              (*it).ints.front().u = newq.ints.front().l = inter;
+            else
+              (*it).ints = {};
+            found = true;
+          } //end else 
+        } // end else 
+      } // end else
+    
+    } // end for
+  
+  cost.remove_if([](auto& q){
+    return q.ints.size() == 0;
+  });
+  cost.push_back(newq);
+  
+  return cost;
+}
+
+
+
+std::list<Quadratic> get_max_of_cost_melk_left(std::list<Quadratic> cost, Quadratic newq) {
+  
+  bool found = false;
+  //std::cout << "Break 2" << std::endl;
+  
+  for(auto it = cost.begin(); it != cost.end(); ++it) {
+    //std::cout << "Break 3. Len: " << cost.size() << std::endl;
+    //print((*it));
+    
+    if (found) {
+      (*it).ints = {}; // if we have found an intersection already we prune the remaining quadratics
+    } else {
+      auto nx = std::next(it, 1);
+      
+      //std::cout << "Break 4 " << (nx == cost.end()) << std::endl;
+      if (nx == cost.end()) {
+        //print(newq);
+        //print((*it));
+        auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
+        if (inter < 0)
+          (*it).ints.front().l = newq.ints.front().u = inter;
+        else
+          (*it).ints = {};
+        found = true;
+      } else {
+        auto a = (*it).a - (*nx).a;
+        auto b = (*it).b - (*nx).b;
+        auto inter = - b / a;
+        
+        if (evaluate_quadratic((*it), inter) > 0.0 && inter < 0.0) {
+          (*it).ints.front().l = (*nx).ints.front().u = inter; // in this case we intercept the quadratic
+        } else {
+          inter = - (*it).b / (*it).a; // in this case we have intercepted the line
+          if (inter < 0)
+            (*it).ints.front().l = newq.ints.front().u = inter;
+          else
+            (*it).ints = {};
+          found = true;
+        } //end else 
+      } // end else 
+    } // end else
+    
+  } // end for
+  
+  cost.remove_if([](auto& q){
+    return q.ints.size() == 0;
+  });
+  cost.push_back(newq);
+  
+  return cost;
+}
+
+
+
+// ********* end of the experimental crap *************
 
 // function for the approximation
 void approximation_grid (std::list<Quadratic>& Q, const std::list<double>& grid) {

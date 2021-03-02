@@ -9,6 +9,14 @@
     .Call(`_FOCuS_FOCuS_offline`, Y, thres, mu0, grid, K)
 }
 
+FOCuS_melk <- function(Y, thres, mu0, grid, K) {
+    .Call(`_FOCuS_FOCuS_melk`, Y, thres, mu0, grid, K)
+}
+
+PageCUSUM_offline <- function(Y, thres, mu0, grid) {
+    .Call(`_FOCuS_PageCUSUM_offline`, Y, thres, mu0, grid)
+}
+
 test <- function() {
     invisible(.Call(`_FOCuS_test`))
 }
