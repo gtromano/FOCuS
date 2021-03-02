@@ -140,7 +140,7 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
       rline.ints.front().l = 0;
       
       // trimming with the new line // add std::move
-      info.Qright = get_max_of_cost_melk_right(std::move(info.Qright), rline);
+      get_max_of_cost_melk_right(info.Qright, std::move(rline));
       
       // grid approximation
       if (!std::isnan(rgrid.front()))
@@ -165,7 +165,7 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
       lline.ints.front().u = 0;
       
       // trimming with the new line // add std::move
-      info.Qleft = get_max_of_cost_melk_left(std::move(info.Qleft), lline);
+      get_max_of_cost_melk_left(info.Qleft, std::move(lline));
       
       // grid approximation
       if (!std::isnan(lgrid.front()))
