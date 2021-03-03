@@ -11,6 +11,8 @@ sim_grid <- expand.grid(
 )
 
 
+CORES <- 16
+
 run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
 
   set.seed(seed)
@@ -18,7 +20,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
 
   print("Running FOCuS")
   # FOCuS with no pruning costraint
-  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = 6)
+  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
@@ -30,7 +32,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   print("Running FOCuS 5")
   # FoCUS 5
   grid <- find_grid(0, 5, .1)
-  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = 6)
+  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
@@ -42,7 +44,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   print("Running Page-CUSUM")
   # Page CUSUM 100
   grid <- find_grid(0, 100, .01)
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, Inf, mu0 = 0, grid = grid), mc.cores = 6)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, Inf, mu0 = 0, grid = grid), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
@@ -51,7 +53,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   res_page100 <- data.frame(sim = 1:REPS, algo = "Page-CUSUM 100", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
   
   print("Running CUSUM")
-  res <- mclapply(data, function (y) CUSUM_offline(y, Inf, 0), mc.cores = 6)
+  res <- mclapply(data, function (y) CUSUM_offline(y, Inf, 0), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
@@ -61,7 +63,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   
   # MOSUM
   print("Running MOSUM")
-  res <- mclapply(data, function (y) MOSUMwrapper(y, 50, thres = Inf), mc.cores = 6)
+  res <- mclapply(data, function (y) MOSUMwrapper(y, 50, thres = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$cp)
   max1e3 <- sapply(res, function (r) max(r$out$stat[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$out$stat[1:1e4]))
