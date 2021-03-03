@@ -186,12 +186,8 @@ std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) 
 void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
   
   bool found = false;
-  //std::cout << "Break 2" << std::endl;
   
   for(auto it = cost.begin(); it != cost.end(); ++it) {
-    //std::cout << "Break 3. Len: " << cost.size() << std::endl;
-    //print((*it));
-    
     if (found) {
       (*it).ints = {}; // if we have found an intersection already we prune the remaining quadratics
     } else {
@@ -199,13 +195,11 @@ void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
       
       //std::cout << "Break 4 " << (nx == cost.end()) << std::endl;
       if (nx == cost.end()) {
-        //print(newq);
-        //print((*it));
         auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
-          if (inter > 0)
-            (*it).ints.front().u = newq.ints.front().l = inter;
-          else
-            (*it).ints = {};
+        if (inter > 0)
+          (*it).ints.front().u = newq.ints.front().l = inter;
+        else
+          (*it).ints = {};
         found = true;
       } else {
         auto a = (*it).a - (*nx).a;
@@ -213,112 +207,38 @@ void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
         auto inter = - b / a;
         
         if (evaluate_quadratic((*it), inter) > 0.0 && inter > 0.0) {
-            (*it).ints.front().u = (*nx).ints.front().l = inter; // in this case we intercept the quadratic
+          (*it).ints.front().u = (*nx).ints.front().l = inter; // in this case we intercept the quadratic
         } else {
-            inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
-            if (inter > 0)
-              (*it).ints.front().u = newq.ints.front().l = inter;
-            else
-              (*it).ints = {};
-            found = true;
-          } //end else 
-        } // end else 
-      } // end else
-    
-    } // end for
+          inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
+          if (inter > 0)
+            (*it).ints.front().u = newq.ints.front().l = inter;
+          else
+            (*it).ints = {};
+          found = true;
+        } //end else 
+      } // end else 
+    } // end else
+  } // end for
   
   cost.remove_if([](auto& q){
     return q.ints.size() == 0;
   });
   cost.push_back(newq);
   
-  //return cost;
 }
-
-
-/*
-void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
-  
-  //bool found = false;
-  auto the_god_of_chaos = 0;
-  
-  for(auto it = cost.begin(); it != cost.end(); ++it) {
-    //std::cout << "Break 3. Len: " << cost.size() << std::endl;
-    //print((*it));
-
-    auto nx = std::next(it, 1);
-    
-    if (nx == cost.end()) {
-
-      auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
-      if (inter > 0) {
-        (*it).ints.front().u = newq.ints.front().l = inter;
-        the_god_of_chaos++;
-      } else {
-        (*it).ints = {};
-      }
-      break;
-      
-    } else {
-      auto a = (*it).a - (*nx).a;
-      auto b = (*it).b - (*nx).b;
-      auto inter = - b / a;
-      
-      if (evaluate_quadratic((*it), inter) > 0.0 && inter > 0.0) {
-        (*it).ints.front().u = (*nx).ints.front().l = inter; // in this case we intercept the quadratic
-        the_god_of_chaos++;
-      } else {
-        inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
-        if (inter > 0) {
-          (*it).ints.front().u = newq.ints.front().l = inter;
-          the_god_of_chaos++;
-        } else {
-          (*it).ints = {};
-        }
-        break;
-      } //end else 
-    } // end else 
-
-  } // end for
-  
-  //std::cout << "\nMy list is long: " <<  cost.size() << std::endl;
-  //std::cout << "The god of chaos is: " << the_god_of_chaos << std::endl;
-  
-  auto to_prune =  (cost.size() - the_god_of_chaos);
-  //std::cout << "We need to prune: " << to_prune << " elements" << std::endl;
-  
-  for (int a = 0; a < to_prune; a++) {
-    //std::cout << "Pruning: " <<  a << " ";
-    
-    cost.pop_back(); // please dear god have mercy on our souls
-  }
-  
-  //std::cout << "All done. We have " <<  cost.size() << std::endl;
-  
-    
-  
-  cost.push_back(newq);
-  
-  //return cost;
-}
-*/
 
 
 void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
   
   bool found = false;
-  //std::cout << "Break 2" << std::endl;
   
   for(auto it = cost.begin(); it != cost.end(); ++it) {
-    //std::cout << "Break 3. Len: " << cost.size() << std::endl;
-    //print((*it));
     
     if (found) {
       (*it).ints = {}; // if we have found an intersection already we prune the remaining quadratics
     } else {
       auto nx = std::next(it, 1);
       
-      //std::cout << "Break 4 " << (nx == cost.end()) << std::endl;
       if (nx == cost.end()) {
         //print(newq);
         //print((*it));
@@ -352,11 +272,110 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
     return q.ints.size() == 0;
   });
   cost.push_back(newq);
-  
-  //return cost;
 }
 
 
+/*
+void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
+  
+  auto the_god_of_chaos = 0;
+  
+  for(auto it = cost.begin(); it != cost.end(); ++it) {
+    
+    
+    auto nx = std::next(it, 1);
+    
+    if (nx == cost.end()) {
+      
+      auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
+      if (inter > 0) {
+        (*it).ints.front().u = newq.ints.front().l = inter;
+        the_god_of_chaos++;
+      } else {
+        (*it).ints = {};
+      }
+      break;
+      
+    } else {
+      auto a = (*it).a - (*nx).a;
+      auto b = (*it).b - (*nx).b;
+      auto inter = - b / a;
+      
+      if (evaluate_quadratic((*it), inter) > 0.0 && inter > 0.0) {
+        (*it).ints.front().u = (*nx).ints.front().l = inter; // in this case we intercept the quadratic
+        the_god_of_chaos++;
+      } else {
+        inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
+        if (inter > 0) {
+          (*it).ints.front().u = newq.ints.front().l = inter;
+          the_god_of_chaos++;
+        } else {
+          (*it).ints = {};
+        }
+        break;
+      } //end else 
+    } // end else 
+  } // end for
+  
+  //std::cout << "\nMy list is long: " <<  cost.size() << std::endl;
+  auto to_prune =  (cost.size() - the_god_of_chaos);
+  for (int a = 0; a < to_prune; a++) {
+    cost.pop_back(); // please dear god have mercy on our souls
+  }
+  
+  cost.push_back(newq);
+}
+
+
+void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
+  
+  auto the_god_of_chaos = 0;
+  
+  for(auto it = cost.begin(); it != cost.end(); ++it) {
+    
+    auto nx = std::next(it, 1);
+    if (nx == cost.end()) {
+      
+      auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
+      if (inter < 0) {
+        (*it).ints.front().l = newq.ints.front().u = inter;
+        the_god_of_chaos++;
+      } else {
+        (*it).ints = {};
+      }
+      break;
+      
+    } else {
+      auto a = (*it).a - (*nx).a;
+      auto b = (*it).b - (*nx).b;
+      auto inter = - b / a;
+      
+      if (evaluate_quadratic((*it), inter) > 0.0 && inter < 0.0) {
+        (*it).ints.front().l = (*nx).ints.front().u = inter; // in this case we intercept the quadratic
+        the_god_of_chaos++;
+      } else {
+        inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
+        if (inter < 0) {
+          (*it).ints.front().l = newq.ints.front().u = inter;
+          the_god_of_chaos++;
+        } else {
+          (*it).ints = {};
+        }
+        break;
+      } //end else 
+    } // end else 
+  } // end for
+  
+  //std::cout << "\nMy list is long: " <<  cost.size() << std::endl;
+  auto to_prune =  (cost.size() - the_god_of_chaos);
+  for (int a = 0; a < to_prune; a++) {
+    cost.pop_back(); // please dear god have mercy on our souls
+  }
+  
+  cost.push_back(newq);
+}
+
+*/
 
 // ********* end of the experimental crap *************
 

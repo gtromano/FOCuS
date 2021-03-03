@@ -1,24 +1,4 @@
-library(tidyverse)
-library(FOCuS)
-library(parallel)
-library(ggpubr)
-
-library(compiler)
-compiler::enableJIT(3)
-pageCUSUM_offline <- compiler::cmpfun(pageCUSUM_offline)
-
-
-theme_idris <- function() {
-  theme(
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.background = element_blank(),
-    axis.line = element_line(colour = "grey20"),
-    panel.border =  element_rect(fill = NA,
-                                 colour = "grey20")
-  )
-}
-
+source("simulations/helper_functions.R")
 run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   print(p)
 

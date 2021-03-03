@@ -52,3 +52,46 @@ List PageCUSUM_offline(NumericVector Y, const double thres, const double& mu0, s
   return List::create(Rcpp::Named("t") = cp,
                       Rcpp::Named("maxs") = max_at_time_t);
 }
+
+
+
+/* ------------------------------------------------------------
+
+                OFFLINE VERSIONS OF CUSUM
+
+-------------------------------------------------------------- */
+
+
+double CUSUM_step (double Q, double new_point, double mu0) {
+  return Q + (new_point - mu0);
+}
+
+
+// [[Rcpp::export]]
+List CUSUM_offline(NumericVector Y, const double thres, const double& mu0) {
+
+  long t = 0;
+  long cp = -1;
+
+  auto Q = 0.0;
+  std::list<double> max_at_time_t;
+
+  for (auto& y:Y) {
+      t += 1;
+      Q = CUSUM_step(std::move(Q), y, mu0);
+
+      max_at_time_t.push_back(std::abs(Q));
+
+      if (max_at_time_t.back() >= thres) {
+      cp = t;
+      break;
+    }
+  }
+
+
+  // std::cout << info.Q1.size() << std::endl;
+  // std::cout << info.global_max << std::endl;
+
+  return List::create(Rcpp::Named("t") = cp,
+                      Rcpp::Named("maxs") = max_at_time_t);
+}

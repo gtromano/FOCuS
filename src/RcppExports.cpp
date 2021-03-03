@@ -64,6 +64,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// CUSUM_offline
+List CUSUM_offline(NumericVector Y, const double thres, const double& mu0);
+RcppExport SEXP _FOCuS_CUSUM_offline(SEXP YSEXP, SEXP thresSEXP, SEXP mu0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const double >::type thres(thresSEXP);
+    Rcpp::traits::input_parameter< const double& >::type mu0(mu0SEXP);
+    rcpp_result_gen = Rcpp::wrap(CUSUM_offline(Y, thres, mu0));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test
 void test();
 RcppExport SEXP _FOCuS_test() {
@@ -79,6 +92,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 5},
     {"_FOCuS_FOCuS_melk", (DL_FUNC) &_FOCuS_FOCuS_melk, 5},
     {"_FOCuS_PageCUSUM_offline", (DL_FUNC) &_FOCuS_PageCUSUM_offline, 4},
+    {"_FOCuS_CUSUM_offline", (DL_FUNC) &_FOCuS_CUSUM_offline, 3},
     {"_FOCuS_test", (DL_FUNC) &_FOCuS_test, 0},
     {NULL, NULL, 0}
 };

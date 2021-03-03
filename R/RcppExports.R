@@ -17,6 +17,10 @@ PageCUSUM_offline <- function(Y, thres, mu0, grid) {
     .Call(`_FOCuS_PageCUSUM_offline`, Y, thres, mu0, grid)
 }
 
+CUSUM_offline <- function(Y, thres, mu0) {
+    .Call(`_FOCuS_CUSUM_offline`, Y, thres, mu0)
+}
+
 test <- function() {
     invisible(.Call(`_FOCuS_test`))
 }

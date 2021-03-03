@@ -1,19 +1,77 @@
 # this script investigates the average run length to a false positive
 
-source("simulations/set_simulations.R")
+source("simulations/helper_functions.R")
 
-output_file = "./simulations/results/avgrlen7.RData"
+output_file = "./simulations/results/avgl1.RData"
 
 sim_grid <- expand.grid(
-  N = 1e5,
-  changepoint = 1e5,
-  delta = 0,
-  threshold = c(1:10, seq(15, 35, by = 5))
-  #threshold = seq(200, 1000, by = 10)
+  N = 1e6,
+  changepoint = -1,
+  threshold = Inf
 )
 
 
-if (F) {
+run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
+
+  set.seed(seed)
+  data <- lapply(1:REPS, function (k) rnorm(p$N))
+  
+  # FOCuS with no pruning costraint
+  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = 6)
+  cp <- sapply(res, function (r) r$t)
+  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
+  max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
+  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
+  max1e6 <- sapply(res, function (r) max(r$maxs))
+  res_FOCuS <- data.frame(sim = 1:REPS, algo = "FOCuS", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
+  #print("FOCus done")
+  
+  # FoCUS 5
+  grid <- find_grid(0, 5, .1)
+  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = 6)
+  cp <- sapply(res, function (r) r$t)
+  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
+  max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
+  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
+  max1e6 <- sapply(res, function (r) max(r$maxs))
+  res_FOCuS5 <- data.frame(sim = 1:REPS, algo = "FOCuS 5",  est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
+  #print("page-CUSUM done")
+  
+  # Page CUSUM 100
+  grid <- find_grid(0, 100, .01)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, Inf, mu0 = 0, grid = grid), mc.cores = 6)
+  cp <- sapply(res, function (r) r$t)
+  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
+  max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
+  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
+  max1e6 <- sapply(res, function (r) max(r$maxs))
+  res_page100 <- data.frame(sim = 1:REPS, algo = "Page-CUSUM 100", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
+  
+
+  res <- mclapply(data, function (y) CUSUM_offline(y, Inf, 0), mc.cores = 6)
+  cp <- sapply(res, function (r) r$t)
+  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
+  max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
+  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
+  max1e6 <- sapply(res, function (r) max(r$maxs))
+  res_CUSUM <- data.frame(sim = 1:REPS, algo = "CUSUM", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
+  
+  # # MOSUM
+  # res <- mclapply(data, function (y) MOSUM_offline(y, Inf, 100, 0), mc.cores = 6)
+  # cp <- sapply(res, function (r) r$cp)
+  # max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
+  # max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
+  # max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
+  # max1e6 <- sapply(res, function (r) max(r$maxs))
+  # res_MOSUM <- data.frame(sim = 1:REPS, algo = "MOSUM", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
+  #
+  
+  return(rbind(res_FOCuS, res_FOCuS5, res_page100, res_CUSUM))
+}
+
+
+
+if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -23,19 +81,15 @@ if (F) {
   outDF <- Reduce(rbind, outDF)
 }
 
-#save(outDF, file = output_file)
+save(outDF, file = output_file)
 
 load(output_file)
 
-summary_df <- outDF %>% mutate(
-    run_len = if_else(est == -1, N, est),
-    det_delay = ifelse(est - real > 0, est - real, NA),
-    no_detection = if_else(est == -1, 1, 0),
-    false_alarm = if_else(!no_detection & (is.na(det_delay)), 1, 0),
-    true_positive = if_else(!no_detection & !false_alarm,1, 0), # if it's not a missed detection nor it's a false alarm, then it's a true positive
-)
 
-summary_df
+summary_df <- outDF
+summary_df %>% filter(algo == "FOCuS") %>% summary
+summary_df %>% filter(algo == "Page-CUSUM 100") %>% summary
+summary_df %>% filter(algo == "CUSUM") %>% summary
 
 
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
