@@ -68,14 +68,14 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   max1e3 <- sapply(res, function (r) max(r$out$stat[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$out$stat[1:1e4]))
   max1e5 <- sapply(res, function (r) max(r$out$stat[1:1e5]))
-  max1e6 <- sapply(res, function (r) max(r$maxs))
+  max1e6 <- sapply(res, function (r) max(r$maxs[1:(N - 100)]))
   res_MOSUM <- data.frame(sim = 1:REPS, algo = "MOSUM", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
   
   return(rbind(res_FOCuS, res_FOCuS5, res_page100, res_CUSUM, res_MOSUM))
 }
 
 
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -83,9 +83,12 @@ if (T) {
   })
 
   outDF <- Reduce(rbind, outDF)
+  save(outDF, file = output_file)
+
 }
 
-save(outDF, file = output_file)
+
+
 
 load(output_file)
 

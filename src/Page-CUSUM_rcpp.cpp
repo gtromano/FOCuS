@@ -80,7 +80,7 @@ List CUSUM_offline(NumericVector Y, const double thres, const double& mu0) {
       t += 1;
       Q = CUSUM_step(std::move(Q), y, mu0);
 
-      max_at_time_t.push_back(std::abs(Q));
+      max_at_time_t.push_back(std::abs(Q) / sqrt(t));
 
       if (max_at_time_t.back() >= thres) {
       cp = t;
