@@ -95,3 +95,5 @@ List CUSUM_offline(NumericVector Y, const double thres, const double& mu0) {
   return List::create(Rcpp::Named("t") = cp,
                       Rcpp::Named("maxs") = max_at_time_t);
 }
+
+
