@@ -2,18 +2,6 @@
 
 source("simulations/helper_functions.R")
 
-output_file = "./simulations/results/avgl1.RData"
-
-
-sim_grid <- expand.grid(
-  N = 1e6,
-  changepoint = -1,
-  threshold = Inf
-)
-
-
-CORES <- 16
-
 run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
 
   grid <- find_grid(0, 100, .005, 1.15)
@@ -43,6 +31,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   res_FOCuS5 <- data.frame(sim = 1:REPS, algo = "FOCuS 10",  est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
 
   print("Running Page-CUSUM")
+  grid <- find_grid(0, 100, .005, 1.15) # this is just to ensure that it actually gets it
   # Page CUSUM 100
   res <- mclapply(data, function (y) PageCUSUM_offline(y, Inf, mu0 = 0, grid = grid), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
@@ -75,6 +64,16 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
 }
 
 
+output_file = "./simulations/results/avgl1.RData"
+
+sim_grid <- expand.grid(
+  N = 1e6,
+  changepoint = -1,
+  threshold = Inf
+)
+
+CORES <- 16
+
 if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
@@ -87,13 +86,11 @@ if (T) {
 
 }
 
-
-
-
 load(output_file)
 
 
 outDF %>% filter(algo == "FOCuS") %>% summary
+outDF %>% filter(algo == "FOCuS 10") %>% summary
 outDF %>% filter(algo == "Page-CUSUM 100") %>% summary
 outDF %>% filter(algo == "CUSUM") %>% summary
 
@@ -131,3 +128,7 @@ abline(v = grid)
 plot(NULL, xlim = c(-5, 5), ylim = c(-1, 1), ylab = " ", xlab = expression(mu), main = "FOCuS 10 points grid")
 abline(v = grid[seq(1, 100, length.out = 10)])
 par(mfrow = c(1,1))
+
+
+thresholds <- summary_df
+save(thresholds, file = "simulations/thresholds.RData")

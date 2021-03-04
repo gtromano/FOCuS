@@ -1,18 +1,6 @@
 source("simulations/set_simulations.R")
 
-output_file = "./simulations/results/dr_new1.RData"
-
-sim_grid <- expand.grid(
-  N = 1e5,
-  changepoint = 9e4,
-  delta = seq(.05, 2, by = 0.05)
-)
-
-load("simulations/thresholds.RData")
-
-tlist <- thresholds %>% filter(run_len == 1e5) %>% group_by(algo) %>% summarise(tres = mean(threshold))
-tlist <- tlist %>% column_to_rownames(var = "algo")
-
+CORES <- 16
 
 run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
@@ -27,12 +15,10 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   #print("FOCus done")
 
   # FoCUS 10
-  grid <- grid[seq(1, 100, length.out = 10)]
   res <- mclapply(data, function (y) FOCuS_melk(y,  tlist["FOCuS 10", 1], mu0 = 0, grid = grid[seq(1, 100, length.out = 10)], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   res_FOCuS10 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS 10", est = cp, real = p$changepoint, N = p$N)
   #print("page-CUSUM done")
-
 
   # Page CUSUM 50
   res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 100", 1], mu0 = 0, grid = grid), mc.cores = CORES)
@@ -46,7 +32,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   res_CUSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "CUSUM", est = cp, real = p$changepoint, N = p$N)
 
   # MOSUM
-  res <- mclapply(data, function (y) MOSUMwrapper(y, tlist["MOSUM", 1], thres = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) MOSUMwrapper(y, bandw = 50, thres = tlist["MOSUM", 1]), mc.cores = CORES)
   cp <- sapply(res, function (r) r$cp)
   res_MOSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "MOSUM", est = cp, real = p$changepoint, N = p$N)
 
@@ -56,17 +42,35 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-if (F) {
+output_file = "./simulations/results/dr_new1.RData"
+
+sim_grid <- expand.grid(
+  N = 1e5,
+  changepoint = 9e4,
+  delta = seq(.05, 2, by = 0.05)
+)
+
+load("simulations/thresholds.RData")
+
+tlist <- thresholds %>%
+  filter(run_len == 1e5) %>%
+  group_by(algo) %>%
+  summarise(tres = quantile(threshold, .5)) %>%
+  column_to_rownames(var = "algo")
+
+#run_simulation(sim_grid[10, ], NREP, tlist = tlist)
+
+if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
-    return(run_simulation(p, NREP, diff_thres = T))
+    return(run_simulation(p, NREP, tlist = tlist))
   })
 
   outDF <- Reduce(rbind, outDF)
+  save(outDF, file = output_file)
 }
 
-save(outDF, file = output_file)
 
 load(output_file)
 
@@ -75,7 +79,7 @@ summary_df <- outDF %>% mutate(
     det_delay = ifelse(est - real > 0, est - real, NA),
     no_detection = if_else(est == -1, 1, 0),
     false_alarm = if_else(!no_detection & (is.na(det_delay)), 1, 0),
-    true_positive = if_else(!no_detection & !false_alarm,1, 0), # if it's not a missed detection nor it's a false alarm, then it's a true positiv
+    true_positive = if_else(!no_detection & !false_alarm,1, 0), # if it's not a missed detection nor it's a false alarm, then it's a true positive
   )
 
 
@@ -84,19 +88,29 @@ grouped <- summary_df %>% group_by(algo, magnitude) %>%
 print(grouped, n = 80)
 
 
-### true positive rate ####
+### false alarm rate ####
 
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-tp_rate <- ggplot(summary_df, aes(x = magnitude, y = true_positive, group = algo, col = algo)) +
+fa_rate <- ggplot(summary_df, aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
-  facet_grid(~ threshold) +
   scale_color_manual(values = cbPalette) +
   xlab("magnitude") +
-  ylab("True Positive Rate") +
+  ylab("False Alarm Rate") +
   theme_idris()
 
-tp_rate
+fa_rate
+
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+md_rate <- ggplot(summary_df, aes(x = magnitude, y = no_detection, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  xlab("magnitude") +
+  ylab("Missed Detectection Rate") +
+  theme_idris()
+
+md_rate
 
 
 ### detection delay ####
@@ -140,6 +154,3 @@ summary2 <- summary_df %>% filter(algo == algo1) %>%
   xlab("magnitude") +
   ylab("Detection delay between FOCuS 5 and Page-CUSUM 5") +
   theme_idris()
-
-thresholds <- summary_df
-save(thresholds, file = "simulations/thresholds.RData")
