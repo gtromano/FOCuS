@@ -4,6 +4,7 @@ source("simulations/helper_functions.R")
 
 output_file = "./simulations/results/avgl1.RData"
 
+
 sim_grid <- expand.grid(
   N = 1e6,
   changepoint = -1,
@@ -33,8 +34,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
 
   print("Running FOCuS 10")
   # FoCUS 10
-  grid <- grid[seq(1, 100, length.out = 10)]
-  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = grid[seq(1, 100, length.out = 10)], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))

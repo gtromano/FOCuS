@@ -1,14 +1,59 @@
 source("simulations/set_simulations.R")
 
-
-output_file = "./simulations/results/dr7.RData"
+output_file = "./simulations/results/dr_new1.RData"
 
 sim_grid <- expand.grid(
-  N = 2e5,
-  changepoint = 1e5,
-  delta = seq(.05, .6, by = 0.05),
-  threshold = c(15)
+  N = 1e5,
+  changepoint = 9e4,
+  delta = seq(.05, 2, by = 0.05)
 )
+
+load("simulations/thresholds.RData")
+
+tlist <- thresholds %>% filter(run_len == 1e5) %>% group_by(algo) %>% summarise(tres = mean(threshold))
+tlist <- tlist %>% column_to_rownames(var = "algo")
+
+
+run_simulation <- function(p, REPS, seed = 42, tlist) {
+  print(p)
+  grid <- find_grid(0, 100, .005, 1.15)
+  set.seed(seed)
+  data <- lapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)))
+
+  # FOCuS with no pruning costraint
+  res <- mclapply(data, function (y) FOCuS_melk(y, tlist["FOCuS", 1], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  res_FOCuS <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS", est = cp, real = p$changepoint, N = p$N)
+  #print("FOCus done")
+
+  # FoCUS 10
+  grid <- grid[seq(1, 100, length.out = 10)]
+  res <- mclapply(data, function (y) FOCuS_melk(y,  tlist["FOCuS 10", 1], mu0 = 0, grid = grid[seq(1, 100, length.out = 10)], K = Inf), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  res_FOCuS10 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS 10", est = cp, real = p$changepoint, N = p$N)
+  #print("page-CUSUM done")
+
+
+  # Page CUSUM 50
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 100", 1], mu0 = 0, grid = grid), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  res_page100 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-CUSUM 100", est = cp, real = p$changepoint, N = p$N)
+
+  # here put methods with different thresholds
+  # CUSUM
+   res <- mclapply(data, function (y) CUSUM_offline(y, tlist["CUSUM", 1], 0), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  res_CUSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "CUSUM", est = cp, real = p$changepoint, N = p$N)
+
+  # MOSUM
+  res <- mclapply(data, function (y) MOSUMwrapper(y, tlist["MOSUM", 1], thres = Inf), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$cp)
+  res_MOSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "MOSUM", est = cp, real = p$changepoint, N = p$N)
+
+
+  return(rbind(res_FOCuS, res_FOCuS10, res_page100, res_CUSUM, res_MOSUM))
+}
+
 
 
 if (F) {
@@ -96,3 +141,5 @@ summary2 <- summary_df %>% filter(algo == algo1) %>%
   ylab("Detection delay between FOCuS 5 and Page-CUSUM 5") +
   theme_idris()
 
+thresholds <- summary_df
+save(thresholds, file = "simulations/thresholds.RData")
