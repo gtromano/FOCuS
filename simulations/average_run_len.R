@@ -15,6 +15,8 @@ CORES <- 16
 
 run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
 
+  grid <- find_grid(0, 100, .005, 1.15)
+
   set.seed(seed)
   data <- lapply(1:REPS, function (k) rnorm(p$N))
 
@@ -29,21 +31,19 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   res_FOCuS <- data.frame(sim = 1:REPS, algo = "FOCuS", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
   #print("FOCus done")
 
-  print("Running FOCuS 5")
-  # FoCUS 5
-  grid <- find_grid(0, 5, .1)
+  print("Running FOCuS 10")
+  # FoCUS 10
+  grid <- grid[seq(1, 100, length.out = 10)]
   res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
   max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
   max1e6 <- sapply(res, function (r) max(r$maxs))
-  res_FOCuS5 <- data.frame(sim = 1:REPS, algo = "FOCuS 5",  est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
-  #print("page-CUSUM done")
+  res_FOCuS5 <- data.frame(sim = 1:REPS, algo = "FOCuS 10",  est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
 
   print("Running Page-CUSUM")
   # Page CUSUM 100
-  grid <- find_grid(0, 100, .01)
   res <- mclapply(data, function (y) PageCUSUM_offline(y, Inf, mu0 = 0, grid = grid), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
@@ -93,7 +93,6 @@ if (T) {
 load(output_file)
 
 
-outDF
 outDF %>% filter(algo == "FOCuS") %>% summary
 outDF %>% filter(algo == "Page-CUSUM 100") %>% summary
 outDF %>% filter(algo == "CUSUM") %>% summary
@@ -122,3 +121,13 @@ avg_run_len <- ggplot(summary_df,
 avg_run_len
 
 ggsave("simulations/results/avg_run_len.pdf", avg_run_len, width = 5, height = 8)
+
+
+# plot of the grids
+grid <- find_grid(0, 100, .005, 1.15)
+par(mfrow = c(1,2))
+plot(NULL, xlim = c(-5, 5), ylim = c(-1, 1), ylab = " ", xlab = expression(mu), main = "Page-CUSUM 100 points grid")
+abline(v = grid)
+plot(NULL, xlim = c(-5, 5), ylim = c(-1, 1), ylab = " ", xlab = expression(mu), main = "FOCuS 10 points grid")
+abline(v = grid[seq(1, 100, length.out = 10)])
+par(mfrow = c(1,1))
