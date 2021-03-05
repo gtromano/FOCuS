@@ -295,8 +295,6 @@ void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
       if (inter > 0) {
         (*it).ints.front().u = newq.ints.front().l = inter;
         n_to_retain++;
-      } else {
-        (*it).ints = {};
       }
       break;
       
@@ -309,14 +307,13 @@ void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
         (*it).ints.front().u = (*nx).ints.front().l = inter; // in this case we intercept the quadratic
         n_to_retain++;
       } else {
-        inter = - (*it).b / (*it).a; // in this case we have intercepted the line
+        // in this case we do not have any valid intersection so we need to cut with the line (newq)
+        inter = - (*it).b / (*it).a;
         if (inter > 0) {
           (*it).ints.front().u = newq.ints.front().l = inter;
           n_to_retain++;
-        } else {
-          (*it).ints = {};
         }
-        break;
+        break; // and we break
       } //end else 
     } // end else 
   } // end for
@@ -344,8 +341,6 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
       if (inter < 0) {
         (*it).ints.front().l = newq.ints.front().u = inter;
         n_to_retain++;
-      } else {
-        (*it).ints = {};
       }
       break;
       
@@ -362,8 +357,6 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
         if (inter < 0) {
           (*it).ints.front().l = newq.ints.front().u = inter;
           n_to_retain++;
-        } else {
-          (*it).ints = {};
         }
         break;
       } //end else 

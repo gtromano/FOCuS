@@ -42,7 +42,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file = "./simulations/results/dr_new3.RData"
+output_file = "./simulations/results/dr_new2.RData"
 
 sim_grid <- expand.grid(
   N = 1e5,
