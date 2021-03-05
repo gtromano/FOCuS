@@ -182,7 +182,7 @@ std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) 
 
 
 // MELKMANS LIKE ALGORITHM ****   experimental crap   *****
-
+/*
 void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
   
   bool found = false;
@@ -273,24 +273,28 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
   });
   cost.push_back(newq);
 }
+*/
 
 
-/*
+// so this is the Melkmans algo using only the linked list features. 
+// here we actually break from the for cycle as soon as an intersection is detected
+// the pruning is done with the pop_back function, that only touches the back of the 
+// list and it is constant in time. 
+ 
 void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
   
-  auto the_god_of_chaos = 0;
+  auto n_to_retain = 0; // number of quadratics to retain (needed for the pruning later)
   
   for(auto it = cost.begin(); it != cost.end(); ++it) {
     
-    
-    auto nx = std::next(it, 1);
+    auto nx = std::next(it, 1); // this is the pointer to the next quadratic
     
     if (nx == cost.end()) {
-      
-      auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
+      // in this case we are at the end of the list
+      auto inter = - (*it).b / (*it).a; 
       if (inter > 0) {
         (*it).ints.front().u = newq.ints.front().l = inter;
-        the_god_of_chaos++;
+        n_to_retain++;
       } else {
         (*it).ints = {};
       }
@@ -303,12 +307,12 @@ void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
       
       if (evaluate_quadratic((*it), inter) > 0.0 && inter > 0.0) {
         (*it).ints.front().u = (*nx).ints.front().l = inter; // in this case we intercept the quadratic
-        the_god_of_chaos++;
+        n_to_retain++;
       } else {
-        inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
+        inter = - (*it).b / (*it).a; // in this case we have intercepted the line
         if (inter > 0) {
           (*it).ints.front().u = newq.ints.front().l = inter;
-          the_god_of_chaos++;
+          n_to_retain++;
         } else {
           (*it).ints = {};
         }
@@ -318,7 +322,7 @@ void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
   } // end for
   
   //std::cout << "\nMy list is long: " <<  cost.size() << std::endl;
-  auto to_prune =  (cost.size() - the_god_of_chaos);
+  auto to_prune =  (cost.size() - n_to_retain);
   for (int a = 0; a < to_prune; a++) {
     cost.pop_back(); // please dear god have mercy on our souls
   }
@@ -329,17 +333,17 @@ void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
 
 void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
   
-  auto the_god_of_chaos = 0;
+  auto n_to_retain = 0;
   
   for(auto it = cost.begin(); it != cost.end(); ++it) {
     
     auto nx = std::next(it, 1);
     if (nx == cost.end()) {
       
-      auto inter = - (*it).b / (*it).a; // in this case this only happens to the last one
+      auto inter = - (*it).b / (*it).a;
       if (inter < 0) {
         (*it).ints.front().l = newq.ints.front().u = inter;
-        the_god_of_chaos++;
+        n_to_retain++;
       } else {
         (*it).ints = {};
       }
@@ -351,13 +355,13 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
       auto inter = - b / a;
       
       if (evaluate_quadratic((*it), inter) > 0.0 && inter < 0.0) {
-        (*it).ints.front().l = (*nx).ints.front().u = inter; // in this case we intercept the quadratic
-        the_god_of_chaos++;
+        (*it).ints.front().l = (*nx).ints.front().u = inter;
+        n_to_retain++;
       } else {
-        inter = - (*it).b / (*it).a; // in this case we have intercepted the line the line
+        inter = - (*it).b / (*it).a; // in this case we have intercepted the line
         if (inter < 0) {
           (*it).ints.front().l = newq.ints.front().u = inter;
-          the_god_of_chaos++;
+          n_to_retain++;
         } else {
           (*it).ints = {};
         }
@@ -367,7 +371,7 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
   } // end for
   
   //std::cout << "\nMy list is long: " <<  cost.size() << std::endl;
-  auto to_prune =  (cost.size() - the_god_of_chaos);
+  auto to_prune =  (cost.size() - n_to_retain);
   for (int a = 0; a < to_prune; a++) {
     cost.pop_back(); // please dear god have mercy on our souls
   }
@@ -375,7 +379,7 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
   cost.push_back(newq);
 }
 
-*/
+
 
 // ********* end of the experimental crap *************
 

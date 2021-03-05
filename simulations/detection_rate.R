@@ -42,7 +42,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file = "./simulations/results/dr_new1.RData"
+output_file = "./simulations/results/dr_new3.RData"
 
 sim_grid <- expand.grid(
   N = 1e5,
@@ -55,12 +55,12 @@ load("simulations/thresholds.RData")
 tlist <- thresholds %>%
   filter(run_len == 1e5) %>%
   group_by(algo) %>%
-  summarise(tres = quantile(threshold, .5)) %>%
+  summarise(tres = quantile(threshold, .75)) %>%
   column_to_rownames(var = "algo")
 
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -90,32 +90,32 @@ print(grouped, n = 80)
 
 ### false alarm rate ####
 
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-fa_rate <- ggplot(summary_df, aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4)]
+fa_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
+  ylim(0, 1) +
   xlab("magnitude") +
   ylab("False Alarm Rate") +
   theme_idris()
 
 fa_rate
 
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-md_rate <- ggplot(summary_df, aes(x = magnitude, y = no_detection, group = algo, col = algo)) +
+tp_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y = true_positive, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
+  ylim(0, 1) +
   xlab("magnitude") +
-  ylab("Missed Detectection Rate") +
+  ylab("True Positive Rate") +
   theme_idris()
 
-md_rate
+tp_rate
 
 
 ### detection delay ####
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-detection_delay <- ggplot(summary_df %>% filter(true_positive == 1),
+detection_delay <- ggplot(summary_df %>% filter(true_positive == 1, algo != "MOSUM"),
                            aes(x = magnitude, y = det_delay, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
@@ -126,31 +126,36 @@ detection_delay <- ggplot(summary_df %>% filter(true_positive == 1),
 
 detection_delay
 
-# this is to show that we do always as good as if not better than the Page-CUSUM
-# as proven in proposition 1
 
-tot_dr <- ggarrange(detection_delay, detection_delay + scale_y_continuous(trans = "log10") + ylab("log detection delay"), labels = "AUTO", nrow = 2, common.legend = T, legend = "right")
-ggsave("simulations/results/dr.pdf", tot_dr, width = 10, height = 6)
-
-
+tot_dr <- ggarrange(fa_rate, tp_rate, detection_delay, labels = "AUTO", nrow = 3, common.legend = T, legend = "right")
+ggsave("simulations/results/dr.pdf", tot_dr, width = 6, height = 10)
 
 
 #########################
-algo1 <- "FOCuS"
-algo2 <- "Page-CUSUM 5"
+# algo1 <- "FOCuS"
+# algo2 <- "Page-CUSUM 5"
 
-detection_diff <- (summary_df %>% filter(algo == algo1))$est - (summary_df %>% filter(algo == algo2))$est
+# detection_diff <- (summary_df %>% filter(algo == algo1))$est - (summary_df %>% filter(algo == algo2))$est
+#
+# summary2 <- summary_df %>% filter(algo == algo1) %>%
+#   mutate(diff = detection_diff)
+#
+#
+#  ggplot(summary2 %>% filter(true_positive == 1),
+#                            aes(x = magnitude, y = diff)) +
+#   stat_summary(fun.data = "mean_se", geom = "line") +
+#   stat_summary(fun.data = "mean_se", geom = "errorbar") +
+#   scale_color_manual(values = cbPalette) +
+#    geom_hline(yintercept = 0, lty = 2, colour = "grey") +
+#   xlab("magnitude") +
+#   ylab("Detection delay between FOCuS 5 and Page-CUSUM 5") +
+#   theme_idris()
 
-summary2 <- summary_df %>% filter(algo == algo1) %>%
-  mutate(diff = detection_diff)
+
+test = (summary_df %>% filter(algo == "FOCuS"))$det_delay - (summary_df %>% filter(algo == "FOCuS 10"))$det_delay
+mean(test, na.rm = T)
 
 
- ggplot(summary2 %>% filter(true_positive == 1),
-                           aes(x = magnitude, y = diff)) +
-  stat_summary(fun.data = "mean_se", geom = "line") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar") +
-  scale_color_manual(values = cbPalette) +
-   geom_hline(yintercept = 0, lty = 2, colour = "grey") +
-  xlab("magnitude") +
-  ylab("Detection delay between FOCuS 5 and Page-CUSUM 5") +
-  theme_idris()
+
+test = (summary_df %>% filter(magnitude < .1, algo == "FOCuS"))$det_delay - (summary_df %>% filter(magnitude < .1, algo == "FOCuS 10"))$det_delay
+mean(test, na.rm = T)

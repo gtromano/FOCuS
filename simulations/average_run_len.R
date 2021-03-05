@@ -106,7 +106,7 @@ summary_df <-
 
 
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-avg_run_len <- ggplot(summary_df,
+avg_run_len <- ggplot(summary_df %>% filter(algo != "MOSUM"),
        aes(x = run_len, y = threshold, group = run_len)) +
   stat_boxplot() +
   facet_grid(algo~., scales = "free") +
@@ -117,7 +117,7 @@ avg_run_len <- ggplot(summary_df,
   theme_idris()
 avg_run_len
 
-ggsave("simulations/results/avg_run_len.pdf", avg_run_len, width = 5, height = 8)
+ggsave("simulations/results/avg_run_len.pdf", avg_run_len, width = 6, height = 10)
 
 
 # plot of the grids
