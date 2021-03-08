@@ -4,7 +4,7 @@ CORES <- 16
 
 run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
-  grid <- find_grid(0, 100, .005, 1.15)
+  grid <- find_grid(0, 50, .01, 1.3)
   set.seed(seed)
   data <- lapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)))
 
@@ -15,15 +15,15 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   #print("FOCus done")
 
   # FoCUS 10
-  res <- mclapply(data, function (y) FOCuS_melk(y,  tlist["FOCuS 10", 1], mu0 = 0, grid = grid[seq(1, 100, length.out = 10)], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_melk(y,  tlist["FOCuS 10", 1], mu0 = 0, grid = grid[round(seq(1, 50, length.out = 10))], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   res_FOCuS10 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS 10", est = cp, real = p$changepoint, N = p$N)
   #print("page-CUSUM done")
 
   # Page CUSUM 50
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 100", 1], mu0 = 0, grid = grid), mc.cores = CORES)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 50", 1], mu0 = 0, grid = grid), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
-  res_page100 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-CUSUM 100", est = cp, real = p$changepoint, N = p$N)
+  res_page50 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-CUSUM 50", est = cp, real = p$changepoint, N = p$N)
 
   # here put methods with different thresholds
   # CUSUM
@@ -37,7 +37,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   res_MOSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "MOSUM", est = cp, real = p$changepoint, N = p$N)
 
 
-  return(rbind(res_FOCuS, res_FOCuS10, res_page100, res_CUSUM, res_MOSUM))
+  return(rbind(res_FOCuS, res_FOCuS10, res_page50, res_CUSUM, res_MOSUM))
 }
 
 

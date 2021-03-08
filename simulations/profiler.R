@@ -1,6 +1,0 @@
-library(FOCuS)
-set.seed(42)
-Y <- c(rnorm(5e6), rnorm(250, -0.4))
-start_profiler(str = "myprof.log")
-a <- FOCuS_melk(Y, thres = 15, mu0 = 0, grid = NA, K = Inf)
-stop_profiler()
