@@ -215,7 +215,7 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
   
   // info should have Qright and Qleft
   // this is the update
-  if (std::isinf(K)) {
+  // if (std::isinf(K)) {
     for (auto& q:info.Qleft) {
       q.a -= 0.5;
       q.b += new_point;
@@ -224,10 +224,10 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
       q.a -= 0.5;
       q.b += new_point;
     }
-  } else {
-    update_cost_biweight(info.Qleft, new_point, K, 0.0);
-    update_cost_biweight(info.Qright, new_point, K, 0.0);
-  }
+  // } else { // currently not working, to check
+  //   update_cost_biweight(info.Qleft, new_point, K, 0.0);
+  //   update_cost_biweight(info.Qright, new_point, K, 0.0);
+  // }
   
   if (new_point > 0) {
     // get the new line
@@ -245,11 +245,9 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
     // getting the maximums for right
     std::for_each(info.Qright.begin(), info.Qright.end(), [&info](auto& q){
       double m = -INFINITY;
-      for(const auto& i:q.ints) {
-        m = get_only_the_minimum(q, i);
-        if (m > q.max)
-          q.max = m;
-      }
+      m = get_only_the_minimum(q, q.ints.front());
+      if (m > q.max)
+        q.max = m;
       if (q.max > info.global_max)
         info.global_max = q.max;
     });
@@ -270,11 +268,9 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
     info.global_max = -INFINITY;
     std::for_each(info.Qleft.begin(), info.Qleft.end(), [&info](auto& q){
       double m = -INFINITY;
-      for(const auto& i:q.ints) {
-        m = get_only_the_minimum(q, i);
-        if (m > q.max)
-          q.max = m;
-      }
+      m = get_only_the_minimum(q, q.ints.front());
+      if (m > q.max)
+        q.max = m;
       if (q.max > info.global_max)
         info.global_max = q.max;
     });
