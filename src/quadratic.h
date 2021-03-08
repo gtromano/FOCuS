@@ -24,14 +24,20 @@ typedef struct {
     double b = 0; // b coefficient
     double c = 0; // c coefficient
     std::list<Interval> ints = {I}; // intervals list
+    double max = 0; // maximum of the quadratic
+
 } Quadratic;
 
-
+Interval I(const double&, const double&);
+bool inRange(const double&, const Interval&);
 std::tuple<double, double> get_intersections (const Quadratic&, const Quadratic&);
 void get_min_of_two_quadratics (Quadratic& q1, Quadratic& q2);
 void print(const Quadratic&);
 std::tuple<double, double> get_minimum(const Quadratic&, const Interval&);
 std::list<Quadratic> get_max_of_cost(std::list<Quadratic>, Quadratic);
-void get_max_of_cost_V1(std::list<Quadratic>&, Quadratic&);
-  
+void get_max_of_cost_melk_right(std::list<Quadratic>&, Quadratic);
+void get_max_of_cost_melk_left(std::list<Quadratic>&, Quadratic);
+
+void approximation_grid (std::list<Quadratic>& Q, const std::list<double>& grid);
+
 #endif
