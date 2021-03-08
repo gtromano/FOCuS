@@ -216,10 +216,14 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
   // info should have Qright and Qleft
   // this is the update
   if (std::isinf(K)) {
-    for (auto& q:info.Qleft)
-      update_quad(q, new_point);
-    for (auto& q:info.Qright)
-      update_quad(q, new_point);
+    for (auto& q:info.Qleft) {
+      q.a -= 0.5;
+      q.b += new_point;
+    }
+    for (auto& q:info.Qright) {
+      q.a -= 0.5;
+      q.b += new_point;
+    }
   } else {
     update_cost_biweight(info.Qleft, new_point, K, 0.0);
     update_cost_biweight(info.Qright, new_point, K, 0.0);

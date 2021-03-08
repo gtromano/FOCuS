@@ -21,6 +21,14 @@ CUSUM_offline <- function(Y, thres, mu0) {
     .Call(`_FOCuS_CUSUM_offline`, Y, thres, mu0)
 }
 
+start_profiler <- function(str) {
+    .Call(`_FOCuS_start_profiler`, str)
+}
+
+stop_profiler <- function() {
+    .Call(`_FOCuS_stop_profiler`)
+}
+
 test <- function() {
     invisible(.Call(`_FOCuS_test`))
 }
