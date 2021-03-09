@@ -77,6 +77,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simpleMelkman
+List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR);
+RcppExport SEXP _FOCuS_simpleMelkman(SEXP xSEXP, SEXP onlyPruneSEXP, SEXP exportInRSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< bool >::type onlyPrune(onlyPruneSEXP);
+    Rcpp::traits::input_parameter< bool >::type exportInR(exportInRSEXP);
+    rcpp_result_gen = Rcpp::wrap(simpleMelkman(x, onlyPrune, exportInR));
+    return rcpp_result_gen;
+END_RCPP
+}
 // test
 void test();
 RcppExport SEXP _FOCuS_test() {
@@ -93,6 +106,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_FOCuS_melk", (DL_FUNC) &_FOCuS_FOCuS_melk, 5},
     {"_FOCuS_PageCUSUM_offline", (DL_FUNC) &_FOCuS_PageCUSUM_offline, 4},
     {"_FOCuS_CUSUM_offline", (DL_FUNC) &_FOCuS_CUSUM_offline, 3},
+    {"_FOCuS_simpleMelkman", (DL_FUNC) &_FOCuS_simpleMelkman, 3},
     {"_FOCuS_test", (DL_FUNC) &_FOCuS_test, 0},
     {NULL, NULL, 0}
 };

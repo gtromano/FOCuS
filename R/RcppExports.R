@@ -21,6 +21,10 @@ CUSUM_offline <- function(Y, thres, mu0) {
     .Call(`_FOCuS_CUSUM_offline`, Y, thres, mu0)
 }
 
+simpleMelkman <- function(x, onlyPrune, exportInR) {
+    .Call(`_FOCuS_simpleMelkman`, x, onlyPrune, exportInR)
+}
+
 test <- function() {
     invisible(.Call(`_FOCuS_test`))
 }
