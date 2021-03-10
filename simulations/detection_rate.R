@@ -152,10 +152,16 @@ ggsave("simulations/results/dr.pdf", tot_dr, width = 6, height = 10)
 #   theme_idris()
 
 
-test = (summary_df %>% filter(algo == "FOCuS"))$det_delay - (summary_df %>% filter(algo == "FOCuS 10"))$det_delay
+test = (summary_df %>% filter(algo == "FOCuS"))$det_delay - (summary_df %>% filter(algo == "Page-CUSUM 50"))$det_delay
+mean(test, na.rm = T)
+
+test = (summary_df %>% filter(magnitude < .1, algo == "FOCuS"))$det_delay - (summary_df %>% filter(magnitude < .1, algo == "Page-CUSUM 50"))$det_delay
 mean(test, na.rm = T)
 
 
+
+test = (summary_df %>% filter(algo == "FOCuS"))$det_delay - (summary_df %>% filter(algo == "FOCuS 10"))$det_delay
+mean(test, na.rm = T)
 
 test = (summary_df %>% filter(magnitude < .1, algo == "FOCuS"))$det_delay - (summary_df %>% filter(magnitude < .1, algo == "FOCuS 10"))$det_delay
 mean(test, na.rm = T)
