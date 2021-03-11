@@ -1,29 +1,13 @@
-#include <Rcpp.h>
-#include <cmath>
-#include <iostream>
-#include <vector>
+#include "simpleMelkman2D.h"
 
-using namespace Rcpp;
-
-
-void oneStepUpdate(int n, double sumAllX,
-		std::vector<int> &tau,
-		std::vector<double> &bound,
-		std::vector<double> &sum);
-
-
-double getBestCost(	
-		int n, double sumAllX,
-		std::vector<int> &tau, 
-		std::vector<double> &sum);
-
-// [[Rcpp::export]]
 List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR){
   List out;
   /*.................................................................................*/
-  /* ((INITIALIZE */
+  /* << INITIALIZE */
   /*.................................................................................*/
+  // TODO study the impact of the initSize on speed?
   int initSize = 10*log(x.size()) + 10;
+  // Store for up and down changes a vector of changepoints, bounds and sums
   // TAUS
   std::vector<int> tauUp(0);
   std::vector<int> tauDw(0);
@@ -42,12 +26,13 @@ List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR){
   sumUp.reserve(initSize);
   sumDw.reserve(initSize);
   /*.................................................................................*/
-  /* INITIALIZE)) */
+  /* INITIALIZE >> */
   /*.................................................................................*/
 
   /*.................................................................................*/
-  /* ((FIRST DATA POINT */
+  /* << FIRST DATA POINT */
   /*.................................................................................*/
+  // TODO CHANGE tauUp and tauDw push_back to accomodate the case where the first [0, ... tauStart) changes are not tested
   tauUp.push_back(0);
   tauDw.push_back(0);
 
@@ -58,37 +43,43 @@ List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR){
   boundDw.push_back(-x[0]);
   
   /*.................................................................................*/
-  /* FIRST DATA POINT)) */
+  /* FIRST DATA POINT>> */
   /*.................................................................................*/
 
   /*.................................................................................*/
-  /* ((LOOP OVER OTHER POINTS */
+  /* <<LOOP OVER OTHER POINTS */
   /*.................................................................................*/
   double sumAllX = x[0];
   double minCurrent = 10;
+
   if(onlyPrune){ // does not compute best at each step
     for(int i=1; i < x.size(); i++){
-      sumAllX = sumAllX + x[i];
-      oneStepUpdate(i, sumAllX, tauUp, boundUp, sumUp);
-      oneStepUpdate(i, -sumAllX, tauDw, boundDw, sumDw);
+      sumAllX = sumAllX + x[i];                           // update sum
+      oneStepUpdate(i, sumAllX, tauUp, boundUp, sumUp);   // update up intervals
+      oneStepUpdate(i, -sumAllX, tauDw, boundDw, sumDw);  // update dw intervals
     }
   } else {  // recover best at each step
     
     for(int i=1; i < x.size(); i++){
-      sumAllX = sumAllX + x[i];
-      oneStepUpdate(i+1, sumAllX, tauUp, boundUp, sumUp);
-      oneStepUpdate(i+1, -sumAllX, tauDw, boundDw, sumDw);
+      sumAllX = sumAllX + x[i];				  // update sum
+      oneStepUpdate(i+1, sumAllX, tauUp, boundUp, sumUp); // update up intervals
+      oneStepUpdate(i+1, -sumAllX, tauDw, boundDw, sumDw);// update dw intervals
 
-      minCurrent = std::min(getBestCost(i+1, sumAllX, tauUp, sumUp), getBestCost(i+1, -sumAllX, tauDw, sumDw));
+      minCurrent = std::min(
+			getBestCost(i+1, sumAllX, tauUp, sumUp),  // best cost-up
+			getBestCost(i+1, -sumAllX, tauDw, sumDw)  // best cost-dw
+			);
     }
 
   }
 
   /*.................................................................................*/
-  /* LOOP OVER OTHER POINTS)) */
+  /* LOOP OVER OTHER POINTS>> */
   /*.................................................................................*/
   
-  // OUTPUT IN R 
+  /*.................................................................................*/
+  /* OUTPUT IN R IF REQUESTED */
+  /*.................................................................................*/
   if(exportInR){
     out["tauUp"] = tauUp;
     out["tauDw"] = tauDw;
@@ -102,7 +93,9 @@ List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR){
 }
 
 
-// One-step interval update of the Melkman 2d algo for Up-changes
+/*.................................................................................*/
+/* One-step interval update of the Melkman 2d algo for Up-changes                  */
+/*.................................................................................*/
 void oneStepUpdate(	
 		int n, double sumAllX,
 		std::vector<int> &tau,
@@ -135,7 +128,10 @@ void oneStepUpdate(
    sum.push_back(sumAllX);
 }
 
-// One-step cost calculation
+
+/*.................................................................................*/
+/* One-step cost calculation                                                       */
+/*.................................................................................*/
 double getBestCost(	
 		int n, double sumAllX,
 		std::vector<int> &tau, 

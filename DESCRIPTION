@@ -12,3 +12,4 @@ LinkingTo: Rcpp
 Suggests: 
     testthat (>= 2.0.0)
 Config/testthat/edition: 2
+RoxygenNote: 7.1.1

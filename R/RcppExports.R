@@ -21,6 +21,31 @@ CUSUM_offline <- function(Y, thres, mu0) {
     .Call(`_FOCuS_CUSUM_offline`, Y, thres, mu0)
 }
 
+#' Function to update list of intervals (up or down) 
+#'
+#' @param n number of datapoints
+#' @param sumAllX sum of all x_i up to n (For down change should give -sumAllX)   
+#' @param tau vector of candidate changes
+#' @param bound vector of interval bound m = (\mu1+\mu2)/2
+#' @param sum vector of sum of x_i up to tau	 
+#' @return void
+NULL
+
+#' Function to get the best cost given a set of candidate and there sum
+#' 
+#' @param n number of datapoints
+#' @param sumAllX sum of all x_i up to n (For down change should give -sumAllX)   
+#' @param tau vector of candidate changes
+#' @param sum vector of sum of x_i up to tau	  
+#' @return double
+NULL
+
+#' Function to run a Melkman-like algorithm for unknown first and second segment mean
+#'
+#' @param x datapoints
+#' @param onlyPrune if TRUE only update intervals and does not compute the best cost at each step
+#' @param exportInR if TRUE results (tau, bound and sum) are exported in R
+#' @return Product of v1 and v2
 simpleMelkman <- function(x, onlyPrune, exportInR) {
     .Call(`_FOCuS_simpleMelkman`, x, onlyPrune, exportInR)
 }
