@@ -21,7 +21,7 @@ theme_idris <- function() {
 ### so this is just a wrapper to pick the first point that passes the threshold
 
 MOSUMwrapper <- function (x, bandw, thres) {
-  m <- mosum(x, G = bandw, threshold = "custom", threshold.custom = thres)
+  m <- mosum(x, G = bandw)
   
   cp <- which(m$stat > thres)[1]
   t <- cp + bandw

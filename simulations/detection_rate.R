@@ -60,7 +60,7 @@ tlist <- thresholds %>%
 
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
-if (F) {
+if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -165,3 +165,45 @@ mean(test, na.rm = T)
 
 test = (summary_df %>% filter(magnitude < .1, algo == "FOCuS"))$det_delay - (summary_df %>% filter(magnitude < .1, algo == "FOCuS 10"))$det_delay
 mean(test, na.rm = T)
+
+
+
+
+############################# mosum stuff
+
+
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
+fa_rate <- ggplot(summary_df, aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  ylim(0, 1) +
+  xlab("magnitude") +
+  ylab("False Alarm Rate") +
+  theme_idris()
+
+fa_rate
+
+tp_rate <- ggplot(summary_df, aes(x = magnitude, y = true_positive, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  ylim(0, 1) +
+  xlab("magnitude") +
+  ylab("True Positive Rate") +
+  theme_idris()
+
+tp_rate
+
+
+### detection delay ####
+detection_delay <- ggplot(summary_df,
+                           aes(x = magnitude, y = det_delay, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  xlab("magnitude") +
+  ylab("Detection Delay") +
+  theme_idris()
+
+detection_delay
