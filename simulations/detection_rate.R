@@ -27,7 +27,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
   # here put methods with different thresholds
   # CUSUM
-   res <- mclapply(data, function (y) CUSUM_offline(y, tlist["CUSUM", 1], 0), mc.cores = CORES)
+  res <- mclapply(data, function (y) CUSUM_offline(y, tlist["CUSUM", 1], 0), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   res_CUSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "CUSUM", est = cp, real = p$changepoint, N = p$N)
 
@@ -42,7 +42,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file = "./simulations/results/dr_new2.RData"
+output_file = "./simulations/results/dr_new3.RData"
 
 sim_grid <- expand.grid(
   N = 1e5,

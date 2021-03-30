@@ -64,7 +64,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
 }
 
 
-output_file = "./simulations/results/avgl1.RData"
+output_file = "./simulations/results/avgl2.RData"
 
 sim_grid <- expand.grid(
   N = 1e6,
@@ -74,7 +74,7 @@ sim_grid <- expand.grid(
 
 CORES <- 16
 
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
