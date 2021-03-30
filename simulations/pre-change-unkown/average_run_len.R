@@ -2,80 +2,59 @@
 
 source("simulations/helper_functions.R")
 
-run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
+run_simulation <- function(p, REPS, seed = 42) {
 
   grid <- find_grid(0, 50, .01, 1.3)
 
   set.seed(seed)
-  data <- lapply(1:REPS, function (k) rnorm(p$N))
+  means <- runif(REPS, 1, 10)
+  data <- lapply(1:REPS, function (k) rnorm(p$N, mean = means[k]))
+  m <- 100
+
 
   print("Running FOCuS")
   # FOCuS with no pruning costraint
-  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y, Inf, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
-  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
-  max1e6 <- sapply(res, function (r) max(r$maxs))
-  res_FOCuS <- data.frame(sim = 1:REPS, algo = "FOCuS", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
-  #print("FOCus done")
+  res_FOCuS <- data.frame(sim = 1:REPS, algo = "FOCuS", est = cp, max1e3=max1e3,max1e4=max1e4, real = p$changepoint, N = p$N, threshold = p$threshold)
 
-  print("Running FOCuS 10")
+
+  print("Running FOCuS pre-change")
   # FoCUS 10
-  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = 0, grid = grid[round(seq(1, 50, length.out = 10))], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
-  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
-  max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
-  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
-  max1e6 <- sapply(res, function (r) max(r$maxs))
-  res_FOCuS5 <- data.frame(sim = 1:REPS, algo = "FOCuS 10",  est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
+  max1e3 <- sapply(res, function (r) max(r$maxs[1:(1e3 + m)]))
+  max1e4 <- sapply(res, function (r) max(r$maxs))
+  res_FoCuSpc <- data.frame(sim = 1:REPS, algo = "FOCuS est.",  est = cp, max1e3=max1e3,max1e4=max1e4, real = p$changepoint, N = p$N, threshold = p$threshold)
 
-  print("Running Page-CUSUM")
-  grid <- find_grid(0, 100, .005, 1.15) # this is just to ensure that it actually gets it
-  # Page CUSUM 50
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, Inf, mu0 = 0, grid = grid), mc.cores = CORES)
-  cp <- sapply(res, function (r) r$t)
-  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
-  max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
-  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
-  max1e6 <- sapply(res, function (r) max(r$maxs))
-  res_page50 <- data.frame(sim = 1:REPS, algo = "Page-CUSUM 50", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
-  
-  print("Running CUSUM")
-  res <- mclapply(data, function (y) CUSUM_offline(y, Inf, 0), mc.cores = CORES)
-  cp <- sapply(res, function (r) r$t)
-  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
-  max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
-  max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
-  max1e6 <- sapply(res, function (r) max(r$maxs))
-  res_CUSUM <- data.frame(sim = 1:REPS, algo = "CUSUM", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
-  
-  # MOSUM
-  print("Running MOSUM")
-  res <- mclapply(data, function (y) MOSUMwrapper(y, 50, thres = Inf), mc.cores = CORES)
+
+  print("Running yu method")
+  res <- mclapply(data, function (y) yuCUSUM_v3(y, Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$cp)
-  max1e3 <- sapply(res, function (r) max(r$out$stat[1:1e3]))
-  max1e4 <- sapply(res, function (r) max(r$out$stat[1:1e4]))
-  max1e5 <- sapply(res, function (r) max(r$out$stat[1:1e5]))
-  max1e6 <- sapply(res, function (r) max(r$out$stat))
-  res_MOSUM <- data.frame(sim = 1:REPS, algo = "MOSUM", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold)
-  
-  return(rbind(res_FOCuS, res_FOCuS5, res_page50, res_CUSUM, res_MOSUM))
+  max1e3 <- sapply(res, function (r) max(r$maxs[1:1e3]))
+  max1e4 <- sapply(res, function (r) max(r$maxs))
+  res_yuCUSUM <- data.frame(sim = 1:REPS, algo = "Yu-CUSUM",  est = cp, max1e3=max1e3,max1e4=max1e4, real = p$changepoint, N = p$N, threshold = p$threshold)
+
+
+  return(rbind(res_FOCuS, res_FoCuSpc, res_yuCUSUM))
 }
 
 
-output_file = "./simulations/results/avgl2.RData"
+output_file = "./simulations/pre-change-unkown/results/avgl3.RData"
 
 sim_grid <- expand.grid(
-  N = 1e6,
+  N = 1e4,
   changepoint = -1,
   threshold = Inf
 )
 
 CORES <- 16
 
-if (F) {
-  NREP <- 100
+
+if (T) {
+  NREP <- 10
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
     return(run_simulation(p, NREP))
@@ -87,12 +66,6 @@ if (F) {
 }
 
 load(output_file)
-
-
-outDF %>% filter(algo == "FOCuS") %>% summary
-outDF %>% filter(algo == "FOCuS 10") %>% summary
-outDF %>% filter(algo == "Page-CUSUM 50") %>% summary
-outDF %>% filter(algo == "CUSUM") %>% summary
 
 
 summary_df <-
@@ -117,18 +90,18 @@ avg_run_len <- ggplot(summary_df %>% filter(algo != "MOSUM"),
   theme_idris()
 avg_run_len
 
-ggsave("simulations/results/avg_run_len.pdf", avg_run_len, width = 6, height = 10)
+#ggsave("simulations/plots/avg_run_len.pdf", avg_run_len, width = 6, height = 10)
 
 
 # plot of the grids
-grid <- find_grid(0, 50, .01, 1.3)
-par(mfrow = c(1,2))
-plot(NULL, xlim = c(-6, 6), ylim = c(-1, 1), ylab = " ", xlab = expression(mu), main = "Page-CUSUM 50 points grid")
-abline(v = grid)
-plot(NULL, xlim = c(-6, 6), ylim = c(-1, 1), ylab = " ", xlab = expression(mu), main = "FOCuS 10 points grid")
-abline(v = grid[round(seq(1, 50, length.out = 10))])
-par(mfrow = c(1,1))
+# grid <- find_grid(0, 50, .01, 1.3)
+# par(mfrow = c(1,2))
+# plot(NULL, xlim = c(-6, 6), ylim = c(-1, 1), ylab = " ", xlab = expression(mu), main = "Page-CUSUM 50 points grid")
+# abline(v = grid)
+# plot(NULL, xlim = c(-6, 6), ylim = c(-1, 1), ylab = " ", xlab = expression(mu), main = "FOCuS 10 points grid")
+# abline(v = grid[round(seq(1, 50, length.out = 10))])
+# par(mfrow = c(1,1))
 
 
 thresholds <- summary_df
-save(thresholds, file = "simulations/thresholds.RData")
+save(thresholds, file = "simulations/thresholds-unkown.RData")
