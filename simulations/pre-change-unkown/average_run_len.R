@@ -23,7 +23,7 @@ run_simulation <- function(p, REPS, seed = 42) {
 
   print("Running FOCuS pre-change")
   # FoCUS 10
-  res <- mclapply(data, function (y) FOCuS_melk(y, Inf, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y, Inf, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:(1e3 + m)]))
   max1e4 <- sapply(res, function (r) max(r$maxs))
@@ -54,7 +54,7 @@ CORES <- 16
 
 
 if (T) {
-  NREP <- 10
+  NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
     return(run_simulation(p, NREP))
@@ -69,7 +69,7 @@ load(output_file)
 
 
 summary_df <-
-  outDF[, c(2, 4:7)] %>% pivot_longer(
+  outDF[, c(2, 4:5)] %>% pivot_longer(
     -algo,
     names_to = "run_len",
     names_prefix = "max",
