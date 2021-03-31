@@ -23,7 +23,7 @@ run_simulation <- function(p, REPS, seed = 42) {
 
   print("Running FOCuS pre-change")
   # FoCUS 10
-  res <- mclapply(data, function (y) FOCuS_offline(y, Inf, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[m:p$N], Inf, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   max1e3 <- sapply(res, function (r) max(r$maxs[1:(1e3 + m)]))
   max1e4 <- sapply(res, function (r) max(r$maxs))
@@ -53,7 +53,7 @@ sim_grid <- expand.grid(
 CORES <- 16
 
 
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -104,4 +104,4 @@ avg_run_len
 
 
 thresholds <- summary_df
-save(thresholds, file = "simulations/thresholds-unkown.RData")
+save(thresholds, file = "../thresholds-unknown.RData")

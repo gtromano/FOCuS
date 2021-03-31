@@ -1,64 +1,57 @@
-source("simulations/set_simulations.R")
+source("simulations/helper_functions.R")
 
 CORES <- 16
 
 run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
   grid <- find_grid(0, 50, .01, 1.3)
+
   set.seed(seed)
-  data <- lapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)))
+  means <- runif(REPS, 1, 10)
+  data <- lapply(1:REPS, function (k) c(rnorm(p$changepoint, means[k]), rnorm(p$N - p$changepoint, means[k] + p$delta)))
+  m <- 100
+
 
   # FOCuS with no pruning costraint
-  res <- mclapply(data, function (y) FOCuS_melk(y, tlist["FOCuS", 1], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y, tlist["FOCuS", 1], grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   res_FOCuS <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS", est = cp, real = p$changepoint, N = p$N)
   #print("FOCus done")
 
-  # FoCUS 10
-  res <- mclapply(data, function (y) FOCuS_melk(y,  tlist["FOCuS 10", 1], mu0 = 0, grid = grid[round(seq(1, 50, length.out = 10))], K = Inf), mc.cores = CORES)
+  # FOCuS with estimate of mu0
+  res <- mclapply(data, function (y) FOCuS_offline(y, tlist["FOCuS est.", 1], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
-  res_FOCuS10 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS 10", est = cp, real = p$changepoint, N = p$N)
-  #print("page-CUSUM done")
+  res_FOCuSpc <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS est.", est = cp, real = p$changepoint, N = p$N)
+  #print("FOCus done")
 
-  # Page CUSUM 50
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 50", 1], mu0 = 0, grid = grid), mc.cores = CORES)
-  cp <- sapply(res, function (r) r$t)
-  res_page50 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-CUSUM 50", est = cp, real = p$changepoint, N = p$N)
 
-  # here put methods with different thresholds
-  # CUSUM
-  res <- mclapply(data, function (y) CUSUM_offline(y, tlist["CUSUM", 1], 0), mc.cores = CORES)
-  cp <- sapply(res, function (r) r$t)
-  res_CUSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "CUSUM", est = cp, real = p$changepoint, N = p$N)
-
-  # MOSUM
-  res <- mclapply(data, function (y) MOSUMwrapper(y, bandw = 50, thres = tlist["MOSUM", 1]), mc.cores = CORES)
+  res <- mclapply(data, function (y) yuCUSUM_v3(y, tlist["Yu-CUSUM", 1]), mc.cores = CORES)
   cp <- sapply(res, function (r) r$cp)
-  res_MOSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "MOSUM", est = cp, real = p$changepoint, N = p$N)
+  res_yuCUSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Yu-CUSUM", est = cp, real = p$changepoint, N = p$N)
 
 
-  return(rbind(res_FOCuS, res_FOCuS10, res_page50, res_CUSUM, res_MOSUM))
+  return(rbind(res_FOCuS, res_FOCuSpc, res_yuCUSUM))
 }
 
 
 
-output_file = "./simulations/results/dr_new3.RData"
+output_file = "./simulations/pre-change-unknown/results/dr_ukn.RData"
 
 sim_grid <- expand.grid(
-  N = 1e5,
-  changepoint = 9e4,
+  N = 1e4,
+  changepoint = 9e3,
   delta = seq(.05, 2, by = 0.05)
 )
 
-load("simulations/thresholds.RData")
+load("simulations/thresholds-unknown.RData")
 
 tlist <- thresholds %>%
-  filter(run_len == 1e5) %>%
+  filter(run_len == 1e4) %>%
   group_by(algo) %>%
   summarise(tres = quantile(threshold, .75)) %>%
   column_to_rownames(var = "algo")
 
-#run_simulation(sim_grid[10, ], NREP, tlist = tlist)
+#run_simulation(sim_grid[10, ], 10, tlist = tlist) # test run
 
 if (T) {
   NREP <- 100
