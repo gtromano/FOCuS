@@ -1,6 +1,6 @@
 source("simulations/helper_functions.R")
 
-CORES <- 6
+CORES <- 16
 
 run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
@@ -50,7 +50,7 @@ means <- runif(100, 1, 10)
 data <- mclapply(1:100, function (k) rnorm(5e6, mean = means[k]), mc.cores = CORES)
 
 
-run_simulation(sim_grid[33, ], 100, tlist = tlist) # test run
+#run_simulation(sim_grid[33, ], 100, tlist = tlist) # test run
 
 if (T) {
   NREP <- 100
