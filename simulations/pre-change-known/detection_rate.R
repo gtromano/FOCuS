@@ -1,4 +1,4 @@
-source("simulations/set_simulations.R")
+source("simulations/pre-change-known/set_simulations.R")
 
 CORES <- 16
 
@@ -42,7 +42,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file = "./simulations/results/dr_new3.RData"
+output_file = "./simulations/pre-change-known/results/dr_new3.RData"
 
 sim_grid <- expand.grid(
   N = 1e5,
@@ -50,7 +50,7 @@ sim_grid <- expand.grid(
   delta = seq(.05, 2, by = 0.05)
 )
 
-load("simulations/thresholds.RData")
+load("simulations/pre-change-known/thresholds.RData")
 
 tlist <- thresholds %>%
   filter(run_len == 1e5) %>%
@@ -60,7 +60,7 @@ tlist <- thresholds %>%
 
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -207,3 +207,159 @@ detection_delay <- ggplot(summary_df,
   theme_idris()
 
 detection_delay
+
+
+
+
+
+
+
+
+##################### pres plots ##################################à
+
+source("simulations/pre-change-known/set_simulations.R")
+
+CORES <- 16
+
+run_simulation <- function(p, REPS, seed = 42, tlist) {
+  print(p)
+  grid <- find_grid(0, 50, .01, 1.3)
+  set.seed(seed)
+  data <- lapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)))
+
+  # FOCuS with no pruning costraint
+  res <- mclapply(data, function (y) FOCuS_offline(y, tlist["FOCuS", 1], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  res_FOCuS <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS", est = cp, real = p$changepoint, N = p$N)
+  #print("FOCus done")
+
+  # Page CUSUM 50
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 50", 1], mu0 = 0, grid = grid), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  res_page50 <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-CUSUM 50", est = cp, real = p$changepoint, N = p$N)
+
+
+  return(rbind(res_FOCuS, res_page50))
+}
+
+
+
+output_file = "./simulations/pre-change-known/results/dr_pres2.RData"
+
+sim_grid <- expand.grid(
+  N = 1e5,
+  changepoint = 9e4,
+  delta = seq(.05, 2, by = 0.05)
+)
+
+load("simulations/pre-change-known/thresholds.RData")
+
+tlist <- thresholds %>%
+  filter(run_len == 1e5) %>%
+  group_by(algo) %>%
+  summarise(tres = quantile(threshold, .75)) %>%
+  column_to_rownames(var = "algo")
+
+tlist[1, 1] <- 13.4
+tlist[3, 1] <- 13.4
+
+#run_simulation(sim_grid[10, ], NREP, tlist = tlist)
+
+if (F) {
+  NREP <- 100
+  outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
+    p <- sim_grid[i, ]
+    return(run_simulation(p, NREP, tlist = tlist))
+  })
+
+  outDF <- Reduce(rbind, outDF)
+  save(outDF, file = output_file)
+}
+
+
+load(output_file)
+
+summary_df <- outDF %>% mutate(
+    run_len = if_else(est == -1, N, est),
+    det_delay = ifelse(est - real > 0, est - real, NA),
+    no_detection = if_else(est == -1, 1, 0),
+    false_alarm = if_else(!no_detection & (is.na(det_delay)), 1, 0),
+    true_positive = if_else(!no_detection & !false_alarm,1, 0), # if it's not a missed detection nor it's a false alarm, then it's a true positive
+  )
+
+
+summary_df %>%
+  mutate(`change magnitude` = cut(magnitude, breaks = c(0, .3, .5, 2))) %>%
+  group_by(`change magnitude`, algo) %>%
+  summarise(`false positives rate` = mean(false_alarm, na.rm = T),
+            `missed detection rate` = mean(no_detection, na.rm = T))
+
+
+
+
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2,  4, 3)]
+fa_rate <- ggplot(summary_df %>% filter(algo %in% c("FOCuS", "Page-CUSUM 50")), aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  ylim(0, 1) +
+  xlab("magnitude") +
+  ylab("False Alarm Rate") +
+  theme_idris()
+
+fa_rate
+
+tp_rate <- ggplot(summary_df %>% filter(algo %in% c("FOCuS", "Page-CUSUM 50")), aes(x = magnitude, y = true_positive, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  ylim(0, 1) +
+  xlab("magnitude") +
+  ylab("True Positive Rate") +
+  theme_idris()
+
+tp_rate
+
+
+### detection delay ####
+detection_delay <- ggplot(summary_df %>% filter(algo %in% c("FOCuS", "Page-CUSUM 50"), true_positive == 1),
+                          aes(x = magnitude, y = det_delay, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  xlab("magnitude") +
+  ylab("Detection Delay") +
+  theme_idris()
+detection_delay + scale_y_log10()
+
+tot_sim <- ggarrange(fa_rate, tp_rate, detection_delay, ncol = 3)
+
+
+summary3 <- summary_df %>% filter(algo %in%  c(algo1, algo2)) %>% select(sim, magnitude, real, N, algo, det_delay)
+
+summary3 <- summary3 %>% pivot_wider(names_from = "algo", values_from = "det_delay") %>%
+  mutate(diff = FOCuS - `Page-CUSUM 50`)
+
+dec_diff <- ggplot(summary3, aes(x = magnitude, y = diff)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  xlab("magnitude") +
+  ylab("Difference on det. delay between FOCuS and Page-CUSUM 50") +
+  theme_idris()
+
+tot_sim <- ggarrange(dec_diff, tp_rate, ncol = 2)
+
+
+ggsave("simulations/pre-change-known/results/page-cusum-comp.pdf", dec_diff, width = 7, height = 7)
+
+summary3 %>%
+  mutate(`change magnitude` = cut(magnitude, breaks = c(0, .5, 1, 1.5, 2))) %>%
+  group_by(`change magnitude`) %>%
+  summarise(`false positives rate` = mean(diff, na.rm = T))
+
+
+summary3 %>%
+  mutate(`change magnitude` = cut(magnitude, breaks = c(0, .1, .3, .5, 1, 2))) %>%
+  group_by(`change magnitude`) %>%
+  summarise(`average difference` = mean(diff, na.rm = T)) %>% view

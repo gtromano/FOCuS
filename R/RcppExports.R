@@ -54,3 +54,7 @@ test <- function() {
     invisible(.Call(`_FOCuS_test`))
 }
 
+YuCUSUM_offline <- function(Y, thres) {
+    .Call(`_FOCuS_YuCUSUM_offline`, Y, thres)
+}
+
