@@ -57,15 +57,10 @@ sim_grid <- expand.grid(
 )
 
 
-
-run_simulation(sim_grid[33, ], 100, tlist = tlist) # test run
-
 if (F) {
   set.seed(42)
   means <- runif(100, 1, 10)
   data <- mclapply(1:100, function (k) rnorm(5e6, mean = means[k]), mc.cores = CORES)
-
-
 
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
@@ -79,20 +74,23 @@ if (F) {
 
 
 if (T) {
-  load("./simulations/pre-change-unknown/results/avgl2_1.RData")
   set.seed(42)
   means <- runif(100, 1, 10)
   data <- mclapply(1:100, function (k) rnorm(5e6, mean = means[k]), mc.cores = CORES)
 
-
-
   NREP <- 100
+
+  # p <- sim_grid[2, ]
+  # run_simulation(p, NREP, tlist = tlist)
+
   outDF2 <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
     return(run_simulation(p, NREP, tlist = tlist))
   })
 
   outDF2 <- Reduce(rbind, outDF2)
+
+  load("./simulations/pre-change-unknown/results/avgl2_1.RData")
   outDF <- rbind(outDF, outDF2)
   save(outDF, file = output_file)
 }
