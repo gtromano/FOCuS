@@ -72,46 +72,44 @@ if (F) {
   save(outDF, file = output_file)
 }
 
-
-if (T) {
-  set.seed(42)
-  means <- runif(100, 1, 10)
-  data <- mclapply(1:100, function (k) rnorm(5e6, mean = means[k]), mc.cores = CORES)
-
-  NREP <- 100
-
-  # p <- sim_grid[2, ]
-  # run_simulation(p, NREP, tlist = tlist)
-
-  outDF2 <- lapply(seq_len(nrow(sim_grid)), function (i) {
-    p <- sim_grid[i, ]
-    return(run_simulation(p, NREP, tlist = tlist))
-  })
-
-  outDF2 <- Reduce(rbind, outDF2)
-
-  load("./simulations/pre-change-unknown/results/avgl2_1.RData")
-  outDF <- rbind(outDF, outDF2)
-  save(outDF, file = output_file)
-}
+#
+# if (T) {
+#   set.seed(42)
+#   means <- runif(100, 1, 10)
+#   data <- mclapply(1:100, function (k) rnorm(5e6, mean = means[k]), mc.cores = CORES)
+#
+#   NREP <- 100
+#
+#   # p <- sim_grid[2, ]
+#   # run_simulation(p, NREP, tlist = tlist)
+#
+#   outDF2 <- lapply(seq_len(nrow(sim_grid)), function (i) {
+#     p <- sim_grid[i, ]
+#     return(run_simulation(p, NREP, tlist = tlist))
+#   })
+#
+#   outDF2 <- Reduce(rbind, outDF2)
+#
+#   load("./simulations/pre-change-unknown/results/avgl2_1.RData")
+#   outDF <- rbind(outDF, outDF2)
+#   save(outDF, file = output_file)
+# }
 
 load(output_file)
 
 summary_df <- outDF %>% mutate(stopt = if_else(est == -1, N, est))
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 6, 4, 6)]
-ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)) +
-  geom_smooth() +
-  scale_color_manual(values = cbPalette) +
-  ylab("Run Length") +
-  theme_idris()
 
-
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
 ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
   ylab("Run Length") +
   scale_y_log10() +
-#  scale_x_log10() +
+  #scale_x_log10() +
   theme_idris()
+
+
+
+
