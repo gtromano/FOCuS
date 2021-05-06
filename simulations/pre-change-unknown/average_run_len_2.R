@@ -101,7 +101,7 @@ summary_df <- outDF %>% mutate(stopt = if_else(est == -1, N, est))
 
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
-ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)) +
+avg_run_len_plot <- ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +

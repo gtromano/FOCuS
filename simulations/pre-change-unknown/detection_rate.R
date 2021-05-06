@@ -71,7 +71,7 @@ tlist <- thresholds %>%
 #tlist[3,1] <- 12.5
 
 #run_simulation(sim_grid[10, ], 10, tlist = tlist) # test run
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -101,7 +101,7 @@ print(grouped, n = 80)
 
 ### false alarm rate ####
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4)]
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
 fa_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
@@ -142,14 +142,17 @@ detection_delay <-
   scale_color_manual(values = cbPalette) +
   xlab("magnitude") +
   ylab("Detection Delay") +
+  scale_y_log10() +
   theme_idris()
 
 detection_delay
 
 
-tot_dr <- ggarrange(fa_rate, tp_rate, detection_delay, labels = "AUTO", nrow = 3, common.legend = T, legend = "right")
+#tot_dr <- ggarrange(fa_rate, tp_rate, detection_delay, labels = "AUTO", nrow = 3, common.legend = T, legend = "right")
 ggsave("simulations/pre-change-unknown/results/dr.pdf", tot_dr, width = 6, height = 10)
 
+tot_sim <- ggarrange(avg_run_len_plot, detection_delay, nrow = 1, common.legend = T, legend = "right", labels = "AUTO")
+ggsave("simulations/pre-change-unknown/results/tot_sim_ukn.pdf", tot_sim, width = 15, height = 7)
 
 #########################
 # algo1 <- "FOCuS"
