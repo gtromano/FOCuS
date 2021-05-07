@@ -6,37 +6,38 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
   grid <- find_grid(0, 50, .01, 1.3)
   
-  # set.seed(seed)
-  # means <- runif(REPS, 1, 10)
-  # data <- mclapply(1:REPS, function (k) rnorm(p$N, mean = means[k]), mc.cores = CORES)
+  set.seed(seed)
+  means <- runif(REPS, 1, 10)
+  data <- mclapply(1:REPS, function (k) rnorm(p$N, mean = means[k]), mc.cores = CORES)
 
 
   # # FOCuS with no pruning constraint
-  # res <- mclapply(data, function (y) FOCuS_offline(y, p$threshold, grid = NA, K = Inf), mc.cores = CORES)
-  # st <- sapply(res, function (r) r$t)
-  # output <- data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS", est = st, real = p$changepoint, N = p$N)
-  # #print("FOCus done")
-  #
-  # # FOCuS with estimate of mu0 (100 obs)
-  # m <- 100
-  # res <- mclapply(data, function (y) FOCuS_offline(y[m:length(y)], p$threshold, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
-  # st <- sapply(res, function (r) r$t)
-  # #st <- sapply(res, function (r) if_else(r$t != -1, r$t + m, r$t))
-  # output <- rbind(output,
-  #                 data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0 100", est = st, real = p$changepoint, N = p$N))
-  #
-  # # FOCuS with estimate of mu0 (1000 obs)
-  # m <- 1000
-  # res <- mclapply(data, function (y) FOCuS_offline(y[m:length(y)], p$threshold, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
-  # st <- sapply(res, function (r) r$t)
-  # #st <- sapply(res, function (r) if_else(r$t != -1, r$t + m, r$t))
-  # output <- rbind(output,
-  #                 data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0 1000", est = st, real = p$changepoint, N = p$N))
-  #
+  res <- mclapply(data, function (y) FOCuS_offline(y, p$threshold, grid = NA, K = Inf), mc.cores = CORES)
+  st <- sapply(res, function (r) r$t)
+  output <- data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS", est = st, real = p$changepoint, N = p$N)
+  #print("FOCus done")
+
+  # FOCuS with estimate of mu0 (100 obs)
+  m <- 100
+  res <- mclapply(data, function (y) FOCuS_offline(y[m:length(y)], p$threshold, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  st <- sapply(res, function (r) r$t)
+  #st <- sapply(res, function (r) if_else(r$t != -1, r$t + m, r$t))
+  output <- rbind(output,
+                  data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0 100", est = st, real = p$changepoint, N = p$N))
+
+  # FOCuS with estimate of mu0 (1000 obs)
+  m <- 1000
+  res <- mclapply(data, function (y) FOCuS_offline(y[m:length(y)], p$threshold, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  st <- sapply(res, function (r) r$t)
+  #st <- sapply(res, function (r) if_else(r$t != -1, r$t + m, r$t))
+  output <- rbind(output,
+                  data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0 1000", est = st, real = p$changepoint, N = p$N))
+
   m <- 1e4
   res <- mclapply(data, function (y) FOCuS_offline(y[m:length(y)], p$threshold, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   st <- sapply(res, function (r) r$t)
-  output <- data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0 10000", est = st, real = p$changepoint, N = p$N)
+  output <- rbind(output,
+                  data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0 10000", est = st, real = p$changepoint, N = p$N))
 
   m <- 1e5
   res <- mclapply(data, function (y) FOCuS_offline(y[m:length(y)], p$threshold, mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)

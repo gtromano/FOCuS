@@ -35,7 +35,7 @@ List PageCUSUM_offline(NumericVector Y, const double thres, const double& mu0, s
 
   for (auto& y:Y) {
       t += 1;
-      Q = pageCUSUM_step(Q, grid, y - mu0);
+      Q = pageCUSUM_step(std::move(Q), grid, y - mu0);
       
       max_at_time_t.push_back(get_max(Q));
       
