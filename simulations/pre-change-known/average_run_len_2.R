@@ -32,7 +32,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   output <- rbind(output,
                   data.frame(sim = 1:REPS, threshold = p$threshold, algo = "Page-50p", est = st, real = p$changepoint, N = p$N))
 
-  simple cusum
+  #simple cusum
   res <- mclapply(data, function (y) CUSUM_offline(y, p$threshold, 0), mc.cores = CORES)
   st <- sapply(res, function (r) r$t)
   output <- rbind(output,

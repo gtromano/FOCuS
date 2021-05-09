@@ -39,7 +39,7 @@ run_simulation <- function(p, REPS, seed = 42, diff_thres = F) {
   max1e4 <- sapply(res, function (r) max(r$maxs[1:1e4]))
   max1e5 <- sapply(res, function (r) max(r$maxs[1:1e5]))
   max1e6 <- sapply(res, function (r) max(r$maxs))
-  ouput <- rbind(output,
+  output <- rbind(output,
                  data.frame(sim = 1:REPS, algo = "Page-CUSUM 50", est = cp, max1e3=max1e3,max1e4=max1e4,max1e5=max1e5,max1e6=max1e6, real = p$changepoint, N = p$N, threshold = p$threshold))
   
   # print("Running CUSUM")
