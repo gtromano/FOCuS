@@ -108,7 +108,7 @@ avg_run_len_plot <- ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)
   scale_color_manual(values = cbPalette) +
   ylab("Run Length") +
   scale_y_log10() +
-  #scale_x_log10() +
+  xlim(0, 20) +
   theme_idris()
 
 

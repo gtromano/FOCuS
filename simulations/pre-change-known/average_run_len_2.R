@@ -47,7 +47,7 @@ output_file <- "./simulations/pre-change-known/results/avgl2_1.RData"
 sim_grid <- expand.grid(
   N = 5e6,
   changepoint = -1,
-  threshold = seq(1, 25, by = .5)
+  threshold = seq(1, 22, by = .5)
 )
 
 
