@@ -4,7 +4,7 @@ CORES <- 16
 
 run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
-  grid <- find_grid(0, 50, .005, 1.15)
+  grid <- find_grid(0, 50, .01, 1.3)
   
   # set.seed(seed)
   # data <- mclapply(1:REPS, function (k) rnorm(p$N, mean = means[k]), mc.cores = CORES)
@@ -12,7 +12,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
   # # FOCuS with no pruning constraint
   print("Running FOCuS")
-  res <- mclapply(data, function (y) FOCuS_offline(y, p$threshold, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_melk(y, p$threshold, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   st <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0", est = st, real = p$changepoint, N = p$N)
   #print("FOCus done")
@@ -20,7 +20,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   # FOCuS with 10 points grid
   print("Running FOCuS10")
 
-  res <- mclapply(data, function (y) FOCuS_offline(y, p$threshold, mu0 = 0, grid = grid[round(seq(1, 50, length.out = 10))], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_melk(y, p$threshold, mu0 = 0, grid = grid[round(seq(1, 50, length.out = 10))], K = Inf), mc.cores = CORES)
   st <- sapply(res, function (r) r$t)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, threshold = p$threshold, algo = "FOCuS0-10p", est = st, real = p$changepoint, N = p$N))
@@ -32,11 +32,11 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   output <- rbind(output,
                   data.frame(sim = 1:REPS, threshold = p$threshold, algo = "Page-50p", est = st, real = p$changepoint, N = p$N))
 
-  # simple cusum
-  # res <- mclapply(data, function (y) CUSUM_offline(y, p$threshold, 0), mc.cores = CORES)
-  # st <- sapply(res, function (r) r$t)
-  # output <- rbind(output,
-  #                 data.frame(sim = 1:REPS, threshold = p$threshold, algo = "CUSUM", est = st, real = p$changepoint, N = p$N))
+  simple cusum
+  res <- mclapply(data, function (y) CUSUM_offline(y, p$threshold, 0), mc.cores = CORES)
+  st <- sapply(res, function (r) r$t)
+  output <- rbind(output,
+                  data.frame(sim = 1:REPS, threshold = p$threshold, algo = "CUSUM", est = st, real = p$changepoint, N = p$N))
 
   return(output)
 }
@@ -51,7 +51,7 @@ sim_grid <- expand.grid(
 )
 
 
-if (T) {
+if (F) {
   REPS <- 100
 
   set.seed(42)
@@ -74,16 +74,16 @@ load(output_file)
 summary_df <- outDF %>% mutate(stopt = if_else(est == -1, N, est))
 
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 1, 3, 4, 5, 6)]
 avg_run_len_plot <- ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
   ylab("Run Length") +
   scale_y_log10() +
-  #scale_x_log10() +
+  xlim(.5, 20) +
   theme_idris()
-
+avg_run_len_plot
 
 
 
