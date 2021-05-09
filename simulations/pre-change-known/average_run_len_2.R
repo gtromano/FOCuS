@@ -27,7 +27,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
   print("Running Page")
   # Page Cusum 50 points
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, p$threshold, mu0 = 0, grid = grid), mc.cores = 1)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, p$threshold, mu0 = 0, grid = grid), mc.cores = CORES)
   st <- sapply(res, function (r) r$t)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, threshold = p$threshold, algo = "Page-50p", est = st, real = p$changepoint, N = p$N))
