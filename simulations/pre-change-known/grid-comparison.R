@@ -52,7 +52,7 @@ tlist <- thresholds %>%
   column_to_rownames(var = "algo")
 
 
-tlist["FOCuS", ] <- tlist["Page-CUSUM", ]
+tlist[,1 ] <- 16
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
 if (T) {
@@ -98,3 +98,15 @@ detection_delay <- ggplot(summary_df %>% filter(true_positive == 1),
   theme_idris()
 
 detection_delay
+
+fa_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  geom_vline(xintercept = grid, col = "grey") +
+  scale_color_manual(values = cbPalette) +
+  ylim(0, 1) +
+  xlab("magnitude") +
+  ylab("False Alarm Rate") +
+  xlim(.3, .55) +
+  theme_idris()
+fa_rate
