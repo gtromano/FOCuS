@@ -71,7 +71,7 @@ if (F) {
 
 load(output_file)
 
-summary_df <- outDF %>% mutate(stopt = if_else(est == -1, N, est))
+summary_df <- outDF %>% mutate(stopt = if_else(est == -1, N, est)) %>% filter(algo != "CUSUM")
 
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 1, 3, 4, 5, 6)]
@@ -83,7 +83,8 @@ avg_run_len_plot <- ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)
   scale_y_log10() +
   xlim(.5, 20) +
   theme_idris()
-avg_run_len_plot
+
+ggsave(avg_run_len_plot, filename = "simulations/pre-change-known/results/1-avg-run-known.pdf", width = 6, height = 6)
 
 
 

@@ -145,8 +145,9 @@ detection_delay <-
   scale_y_log10() +
   theme_idris()
 
-detection_delay
 
+
+ggsave(filename = "simulations/pre-change-unknown/results/2-det-delay.pdf", ggarrange(detection_delay, legend = F), width = 6, height = 6)
 
 #tot_dr <- ggarrange(fa_rate, tp_rate, detection_delay, labels = "AUTO", nrow = 3, common.legend = T, legend = "right")
 ggsave("simulations/pre-change-unknown/results/dr.pdf", tot_dr, width = 6, height = 10)

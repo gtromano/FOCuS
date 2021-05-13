@@ -112,5 +112,5 @@ avg_run_len_plot <- ggplot(summary_df, aes(x = threshold, y = stopt, col = algo)
   theme_idris()
 
 
-
+ggsave(ggarrange(avg_run_len_plot, legend = F), filename = "simulations/pre-change-unknown/results/2-run-len.pdf", width = 6, height = 6)
 

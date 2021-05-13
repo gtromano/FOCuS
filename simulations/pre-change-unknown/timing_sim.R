@@ -41,7 +41,7 @@ timings <- timings %>% mutate(milliseconds = time * 1e-6, algo = if_else(expr ==
 
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 6)]
-timing_plot <- ggplot(timings, aes(x = len, y = milliseconds, group = algo, col = algo)) +
+timing_plot <- ggplot(timings, aes(x = len, y = milliseconds, group = algo, lty = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   #stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
@@ -53,4 +53,4 @@ timing_plot <- ggplot(timings, aes(x = len, y = milliseconds, group = algo, col 
 
 
 
-ggsave("simulations/pre-change-unknown/results/timings.pdf", timing_plot, width = 9, height = 7)
+ggsave("simulations/pre-change-unknown/results/timings.pdf", ggarrange(timing_plot, legend = F), width = 6, height = 6)
