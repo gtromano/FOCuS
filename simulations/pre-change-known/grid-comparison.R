@@ -51,6 +51,8 @@ tlist <- thresholds %>%
   summarise(tres = mean(threshold)) %>%
   column_to_rownames(var = "algo")
 
+
+tlist["FOCuS", ] <- tlist["Page-CUSUM", ]
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
 if (T) {
@@ -90,7 +92,7 @@ detection_delay <- ggplot(summary_df %>% filter(true_positive == 1),
   stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
   xlab("magnitude") +
-  xlim(.3, .7) +
+  xlim(.3, .55) +
   scale_y_log10() +
   ylab("Detection Delay") +
   theme_idris()
