@@ -40,7 +40,7 @@ grid <- find_grid(0, 50, .01, 1.3)
 sim_grid <- expand.grid(
   N = 2e6,
   changepoint = 1e5,
-  delta = c(seq(.3, .7, by = 0.02), grid[grid > .3 & grid < 7])
+  delta = c(seq(.1, .55, by = 0.02), grid[grid > .1 & grid < .6])
 )
 
 load("simulations/pre-change-known/thresholds.RData")
