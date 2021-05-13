@@ -2,11 +2,12 @@ source("simulations/pre-change-known/set_simulations.R")
 
 CORES <- 16
 
+
 run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
   grid <- find_grid(0, 50, .01, 1.3)
   set.seed(seed)
-  data <- lapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)))
+  data <- mclapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)), mc.cores = CORES)
 
   # FOCuS with no pruning costraint
   print("FOCus0")
@@ -43,6 +44,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
   return(output)
 }
+
 
 
 

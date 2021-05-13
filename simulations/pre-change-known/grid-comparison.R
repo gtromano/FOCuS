@@ -6,7 +6,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   print(p)
   grid <- find_grid(0, 50, .01, 1.3)
   set.seed(seed)
-  data <- lapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)))
+  data <- mclapply(1:REPS, function (k) c(rnorm(p$changepoint,0), rnorm(p$N - p$changepoint, p$delta)), mc.cores = CORES)
 
   # FOCuS with no pruning costraint
   print("FOCus0")
@@ -27,19 +27,6 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-50p", est = cp, real = p$changepoint, N = p$N))
 
-  # here put methods with different thresholds
-  # CUSUM
-  # print("CUSUM")
-  # res <- mclapply(data, function (y) CUSUM_offline(y, tlist["CUSUM", 1], 0), mc.cores = CORES)
-  # cp <- sapply(res, function (r) r$t)
-  # output <- rbind(output,
-  #                 data.frame(sim = 1:REPS, magnitude = p$delta, algo = "CUSUM", est = cp, real = p$changepoint, N = p$N))
-
-  # # MOSUM
-  # res <- mclapply(data, function (y) MOSUMwrapper(y, bandw = 50, thres = tlist["MOSUM", 1]), mc.cores = CORES)
-  # cp <- sapply(res, function (r) r$cp)
-  # res_MOSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "MOSUM", est = cp, real = p$changepoint, N = p$N)
-
 
   return(output)
 }
@@ -48,10 +35,12 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 output_file = "./simulations/pre-change-known/results/dr_comp4.RData"
 
+grid <- find_grid(0, 50, .01, 1.3)
+
 sim_grid <- expand.grid(
   N = 2e6,
   changepoint = 1e5,
-  delta = seq(.3, .7, by = 0.01)
+  delta = c(seq(.3, .7, by = 0.02), grid[grid > .3 & grid < 7])
 )
 
 load("simulations/pre-change-known/thresholds.RData")
@@ -64,7 +53,7 @@ tlist <- thresholds %>%
 
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
-if (F) {
+if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -74,3 +63,36 @@ if (F) {
   outDF <- Reduce(rbind, outDF)
   save(outDF, file = output_file)
 }
+
+
+
+load(output_file)
+
+summary_df <- outDF %>% mutate(
+    run_len = if_else(est == -1, N, est),
+    det_delay = ifelse(est - real >= 0, est - real, NA),
+    no_detection = if_else(est == -1, 1, 0),
+    false_alarm = if_else(!no_detection & is.na(det_delay), 1, 0),
+    true_positive = if_else(!no_detection & !false_alarm,1, 0), # if it's not a missed detection nor it's a false alarm, then it's a true positive
+  )
+
+
+
+
+
+## detection delay ####
+
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 1, 3, 4, 5, 6)]
+detection_delay <- ggplot(summary_df %>% filter(true_positive == 1),
+                           aes(x = magnitude, y = det_delay, group = algo, col = algo)) +
+  geom_vline(xintercept = grid, col = "grey") +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  xlab("magnitude") +
+  xlim(.3, .7) +
+  scale_y_log10() +
+  ylab("Detection Delay") +
+  theme_idris()
+
+detection_delay
