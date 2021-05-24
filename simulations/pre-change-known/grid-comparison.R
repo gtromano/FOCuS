@@ -51,8 +51,7 @@ tlist <- thresholds %>%
   summarise(tres = mean(threshold)) %>%
   column_to_rownames(var = "algo")
 
-
-tlist[,1 ] <- 16
+#tlist[,1] <- 16
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
 if (T) {
@@ -80,12 +79,19 @@ summary_df <- outDF %>% mutate(
 
 
 
+summary_df %>% filter(false_alarm == 1) %>% select(algo) %>% table()
 
+to_exclude <- summary_df %>% filter(false_alarm == 1) %>% select(sim, magnitude) %>% unique()
+
+
+for(i in 1:nrow(to_exclude)) {
+  summary_df[summary_df$sim == to_exclude[i, 1] & summary_df$magnitude == to_exclude[i, 2], ]$det_delay <- NA
+}
 
 ## detection delay ####
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 1, 3, 4, 5, 6)]
-detection_delay <- ggplot(summary_df %>% filter(true_positive == 1),
+detection_delay <- ggplot(summary_df,
                            aes(x = magnitude, y = det_delay, group = algo, col = algo)) +
   geom_vline(xintercept = grid, col = "grey") +
   stat_summary(fun.data = "mean_se", geom = "line") +
@@ -110,3 +116,59 @@ fa_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y =
   xlim(.3, .55) +
   theme_idris()
 fa_rate
+
+
+
+
+
+
+
+
+#################### experiment 2 ##############################
+
+set.seed(32)
+y <- c(rnorm(1e5), rnorm(2e6, .5))
+
+load("simulations/pre-change-known/thresholds.RData")
+tlist <- thresholds %>%
+  filter(run_len == 1e6) %>%
+  group_by(algo) %>%
+  summarise(tres = mean(threshold)) %>%
+  column_to_rownames(var = "algo")
+
+maxY <- 1e5 + 50
+
+resF <- FOCuS_offline(y[1:maxY], thres = tlist[1,], mu0 = 0)
+
+
+gridP <- find_grid(0, 50, .01, 1.3)
+gridP[41] <- .5
+
+resP <- PageCUSUM_offline(y[1:maxY], thres = tlist[3, ], mu0 = 0, grid = gridP)
+
+
+
+### plotting
+
+plot_piecewise_quad <- function(x, quad) {
+  for (q in quad)
+    for (i in q$ints)
+      if (i$l < x && i$u >= x)
+        return(q$a * x^2 + q$b * x + q$c)
+}
+plot_piecewise_quad <- Vectorize(plot_piecewise_quad, vectorize.args = "x")
+
+# ggplot(mapping = aes(x = t, y = y),
+#        data = tibble(t = (1e5 - 200):maxY, y = y[(1e5 - 200):maxY])) +
+#   geom_point(aes(x = t, y = y), tibble(t = (1e5 - 200):(maxY + 100), y = y[(1e5 - 200):(maxY + 100)]), col = "grey") +
+#   geom_point() + geom_line()
+#
+
+ggplot(tibble(mu = -3:3)) +
+  stat_function(aes(x = mu), fun = function(x) plot_piecewise_quad(x, quad = resF$Q1), col = 4) +
+  theme_idris() +
+  xlim(0, 2) +
+  geom_vline(xintercept = gridP, col = "grey", alpha = .3) +
+  xlab(expression(mu)) + ylab(expression(Q[t](mu))) +
+  geom_text(aes(x = grid, y = y, label = Q), data = tibble(grid = gridP + .02, y = 5.8, Q = round(resP$Q, 2)), col = "grey", alpha = .8) +
+  geom_text(aes(x = .455, y = 5.8, label = round(tail(resF$maxs, 1), 2)), col = 4)

@@ -57,6 +57,7 @@ Info FOCuS_step(Info info, const double& new_point, const std::list<double>& gri
   double global_max = -INFINITY;
   std::for_each(info.Q1.begin(), info.Q1.end(), [&global_max](auto& q){
     double m = -INFINITY;
+    q.max = m;
     for(const auto& i:q.ints) {
       m = std::get<0>(get_minimum(q, i));
       if (m > q.max)
@@ -103,6 +104,7 @@ Info FOCuS_step_sim(Info info, const double& new_point, const std::list<double>&
   double global_max = -INFINITY;
   std::for_each(info.Q1.begin(), info.Q1.end(), [&global_max](auto& q){
     double m = -INFINITY;
+    q.max = m; // added for bugfix
     for(const auto& i:q.ints) {
       m = std::get<0>(get_minimum(q, i));
       if (m > q.max)
@@ -245,6 +247,7 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
     // getting the maximums for right
     std::for_each(info.Qright.begin(), info.Qright.end(), [&info](auto& q){
       double m = -INFINITY;
+      q.max = m;
       m = get_only_the_minimum(q, q.ints.front());
       if (m > q.max)
         q.max = m;
@@ -268,6 +271,7 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
     info.global_max = -INFINITY;
     std::for_each(info.Qleft.begin(), info.Qleft.end(), [&info](auto& q){
       double m = -INFINITY;
+      q.max = m;
       m = get_only_the_minimum(q, q.ints.front());
       if (m > q.max)
         q.max = m;

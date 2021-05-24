@@ -50,7 +50,8 @@ List PageCUSUM_offline(NumericVector Y, const double thres, const double& mu0, s
   // std::cout << info.global_max << std::endl;
   
   return List::create(Rcpp::Named("t") = cp,
-                      Rcpp::Named("maxs") = max_at_time_t);
+                      Rcpp::Named("maxs") = max_at_time_t,
+                      Rcpp::Named("Q") = Q);
 }
 
 
