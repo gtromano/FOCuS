@@ -48,7 +48,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file = "./simulations/pre-change-known/results/dr_new4.RData"
+output_file = "./simulations/pre-change-known/results/dr_new5.RData"
 
 sim_grid <- expand.grid(
   N = 2e6,
@@ -66,7 +66,7 @@ tlist <- thresholds %>%
 
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
-if (F) {
+if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
