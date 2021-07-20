@@ -14,18 +14,19 @@ CORES <- 16
 REP <- 100
 N <- 1e6 # up to a million observations
 set.seed(42)
-data <- mclapply(1:REP, function (i) rnorm(N), mc.cores = CORES)
+data <- lapply(1:REP, function (i) rnorm(N))
 
 
 if (T) {
   grid <- find_grid(0, 26, .01, 1.74)
   FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
+  FOCuSmelkRUN <- mclapply(data, FOCuS_melk, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
   FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[floor(seq(1, 25, length.out = 10))], K = Inf, mc.cores = CORES)
 
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid, mc.cores = CORES)
 }
 
-totalRUN <- list(FOCuSRUN, FOCuS10RUN, page25RUN)
+totalRUN <- list(FOCuSRUN, FOCuSmelkRUN, FOCuS10RUN, page25RUN)
 #save.image(file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
 
 thre_seq <- seq(14, 20, by = .05)
@@ -42,7 +43,7 @@ for (i in seq_along(thre_seq)) {
 
 
 
-colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25')
+colnames(avg_run_len) <- c("FOCuS", "FOCuSmelk", 'FOCuS 10', 'Page-CUSUM 25')
 
 avg_run_len
 
