@@ -31,26 +31,25 @@
 # }
 
 
-
-# the simple implementation without the grid as in Kirch and al.
-pageCUSUM_Kirch <- function (Y, threshold) {
-
-
-  cp <- -1
-  max_storage <- NULL
-
-  for (t in seq_along(Y)) {
-
-
-    Q <- abs(cumsum(Y[1:t]))
-
-    maximum <- max(Q)
-    max_storage <- c(max_storage, maximum)
-
-    if (maximum >= threshold) {
-      cp <- t
-      break
-    }
-  }
-  return(list(cp = cp, maxs = max_storage))
-}
+# # the simple implementation without the grid as in Kirch and al.
+# pageCUSUM_Kirch <- function (Y, threshold) {
+#
+#
+#   cp <- -1
+#   max_storage <- NULL
+#
+#   for (t in seq_along(Y)) {
+#
+#
+#     Q <- abs(cumsum(Y[1:t]))
+#
+#     maximum <- max(Q)
+#     max_storage <- c(max_storage, maximum)
+#
+#     if (maximum >= threshold) {
+#       cp <- t
+#       break
+#     }
+#   }
+#   return(list(cp = cp, maxs = max_storage))
+# }

@@ -126,8 +126,6 @@ fa_rate
 
 #################### experiment 2 ##############################
 
-set.seed(32)
-y <- c(rnorm(1e5), rnorm(2e6, .5))
 
 load("simulations/pre-change-known/thresholds.RData")
 tlist <- thresholds %>%
@@ -137,16 +135,6 @@ tlist <- thresholds %>%
   column_to_rownames(var = "algo")
 
 maxY <- 1e5 + 50
-
-resF <- FOCuS_offline(y[1:maxY], thres = tlist[1,], mu0 = 0)
-
-
-gridP <- find_grid(0, 50, .01, 1.3)
-gridP[41] <- .5
-
-resP <- PageCUSUM_offline(y[1:maxY], thres = tlist[3, ], mu0 = 0, grid = gridP)
-
-
 
 ### plotting
 
@@ -158,17 +146,60 @@ plot_piecewise_quad <- function(x, quad) {
 }
 plot_piecewise_quad <- Vectorize(plot_piecewise_quad, vectorize.args = "x")
 
+
+set.seed(32)
+y <- c(rnorm(1e5,0 ,.1), rnorm(2e6, .50, .1))
+
+
+resF <- FOCuS_offline(y[1:maxY], thres = tlist[1,], mu0 = 0)
+
+gridP <- find_grid(0, 50, .01, 1.3)
+gridP[41] <- .5
+
+resP <- PageCUSUM_offline(y[1:maxY], thres = tlist[3, ], mu0 = 0, grid = gridP)
+
 # ggplot(mapping = aes(x = t, y = y),
 #        data = tibble(t = (1e5 - 200):maxY, y = y[(1e5 - 200):maxY])) +
 #   geom_point(aes(x = t, y = y), tibble(t = (1e5 - 200):(maxY + 100), y = y[(1e5 - 200):(maxY + 100)]), col = "grey") +
 #   geom_point() + geom_line()
-#
 
-ggplot(tibble(mu = -3:3)) +
+
+plot1 <- ggplot(tibble(mu = -3:3)) +
   stat_function(aes(x = mu), fun = function(x) plot_piecewise_quad(x, quad = resF$Q1), col = 4) +
   theme_idris() +
   xlim(0, 2) +
   geom_vline(xintercept = gridP, col = "grey", alpha = .3) +
   xlab(expression(mu)) + ylab(expression(Q[t](mu))) +
-  geom_text(aes(x = grid, y = y, label = Q), data = tibble(grid = gridP + .02, y = 5.8, Q = round(resP$Q, 2)), col = "grey", alpha = .8) +
-  geom_text(aes(x = .455, y = 5.8, label = round(tail(resF$maxs, 1), 2)), col = 4)
+  geom_text(aes(x = grid, y = y, label = Q), data = tibble(grid = gridP + .02, y = round(resP$Q, 2) + .1, Q = round(resP$Q, 2)), col = "grey", alpha = .8) +
+  geom_text(aes(x = .47, y = round(tail(resF$maxs, 1), 2) + .1, label = round(tail(resF$maxs, 1), 2)), col = 4) +
+  geom_vline(xintercept = .5, lty = 2)
+
+
+# off grid
+
+set.seed(32)
+y2 <- c(rnorm(1e5,0 ,.1), rnorm(2e6, .58, .1))
+
+
+resF2 <- FOCuS_offline(y2[1:maxY], thres = tlist[1,], mu0 = 0)
+
+gridP <- find_grid(0, 50, .01, 1.3)
+gridP[41] <- .5
+
+resP2 <- PageCUSUM_offline(y2[1:maxY], thres = tlist[3, ], mu0 = 0, grid = gridP)
+
+plot2 <- ggplot(tibble(mu = -3:3)) +
+  stat_function(aes(x = mu), fun = function(x) plot_piecewise_quad(x, quad = resF2$Q1), col = 4) +
+  theme_idris() +
+  xlim(0, 2) +
+  geom_vline(xintercept = gridP, col = "grey", alpha = .3) +
+  xlab(expression(mu)) + ylab(expression(Q[t](mu))) +
+  geom_text(aes(x = grid, y = y, label = Q), data = tibble(grid = gridP + .02, y = round(resP2$Q, 2) + .1, Q = round(resP2$Q, 2)), col = "grey", alpha = .8) +
+  geom_text(aes(x = .56, y = round(tail(resF2$maxs, 1), 2) + .15, label = round(tail(resF2$maxs, 1), 2)), col = 4) +
+  geom_vline(xintercept = .58, lty = 2)
+
+plot2
+
+
+
+ggsave(ggarrange(plot1, plot2, nrow = 2), filename = "grid-comp.pdf", width = 18, height = 12)

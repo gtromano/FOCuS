@@ -66,7 +66,7 @@ tlist <- thresholds %>%
 
 #run_simulation(sim_grid[10, ], NREP, tlist = tlist)
 
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -114,6 +114,7 @@ summary3 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude,
 
 tot_summary_diff <- rbind(summary1, summary2, summary3)
 
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4)]
 dec_diff <- ggplot(tot_summary_diff, aes(x = magnitude, y = - diff)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
   stat_summary(fun.data = "mean_se", geom = "errorbar") +

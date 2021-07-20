@@ -1,16 +1,14 @@
-.MOSUMstep <- function (Info, new_point, m) {
-
-  Info$window <- c(Info$window[2:length(Info$window)],  new_point)
-  Info$S <- abs(sum(.H(Info$window, m)))
+.MOSUMstep <- function (Info, new_point, FUN) {
+  Info$window <- c(Info$window[2:length(Info$window)],  new_point) # we update the window
+  Info$S <- abs(sum(FUN(Info$window)))
   return(Info)
 }
 
-.H <- function (x, m) (x - m)
+.H <- function (x) x
 
+MOSUM_offline <- function (Y, threshold, w, mu0 = 0, FUN = .H) {
 
-MOSUM_offline <- function (Y, threshold, w, m = 0) {
-
-  Info <- list(window = Y[1:w] , S = grid)
+  Info <- list(window = Y[1:w] , S = 0)
   cp <- -1
   t <- w
 
@@ -18,7 +16,7 @@ MOSUM_offline <- function (Y, threshold, w, m = 0) {
 
   for (y in Y[(w+1):length(Y)]) {
     t <- t + 1
-    Info <- .MOSUMstep(Info, y, m)
+    Info <- .MOSUMstep(Info, y - mu0, FUN)
     max_storage <- c(max_storage, Info$S)
     if (Info$S >= threshold) {
       cp <- t
@@ -29,4 +27,19 @@ MOSUM_offline <- function (Y, threshold, w, m = 0) {
 }
 
 
-#MOSUM_offline(c(rnorm(100), rnorm(100, -2)), 15, 20)
+
+MOSUM_offline_kirch <- function (Y, threshold, w, mu0 = 0, FUN = .H) {
+  const <- 1 / sqrt(w)
+  stat <- sapply((w+1):length(Y), function (t){
+    abs(sum(FUN(Y[(t-w):t]))) * const
+  })
+
+  cp <- which(stat >= threshold)[1] + w
+  cp <- ifelse(is.na(cp), -1, cp)
+  return(list(cp = cp, maxs = stat[1:(w-cp)]))
+}
+
+
+y <- c(rnorm(100), rnorm(100, -2))
+(r1 <- MOSUM_offline(y, 15, 20))
+(r2 <- MOSUM_offline_fast(y, 15, 20))
