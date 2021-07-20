@@ -5,25 +5,25 @@ CORES <- 16
 
 run_simulation <- function(p, REPS, noise, tlist) {
   print(p)
-  grid <- find_grid(0, 50, .01, 1.3)
+  grid <- find_grid(0, 26, .01, 1.74)
   data <- mclapply(noise, function (epsilon) c(rep(0, p$changepoint), rep(p$delta, p$N - p$changepoint)) + epsilon, mc.cores = CORES)
 
   # FOCuS with no pruning costraint
   print("FOCus0")
-  res <- mclapply(data, function (y) FOCuS_melk(y, tlist["FOCuS"], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y, tlist["FOCuS"], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0", est = cp, real = p$changepoint, N = p$N)
 
   # FoCUS 10
   print("FOCus0 p10")
-  res <- mclapply(data, function (y) FOCuS_melk(y,  tlist["FOCuS 10"], mu0 = 0, grid = grid[round(seq(1, 50, length.out = 10))], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist["FOCuS 10"], mu0 = 0, grid = grid[floor(seq(1, 25, length.out = 10))], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
   #print("page-CUSUM done")
 
   # Page CUSUM 50
-  print("Page 50p")
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 25"], mu0 = 0, grid = grid[round(seq(1, 50, length.out = 25))]), mc.cores = CORES)
+  print("Page 25p")
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 25"], mu0 = 0, grid = grid, mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-25p", est = cp, real = p$changepoint, N = p$N))
 
@@ -47,10 +47,10 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
 
 
-output_file <- "./simulations/pre-change-known/results/dr_new6.RData"
+output_file <- "./simulations/pre-change-known/results/dr_new7.RData"
 
 
-gg <- find_grid(0, 50, .01, 1.3)[round(seq(1, 50, length.out = 25))][13:25]
+gg <- find_grid(0, 26, .01, 1.74)[3:24]
 
 sim_grid <- expand.grid(
   N = 2e6,
@@ -90,12 +90,34 @@ summary_df <- outDF %>% mutate(
   )
 
 
+det_del_table <- summary_df %>% filter(magnitude > .3, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay))
+print(det_del_table, n = 100)
 
 
-algolist <- c("FOCuS0", "Page-50p")
+detection_delay <-
+  ggplot(summary_df %>% filter(true_positive == 1),
+    aes(
+      x = magnitude,
+      y = det_delay,
+      group = algo,
+      col = algo
+    )
+  ) +
+  stat_summary(fun.data = "mean_se", geom = "line") +
+  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  scale_color_manual(values = cbPalette) +
+  xlab("magnitude") +
+  ylab("Detection Delay") +
+  xlim(0, 2) +
+  ylim(0, 500) +
+  theme_idris()
+
+detection_delay
+
+algolist <- c("FOCuS0", "Page-25p")
 summary1 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-  mutate(diff = FOCuS0 - `Page-50p`,
+  mutate(diff = FOCuS0 - `Page-25p`,
          comparison = "FOCuS0 against Page-50p") %>%
     select(sim, magnitude, diff, comparison)
 
@@ -106,10 +128,10 @@ summary2 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude,
          comparison = "FOCuS0 against FOCuS0-10p") %>%
     select(sim, magnitude, diff, comparison)
 
-algolist <- c("FOCuS0-10p", "Page-50p")
+algolist <- c("FOCuS0-10p", "Page-25p")
 summary3 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-  mutate(diff = `FOCuS0-10p` - `Page-50p`,
+  mutate(diff = `FOCuS0-10p` - `Page-25p`,
          comparison = "FOCuS0-10p against Page-50p") %>%
   select(sim, magnitude, diff, comparison)
 
