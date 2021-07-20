@@ -38,8 +38,3 @@ MOSUM_offline_kirch <- function (Y, threshold, w, mu0 = 0, FUN = .H) {
   cp <- ifelse(is.na(cp), -1, cp)
   return(list(cp = cp, maxs = stat[1:(w-cp)]))
 }
-
-
-y <- c(rnorm(100), rnorm(100, -2))
-(r1 <- MOSUM_offline(y, 15, 20))
-(r2 <- MOSUM_offline_fast(y, 15, 20))
