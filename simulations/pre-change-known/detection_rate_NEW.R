@@ -30,7 +30,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # Page CUSUM 50
   print("Page 25p")
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 25"], mu0 = 0, grid = grid, mc.cores = CORES))
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 25"], mu0 = 0, grid = grid), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-25p", est = cp, real = p$changepoint, N = p$N))
 
