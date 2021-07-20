@@ -26,21 +26,25 @@ if (T) {
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid[round(seq(1, 50, length.out = 25))], mc.cores = CORES)
 }
 
-save.image(file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
+totalRUN <- list(FOCuSRUN, FOCuS10RUN, page50RUN, page25RUN)
+#save.image(file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
 
-#cusumTR <- mclapply(data, CUSUM_offline_kirch, threshold = Inf, mc.cores = CORES)
-#mosumTR <- mclapply(data, MOSUM_offline_kirch, threshold = Inf, w = 50, mc.cores = CORES)
-#pageTR <- mclapply(data, PageCUSUM_offline_kirch, threshold = Inf, mc.cores = CORES)
-#
-# tre_seq <- seq(0.5, 5, length.out = 100)
-# avg_run_len <- matrix(nr = length(tre_seq), nc = 3)
-#
-# row.names(avg_run_len) <- tre_seq
-#
-# for (i in seq_along(tre_seq)) {
-#   avg_run_len[i, 1] <- mean(sapply(cusumTR, run_len_calculator, thres = tre_seq[i]))
-#   avg_run_len[i, 2] <- mean(sapply(mosumTR, run_len_calculator, thres = tre_seq[i]))
-#   avg_run_len[i, 3] <- mean(sapply(pageTR, run_len_calculator, thres = tre_seq[i]))
-# }
-#
-#
+thre_seq <- seq(1, 20, by = .05)
+avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
+
+row.names(avg_run_len) <- thre_seq
+
+for (i in seq_along(thre_seq)) {
+  for (j in seq_along(totalRUN)) {
+    cat(i, j, "\n")
+    avg_run_len[i, j] <- mean(sapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i]))
+  }
+}
+
+
+
+colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 50', 'Page-CUSUM 25')
+
+save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
+tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len == 1e6)][1])
+tlist["FOCuS 10"]
