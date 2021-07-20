@@ -9,11 +9,11 @@ run_len_calculator <- function (res, thres) {
   ifelse(is.na(cp), n, cp)
 }
 
-
+SEED <- 45
 CORES <- 16
 REP <- 100
 N <- 1e6 # up to a million observations
-set.seed(42)
+set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
 
 
@@ -29,7 +29,7 @@ if (T) {
 totalRUN <- list(FOCuSRUN, FOCuSmelkRUN, FOCuS10RUN, page25RUN)
 #save.image(file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
 
-thre_seq <- seq(14, 20, by = .05)
+thre_seq <- seq(16, 20, by = .05)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(avg_run_len) <- thre_seq

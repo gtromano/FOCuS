@@ -1,7 +1,7 @@
 source("simulations/pre-change-known/set_simulations.R")
 
 CORES <- 16
-
+SEED <- 45
 
 run_simulation <- function(p, REPS, noise, tlist) {
   print(p)
@@ -16,7 +16,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # FOCuS with no pruning costraint
   print("FOCusmelk")
-  res <- mclapply(data, function (y) FOCuS_melk(y, tlist["FOCuS"], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_melk(y, tlist["FOCuSmelk"], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0m", est = cp, real = p$changepoint, N = p$N)
 
@@ -30,7 +30,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # Page CUSUM 50
   print("Page 25p")
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 25"], mu0 = 0, grid = grid, mc.cores = CORES)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist["Page-CUSUM 25"], mu0 = 0, grid = grid, mc.cores = CORES))
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-25p", est = cp, real = p$changepoint, N = p$N))
 
@@ -73,7 +73,7 @@ tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len =
 
 if (T) {
   NREP <- 100
-  set.seed(42)
+  set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(2e6))
   #run_simulation(sim_grid[10, ], NREP, noise, tlist = tlist)
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
