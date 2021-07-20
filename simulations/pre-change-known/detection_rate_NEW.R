@@ -18,7 +18,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
   print("FOCusmelk")
   res <- mclapply(data, function (y) FOCuS_melk(y, tlist["FOCuSmelk"], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
-  output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0m", est = cp, real = p$changepoint, N = p$N)
+  output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0m", est = cp, real = p$changepoint, N = p$N))
 
 
   # FoCUS 10
@@ -57,7 +57,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 output_file <- "./simulations/pre-change-known/results/dr_new7.RData"
 
 
-gg <- find_grid(0, 26, .01, 1.74)[3:24]
+gg <- find_grid(0, 26, .01, 1.74)[14:24]
 
 sim_grid <- expand.grid(
   N = 2e6,
