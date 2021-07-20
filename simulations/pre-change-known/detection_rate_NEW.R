@@ -67,7 +67,7 @@ tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len =
 if (T) {
   NREP <- 100
   set.seed(42)
-  noise <- mclapply(1:NREP, function (i) rnorm(N), mc.cores = CORES)
+  noise <- mclapply(1:NREP, function (i) rnorm(2e6), mc.cores = CORES)
   #run_simulation(sim_grid[10, ], NREP, noise, tlist = tlist)
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
