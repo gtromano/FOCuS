@@ -14,13 +14,6 @@ run_simulation <- function(p, REPS, noise, tlist) {
   cp <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0", est = cp, real = p$changepoint, N = p$N)
 
-  # FOCuS with no pruning costraint
-  print("FOCusmelk")
-  res <- mclapply(data, function (y) FOCuS_melk(y, tlist["FOCuSmelk"], mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
-  cp <- sapply(res, function (r) r$t)
-  output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0m", est = cp, real = p$changepoint, N = p$N))
-
-
   # FoCUS 10
   print("FOCus0 p10")
   res <- mclapply(data, function (y) FOCuS_offline(y,  tlist["FOCuS 10"], mu0 = 0, grid = grid[floor(seq(1, 25, length.out = 10))], K = Inf), mc.cores = CORES)
