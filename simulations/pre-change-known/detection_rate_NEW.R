@@ -55,7 +55,7 @@ gg <- find_grid(0, 26, .01, 1.74)[14:24]
 sim_grid <- expand.grid(
   N = 2e6,
   changepoint = 1e5,
-  delta = c(.05, seq(.1, 2, by = 0.1), .25, gg)
+  delta = c(.025, .04, .05, .07, seq(.1, 2, by = 0.1), .25, gg)
 )
 
 
@@ -93,7 +93,7 @@ summary_df <- outDF %>% mutate(
 det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
 print(det_del_table, n = 100)
 
-pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>%  print(n = 100)
+pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>% mutate(diff = FOCuS0 - `Page-25p`) %>%  print(n = 100)
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
 detection_delay <-
