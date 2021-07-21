@@ -12,10 +12,9 @@ run_len_calculator <- function (res, thres) {
 SEED <- 45
 CORES <- 16
 REP <- 100
-N <- 2e6 # up to a million observations
+N <- 2e6 # up to 2 million observations
 set.seed(SEED)
-#data <- lapply(1:REP, function (i) rnorm(N))
-data <- lapply(1:REP, function (i) rnorm(N, sd = .5))
+data <- lapply(1:REP, function (i) rnorm(N))
 
 if (T) {
   grid <- find_grid(0, 26, .01, 1.74)
@@ -26,10 +25,8 @@ if (T) {
 }
 
 totalRUN <- list(FOCuSRUN, FOCuS10RUN, page25RUN)
-#save.image(file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
 
-#thre_seq <- seq(1, 20, by = .05)
-thre_seq <- seq(1, 5, by = .03)
+thre_seq <- seq(1, 20, by = .05)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(avg_run_len) <- thre_seq
@@ -37,7 +34,7 @@ row.names(avg_run_len) <- thre_seq
 for (i in seq_along(thre_seq)) {
   for (j in seq_along(totalRUN)) {
     cat(thre_seq[i], j, "\n")
-    avg_run_len[i, j] <- min(sapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i]))
+    avg_run_len[i, j] <- mean(sapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i]))
   }
 }
 
@@ -47,10 +44,10 @@ colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25')
 
 avg_run_len
 
-save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW2.RData")
+save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
 
 #load("simulations/pre-change-known/results/avg_run_len_NEW2.RData")
-tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len == 1e6)][1])
+tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len >= 1e6)][1])
 tlist
 
 plotDF <- as.data.frame(avg_run_len) %>%
@@ -61,9 +58,10 @@ cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 5, 6)]
 ggplot(plotDF %>% filter(algo != "FOCuSmelk")) +
   geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
   scale_y_log10() +
-  xlim(1, 19) +
+  xlim(1, 15) +
   scale_color_manual(values = cbPalette) +
   ylab("Run Length") +
+  geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
   theme_idris() +
   theme(legend.position = "none")
 

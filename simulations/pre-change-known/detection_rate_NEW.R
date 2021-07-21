@@ -16,7 +16,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # FoCUS 10
   print("FOCus0 p10")
-  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist["FOCuS 10"], mu0 = 0, grid = grid[floor(seq(1, 25, length.out = 10))], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist["FOCuS 10"], mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
   #print("page-CUSUM done")
@@ -59,7 +59,7 @@ sim_grid <- expand.grid(
 )
 
 
-load("simulations/pre-change-known/results/avg_run_len_NEW2.RData")
+load("simulations/pre-change-known/results/avg_run_len_NEW.RData")
 tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len == 1e6)][1] %>% as.numeric)
 
 
@@ -67,8 +67,7 @@ tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len =
 if (T) {
   NREP <- 100
   set.seed(SEED)
-#  noise <- lapply(1:NREP, function (i) rnorm(2e6))
-  noise <- lapply(1:NREP, function (i) rnorm(2e6, sd = 0.5))
+  noise <- lapply(1:NREP, function (i) rnorm(2e6))
   #run_simulation(sim_grid[10, ], NREP, noise, tlist = tlist)
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -91,7 +90,7 @@ summary_df <- outDF %>% mutate(
   )
 
 
-det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay), no_det = mean(no_detection), fa = mean(false_alarm))
+det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
 print(det_del_table, n = 100)
 
 pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>%  print(n = 100)
