@@ -60,7 +60,7 @@ sim_grid <- expand.grid(
 
 
 load("simulations/pre-change-known/results/avg_run_len_NEW.RData")
-tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len == 1e6)][1] %>% as.numeric)
+tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len >= 1e6)][1] %>% as.numeric)
 
 
 
