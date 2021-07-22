@@ -19,16 +19,18 @@ data <- lapply(1:REP, function (i) rnorm(N))
 if (T) {
   grid <- find_grid(0, 26, .01, 1.74)
   FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
+  FOCuSMelkRUN <- mclapply(data, simpleMelkman, onlyPrune =  F, exportInR = T, mc.cores = CORES)
   FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], K = Inf, mc.cores = CORES)
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid, mc.cores = CORES)
 
-  wins <- unique(10^2 / grid ^ 2) %>% round()
-  MOSUMRUN <- mclapply(data, MOSUM_offline_kirch, threshold = Inf, W = wins, mc.cores = CORES)
+#  wins <- unique(10^2 / grid ^ 2) %>% round()
+#  MOSUMRUN <- mclapply(data, MOSUM_offline_kirch, threshold = Inf, W = wins, mc.cores = CORES)
 }
 
-totalRUN <- list(FOCuSRUN, FOCuS10RUN, page25RUN, MOSUMRUN)
+#totalRUN <- list(FOCuSRUN, FOCuS10RUN, page25RUN, MOSUMRUN)
+totalRUN <- list(FOCuSRUN, FOCuSMelkRUN, FOCuS10RUN, page25RUN)
 
-thre_seq <- seq(1, 20, by = .05)
+thre_seq <- seq(18, 23, by = .05)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(avg_run_len) <- thre_seq
@@ -42,14 +44,14 @@ for (i in seq_along(thre_seq)) {
 
 
 
-colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25', 'MOSUM')
-
+#colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25', 'MOSUM')
+colnames(avg_run_len) <- c("FOCuS", 'FOCUSMelk', 'FOCuS 10', 'Page-CUSUM 25')
 avg_run_len
 
-save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW.RData")
+save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW2.RData")
 
 #load("simulations/pre-change-known/results/avg_run_len_NEW2.RData")
-tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len == 1e6)][1])
+tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len >= 1e6-1)][1])
 tlist
 
 plotDF <- as.data.frame(avg_run_len) %>%

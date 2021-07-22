@@ -14,6 +14,13 @@ run_simulation <- function(p, REPS, noise, tlist) {
   cp <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0", est = cp, real = p$changepoint, N = p$N)
 
+  # FoCUS melk
+  print("FOCus0 melk")
+  res <- mclapply(data, function (y) simpleMelkman(y,  F, F), mc.cores = CORES)
+  cp <- sapply(res, function (r) which(r$maxs >= tlist["FOCuSMelk"])[1])
+  output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
+  #print("page-CUSUM done")
+
   # FoCUS 10
   print("FOCus0 p10")
   res <- mclapply(data, function (y) FOCuS_offline(y,  tlist["FOCuS 10"], mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], K = Inf), mc.cores = CORES)
@@ -47,7 +54,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
 
 
-output_file <- "./simulations/pre-change-known/results/dr_new8.RData"
+output_file <- "./simulations/pre-change-known/results/dr_new9.RData"
 
 
 gg <- find_grid(0, 26, .01, 1.74)[14:24]
@@ -59,8 +66,8 @@ sim_grid <- expand.grid(
 )
 
 
-load("simulations/pre-change-known/results/avg_run_len_NEW.RData")
-tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len >= 1e6)][1] %>% as.numeric)
+load("simulations/pre-change-known/results/avg_run_len_NEW2.RData")
+tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len >= 1e6-1)][1] %>% as.numeric)
 
 
 

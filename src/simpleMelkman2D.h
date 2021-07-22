@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <list>
 
 using namespace Rcpp;
 
