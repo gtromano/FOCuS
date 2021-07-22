@@ -18,7 +18,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
   print("FOCus0 melk")
   res <- mclapply(data, function (y) simpleMelkman(y,  F, F), mc.cores = CORES)
   cp <- sapply(res, function (r) which(r$maxs >= tlist["FOCuSMelk"])[1])
-  output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
+  output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0Melk", est = cp, real = p$changepoint, N = p$N))
   #print("page-CUSUM done")
 
   # FoCUS 10
