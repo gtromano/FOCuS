@@ -55,7 +55,7 @@ gg <- find_grid(0, 26, .01, 1.74)[14:24]
 sim_grid <- expand.grid(
   N = 2e6,
   changepoint = 1e5,
-  delta = c(.025, .04, .05, .07, seq(.1, 2, by = 0.1), .25, gg)
+  delta = c(.05, .07, seq(.1, 2, by = 0.1), .25, gg)
 )
 
 
