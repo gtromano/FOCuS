@@ -13,6 +13,14 @@ FOCuS_melk <- function(Y, thres, mu0, grid, K) {
     .Call(`_FOCuS_FOCuS_melk`, Y, thres, mu0, grid, K)
 }
 
+MOSUM_offline_kirch <- function(Y, thres, W) {
+    .Call(`_FOCuS_MOSUM_offline_kirch`, Y, thres, W)
+}
+
+MOSUM_offline_kirch2 <- function(Y, thres, W) {
+    .Call(`_FOCuS_MOSUM_offline_kirch2`, Y, thres, W)
+}
+
 PageCUSUM_offline <- function(Y, thres, mu0, grid) {
     .Call(`_FOCuS_PageCUSUM_offline`, Y, thres, mu0, grid)
 }

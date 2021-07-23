@@ -51,7 +51,7 @@ avg_run_len
 
 save(avg_run_len, file = "simulations/pre-change-unknown/results/avg_run_len_NEW.RData")
 
-#load("simulations/pre-change-known/results/avg_run_len_NEW2.RData")
+#load("simulations/pre-change-unknown/results/avg_run_len_NEW.RData")
 tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len >= 1e6-1)][1])
 tlist
 
@@ -59,7 +59,7 @@ plotDF <- as.data.frame(avg_run_len) %>%
   add_column(threshold = thre_seq) %>%
   pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 5, 6)]
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
 ggplot(plotDF %>% filter(algo != "FOCuSmelk")) +
   geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
   scale_y_log10() +

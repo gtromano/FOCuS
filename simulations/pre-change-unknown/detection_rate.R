@@ -104,7 +104,7 @@ print(grouped, n = 80)
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
 fa_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+#  stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
   ylim(0, 1) +
   xlab("magnitude") +
@@ -115,7 +115,7 @@ fa_rate
 
 tp_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y = true_positive, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+#  stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
   ylim(0, 1) +
   xlab("magnitude") +
@@ -138,12 +138,12 @@ detection_delay <-
     )
   ) +
   stat_summary(fun.data = "mean_se", geom = "line") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+#  stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
   xlab("magnitude") +
   ylab("Detection Delay") +
   scale_y_log10() +
-  theme_idris()
+  theme_idris() + theme(legend.position = "none")
 
 
 
