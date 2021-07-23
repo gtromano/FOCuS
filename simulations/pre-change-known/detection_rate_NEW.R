@@ -73,7 +73,7 @@ tlist <- apply(avg_run_len, 2, function (len) row.names(avg_run_len)[which(len >
 
 
 
-if (T) {
+if (F) {
   NREP <- 100
   set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(N))
@@ -104,24 +104,43 @@ print(det_del_table, n = 100)
 
 pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>% mutate(diff1 = FOCuS0 - FOCuS0Melk, diff2 = FOCuS0 - `Page-25p`, diff3 = FOCuS0Melk - `Page-25p`) %>%  print(n = 100)
 
+
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
+# detection_delay <-
+#   ggplot(summary_df %>% filter(true_positive == 1, algo != "FOCuS0m",  algo != "FOCuS0-10p"),
+#     aes(
+#       x = magnitude,
+#       y = log10(det_delay),
+#       group = algo,
+#       col = algo
+#     )
+#   ) +
+#   geom_vline(xintercept = gg, color = "grey") +
+#   stat_summary(fun.data = "mean_se", geom = "line") +
+#   stat_summary(fun.data = "mean_se", geom = "errorbar") +
+#   scale_color_manual(values = cbPalette) +
+#   xlab("magnitude") +
+#   ylab("Detection Delay") +
+#   scale_y_continuous(trans='log10') +
+#   xlim(0, .6) +
+#   theme_idris()
+
 detection_delay <-
-  ggplot(summary_df %>% filter(true_positive == 1, algo != "FOCuS0m",  algo != "FOCuS0-10p"),
+  ggplot(det_del_table %>% filter(algo != "FOCuS0-10p"),
     aes(
       x = magnitude,
-      y = log10(det_delay),
+      y = dd,
       group = algo,
       col = algo
     )
   ) +
   geom_vline(xintercept = gg, color = "grey") +
-  stat_summary(fun.data = "mean_se", geom = "line") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar") +
+  geom_line() +
   scale_color_manual(values = cbPalette) +
   xlab("magnitude") +
   ylab("Detection Delay") +
-  scale_y_continuous(trans='log10') +
-  xlim(0, .6) +
+  scale_y_log10() +
+  xlim(0, 1.5) +
   theme_idris()
 
 detection_delay
