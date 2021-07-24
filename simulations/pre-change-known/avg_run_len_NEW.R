@@ -80,6 +80,8 @@ for (i in seq_along(thre_seq)) {
 }
 
 tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 1e6-1)][1])
+tlist <- lapply(tlist, function (x) x)
+names(tlist) <- colnames(minimum_run_len)
 save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
 
 
