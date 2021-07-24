@@ -86,7 +86,7 @@ summary_df <- outDF %>% mutate(
 det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
 print(det_del_table, n = 100)
 
-pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>% mutate(diff1 = FOCuS0 - FOCuS0Melk, diff2 = FOCuS0 - `Page-25p`, diff3 = FOCuS0Melk - `Page-25p`) %>%  print(n = 100)
+pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>% mutate(FOCuSvPage = FOCuS0 - `Page-25p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
 
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]

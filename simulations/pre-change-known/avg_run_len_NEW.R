@@ -12,7 +12,7 @@ run_len_calculator <- function (res, thres) {
 SEED <- 45
 CORES <- 16
 REP <- 100
-N <- 2e6
+N <- 1.5e6
 set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
 
@@ -81,7 +81,7 @@ for (i in seq_along(thre_seq)) {
 
 tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 1e6-1)][1])
 tlist <- lapply(tlist, function (x) x)
-names(tlist) <- colnames(minimum_run_len)
+#names(tlist) <- colnames(minimum_run_len)
 save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
 
 
