@@ -10,9 +10,9 @@ run_len_calculator <- function (res, thres) {
 }
 
 SEED <- 45
-CORES <- 16
+CORES <- 6
 REP <- 100
-N <- 1.5e6
+N <- 2e6
 set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
 
@@ -24,7 +24,7 @@ if (T) {
   FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], K = Inf, mc.cores = CORES)
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid, mc.cores = CORES)
 
-  wins <- unique(10^2 / grid ^ 2) %>% round()
+  wins <- unique(14^2 / grid ^ 2) %>% round()
   MOSUMRUN <- mclapply(data, MOSUM_offline_kirch2, thres = Inf, W = wins, mc.cores = CORES)
 }
 
@@ -39,7 +39,7 @@ row.names(avg_run_len) <- thre_seq
 for (i in seq_along(thre_seq)) {
   for (j in seq_along(totalRUN)) {
     cat(thre_seq[i], j, "\n")
-    avg_run_len[i, j] <- mean(sapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i]))
+    avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
   }
 }
 
@@ -49,7 +49,7 @@ avg_run_len
 
 save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW2.RData")
 
-#load("simulations/pre-change-known/results/avg_run_len_NEW2.RData")
+#load("simulations/pre-change-known/results/avg_run_len_NEW.RData")
 plotDF <- as.data.frame(avg_run_len) %>%
   add_column(threshold = thre_seq) %>%
   pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
@@ -79,7 +79,7 @@ for (i in seq_along(thre_seq)) {
   }
 }
 
-tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 1e6-1)][1])
+tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 2e6)][1])
 tlist <- lapply(tlist, function (x) x)
 #names(tlist) <- colnames(minimum_run_len)
 save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
