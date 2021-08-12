@@ -21,11 +21,17 @@ run_simulation <- function(p, REPS, noise, tlist) {
   output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
   #print("page-CUSUM done")
 
-  # Page CUSUM 50
+  # Page CUSUM 25
   print("Page 25p")
   res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 25", mu0 = 0, grid = grid), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-25p", est = cp, real = p$changepoint, N = p$N))
+
+  # Page CUSUM 10
+  print("Page 10p")
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 10", mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)]), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-10p", est = cp, real = p$changepoint, N = p$N))
 
   # MOSUM
   print("MOSUM")
@@ -55,7 +61,7 @@ sim_grid <- expand.grid(
 load(file = "simulations/pre-change-known/results/tlist.RData")
 
 
-output_file <- "./simulations/pre-change-known/results/dr_new10.RData"
+output_file <- "./simulations/pre-change-known/results/dr_new11.RData"
 
 if (F) {
   NREP <- 100
