@@ -12,18 +12,18 @@ run_len_calculator <- function (res, thres) {
 SEED <- 45
 CORES <- 16
 REP <- 100
-N <- 2e6
+N <- 1e6
 set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
 
 
 if (T) {
-  grid <- find_grid(0, 26, .01, 1.74)
+  grid <- find_grid(0, 21, .01, 1.74)
   FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
   #FOCuSMelkRUN <- mclapply(data, simpleMelkman, onlyPrune =  F, exportInR = T, mc.cores = CORES)
-  FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], K = Inf, mc.cores = CORES)
+  FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], K = Inf, mc.cores = CORES)
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid, mc.cores = CORES)
-  page10RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], mc.cores = CORES)
+  page10RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], mc.cores = CORES)
   wins <- unique(14^2 / grid ^ 2) %>% round()
   MOSUMRUN <- mclapply(data, MOSUM_offline_kirch2, thres = Inf, W = wins, mc.cores = CORES)
 
@@ -171,8 +171,8 @@ ggplot(data.frame()) + geom_point() + xlim(-5, 5) + ylim(0, 1) +
   theme(axis.ticks.y = element_blank(),
         axis.text.y = element_blank())
 
-ggplot(data.frame()) + geom_point() + xlim(-5, 5) + ylim(0, 1) +
-  geom_vline(xintercept = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)]) +
+ggplot(data.frame()) + geom_point() + xlim(-1.5, 1.5) + ylim(0, 1) +
+  geom_vline(xintercept = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]) +
   xlab(expression(mu)) +
   theme_idris() +
   theme(axis.ticks.y = element_blank(),

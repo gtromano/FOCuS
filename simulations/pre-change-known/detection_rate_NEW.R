@@ -16,7 +16,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # FoCUS 10
   print("FOCus0 p10")
-  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist$"FOCuS 10", mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist$"FOCuS 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
   #print("page-CUSUM done")
@@ -29,7 +29,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # Page CUSUM 10
   print("Page 10p")
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 10", mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)]), mc.cores = CORES)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-10p", est = cp, real = p$changepoint, N = p$N))
 
@@ -54,7 +54,7 @@ N <- 2e6
 sim_grid <- expand.grid(
   N = N,
   changepoint = 1e5,
-  delta = c(.05, .07, seq(.1, 2, by = 0.1), .25, gg)
+  delta = c(.05, .07, seq(.1, 1, by = 0.1), .25, gg)
 )
 
 
