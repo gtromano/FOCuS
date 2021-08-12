@@ -12,12 +12,12 @@ run_len_calculator <- function (res, thres) {
 SEED <- 45
 CORES <- 16
 REP <- 100
-N <- 1e6
+N <- 2e6
 set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
 
 
-if (T) {
+if (F) {
   grid <- find_grid(0, 21, .01, 1.74)
   FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
   #FOCuSMelkRUN <- mclapply(data, simpleMelkman, onlyPrune =  F, exportInR = T, mc.cores = CORES)
@@ -71,7 +71,8 @@ if (F) {
 }
 
 ### minimum run length to no false positives
-thre_seq <- c(seq(4, 7, by = .05), seq(17.5, 20, by =.5))
+thre_seq <- c(seq(4, 7, by = .05), seq(17.5, 20, by =.05))
+thre_seq <- seq(17.5, 20, by =.05)
 minimum_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(minimum_run_len) <- thre_seq
