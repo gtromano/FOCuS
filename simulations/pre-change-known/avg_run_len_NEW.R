@@ -38,36 +38,37 @@ thre_seq <- seq(1, 20, by = .05)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(avg_run_len) <- thre_seq
+colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25', 'Page-CUSUM 10', 'MOSUM')
 
-for (i in seq_along(thre_seq)) {
-  for (j in seq_along(totalRUN)) {
-    cat(thre_seq[i], j, "\n")
-    avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
+if (F) {
+  for (i in seq_along(thre_seq)) {
+    for (j in seq_along(totalRUN)) {
+      cat(thre_seq[i], j, "\n")
+      avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
+    }
   }
+  avg_run_len
+
+  save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW2.RData")
+
+  #load("simulations/pre-change-known/results/avg_run_len_NEW.RData")
+  plotDF <- as.data.frame(avg_run_len) %>%
+    add_column(threshold = thre_seq) %>%
+    pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
+
+  cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 6, 5, 6)]
+  ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
+    geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
+    scale_y_log10() +
+    xlim(1, 15) +
+    scale_color_manual(values = cbPalette) +
+    ylab("Run Length") +
+    geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
+    theme_idris() +
+    theme(legend.position = "none")
+
+
 }
-
-colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25', 'MOSUM')
-#colnames(avg_run_len) <- c("FOCuS", 'FOCUSMelk', 'FOCuS 10', 'Page-CUSUM 25')
-avg_run_len
-
-save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW2.RData")
-
-#load("simulations/pre-change-known/results/avg_run_len_NEW.RData")
-plotDF <- as.data.frame(avg_run_len) %>%
-  add_column(threshold = thre_seq) %>%
-  pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
-
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 6, 5, 6)]
-ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
-  geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
-  scale_y_log10() +
-  xlim(1, 15) +
-  scale_color_manual(values = cbPalette) +
-  ylab("Run Length") +
-  geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
-  theme_idris() +
-  theme(legend.position = "none")
-
 
 ### minimum run length to no false positives
 thre_seq <- c(seq(4, 7, by = .05), seq(17.5, 20, by =.5))
