@@ -71,8 +71,8 @@ if (F) {
 }
 
 ### minimum run length to no false positives
-thre_seq <- c(seq(4, 7, by = .05), seq(17.5, 20, by =.05))
-thre_seq <- seq(17.5, 20, by =.05)
+thre_seq <- c(seq(4, 6, by = .05), seq(17.5, 20, by =.05))
+#thre_seq <- seq(17.5, 20, by =.05)
 minimum_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(minimum_run_len) <- thre_seq
