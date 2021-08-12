@@ -17,7 +17,7 @@ set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
 
 
-if (F) {
+if (T) {
   grid <- find_grid(0, 21, .01, 1.74)
   FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
   #FOCuSMelkRUN <- mclapply(data, simpleMelkman, onlyPrune =  F, exportInR = T, mc.cores = CORES)
