@@ -10,7 +10,7 @@ run_len_calculator <- function (res, thres) {
 }
 
 SEED <- 45
-CORES <- 6
+CORES <- 16
 REP <- 100
 N <- 2e6
 set.seed(SEED)
@@ -23,14 +23,17 @@ if (T) {
   #FOCuSMelkRUN <- mclapply(data, simpleMelkman, onlyPrune =  F, exportInR = T, mc.cores = CORES)
   FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], K = Inf, mc.cores = CORES)
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid, mc.cores = CORES)
-
+  page10RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid[c(3, 6, 8, 11, 13, 14, 16, 19, 21, 24)], mc.cores = CORES)
   wins <- unique(14^2 / grid ^ 2) %>% round()
   MOSUMRUN <- mclapply(data, MOSUM_offline_kirch2, thres = Inf, W = wins, mc.cores = CORES)
+
+  # merging the total runs
+  totalRUN <- list(FOCuSRUN, FOCuS10RUN, page25RUN, page10RUN, MOSUMRUN)
+  rm(FOCuSRUN, FOCuS10RUN, page25RUN, page10RUN, MOSUMRUN)
+
 }
 
-totalRUN <- list(FOCuSRUN, FOCuS10RUN, page25RUN, MOSUMRUN)
-rm(FOCuSRUN, FOCuS10RUN, page25RUN, MOSUMRUN)
-
+# summarising
 thre_seq <- seq(1, 20, by = .05)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
