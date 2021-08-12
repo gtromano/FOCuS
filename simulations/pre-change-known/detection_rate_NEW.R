@@ -5,7 +5,7 @@ SEED <- 45
 
 run_simulation <- function(p, REPS, noise, tlist) {
   print(p)
-  grid <- find_grid(0, 26, .01, 1.74)
+  grid <- find_grid(0, 21, .01, 1.74)
   data <- mclapply(noise, function (epsilon) c(rep(0, p$changepoint), rep(p$delta, p$N - p$changepoint)) + epsilon, mc.cores = CORES)
 
   # FOCuS with no pruning costraint
@@ -63,7 +63,7 @@ load(file = "simulations/pre-change-known/results/tlist.RData")
 
 output_file <- "./simulations/pre-change-known/results/dr_new11.RData"
 
-if (F) {
+if (T) {
   NREP <- 100
   set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(N))
