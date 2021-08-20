@@ -23,7 +23,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # Page CUSUM 25
   print("Page 20p")
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 25", mu0 = 0, grid = grid), mc.cores = CORES)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 20", mu0 = 0, grid = grid), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-20p", est = cp, real = p$changepoint, N = p$N))
 
@@ -92,8 +92,10 @@ summary_df <- outDF %>% mutate(
 det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
 print(det_del_table, n = 100)
 
-pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>% mutate(FOCuSvPage = FOCuS0 - `Page-25p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
+final_table <- pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>% mutate(FOCuSvPage = FOCuS0 - `Page-20p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
+final_table
 
+write_excel_csv(final_table, file = "table_out.csv")
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
 # detection_delay <-
