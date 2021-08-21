@@ -55,7 +55,7 @@ sim_grid <- expand.grid(
   N = N,
   changepoint = 1e5,
   # delta = c(.05, .07, seq(.1, 1, by = 0.1), .25, gg),
-  delta = unique(c(seq(from = .02, to = .09, by = .01), seq(.1, 1, by = 0.05), .25, gg)) # fine grid
+  delta = unique(c(seq(from = .01, to = .09, by = .005), seq(.1, 1, by = 0.05), .25, gg)) # fine grid
 )
 
 
