@@ -47,8 +47,8 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
 
 
-gg <- find_grid(0, 26, .01, 1.74)[14:24]
-
+#gg <- find_grid(0, 26, .01, 1.74)[14:24]
+gg <- find_grid(0, 21, .01, 1.74)
 
 N <- 2e6
 sim_grid <- expand.grid(
@@ -63,7 +63,7 @@ load(file = "simulations/pre-change-known/results/tlist.RData")
 
 output_file <- "./simulations/pre-change-known/results/dr_new11.RData"
 
-if (T) {
+if (F) {
   NREP <- 100
   set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(N))
@@ -92,12 +92,70 @@ summary_df <- outDF %>% mutate(
 det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
 print(det_del_table, n = 100)
 
-final_table <- pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) %>% mutate(FOCuSvPage = FOCuS0 - `Page-20p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
-final_table
+summ_table <- pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) #%>% mutate(FOCuSvPage = FOCuS0 - `Page-20p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
+summ_table
 
-write_excel_csv(final_table, file = "table_out.csv")
+#write_excel_csv(summ_table, file = "table_out.csv")
+
+
+algs_to_compare <- names(summ_table)[-1]
+possible_comparisons <- expand.grid(alg1 = algs_to_compare,  alg2 = algs_to_compare) # this is the ratios to calculate
+plot_mat <- matrix(seq_len(nrow(possible_comparisons)), 5, 5) # this is to map the plots with the comparisons
+to_plot <- upper.tri(plot_mat)
+
+# now we make a dataframe with all the ratios
+
+comp_table <- summ_table %>% select(magnitude)
+
+for (i in plot_mat[to_plot]) {
+  comp <- possible_comparisons[i, ]
+  comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2))
+  comp_table[, comp_name] <- summ_table[, comp$alg1] / summ_table[, comp$alg2]
+}
+
+comp_table <- comp_table %>% as.data.frame
+to_plot2 <- lower.tri(plot_mat, diag = T)
+
+plot_list <- NULL
+for (i in seq_along(plot_mat)) {
+
+  if(to_plot2[i]) {
+
+    comp <- possible_comparisons[t(plot_mat)[i], ]
+    if (comp$alg1 == comp$alg2) {
+      plot_list[[length(plot_list) + 1]] <- ggplot(comp_table) +
+        geom_line(aes(x = magnitude, y = comp_table[, 1]), alpha = 0) +
+        scale_x_log10() +
+        annotate("text", x = .09, y = 1, size = 8, label = comp$alg1) +
+        theme_idris() +
+        ylim(.6, 1.5) +
+        theme(axis.title=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank())
+    } else {
+      comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2))
+      p <- ggplot(comp_table) +
+        geom_line(aes(x = magnitude, y = comp_table[, comp_name])) +
+        scale_x_log10() +
+        ylim(.6, 1.5) +
+        theme_idris() +
+        theme(axis.title=element_blank())
+      plot_list[[length(plot_list) + 1]] <- ggarrange(p)
+    }
+
+  } else {
+    plot_list[[length(plot_list) + 1]] <- ggplot() + annotate("text", x = 1, y = 1, size = 8, label = " ") +
+      xlim(min(comp_table$magnitude), max(comp_table$magnitude)) +
+      ylim(.6, 1.5) + theme_void()
+  }
+
+}
+
+ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
+
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
+
 # detection_delay <-
 #   ggplot(summary_df %>% filter(true_positive == 1, algo != "FOCuS0m",  algo != "FOCuS0-10p"),
 #     aes(
