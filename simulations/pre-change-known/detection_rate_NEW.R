@@ -64,7 +64,7 @@ load(file = "simulations/pre-change-known/results/tlist.RData")
 # 11 was the run to produce the test plot
 output_file <- "./simulations/pre-change-known/results/dr_new12.RData"
 
-if (T) {
+if (F) {
   NREP <- 100
   set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(N))
@@ -118,6 +118,8 @@ to_plot2 <- lower.tri(plot_mat, diag = T)
 
 # this for cycle construct the matrix of plots that will then be arranged by ggarrange
 library(ggpubr)
+ggrid <- find_grid(0, 21, .01, 1.74)
+
 plot_list <- NULL
 for (i in seq_along(plot_mat)) {
 
@@ -134,6 +136,9 @@ for (i in seq_along(plot_mat)) {
     } else {
       comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2)) # case two, the actual visualization of the ratio
       p <- ggplot(comp_table) +
+        geom_hline(yintercept = 1, col = "grey", lty = 2) +
+        geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid), alpha = .8, pch = 1) +
+        geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]), alpha = .8, pch = 16) +
         geom_line(aes(x = magnitude, y = comp_table[, comp_name])) +
         scale_x_log10() +
         ylim(.6, 1.5) +
