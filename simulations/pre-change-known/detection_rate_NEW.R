@@ -48,22 +48,23 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
 
 #gg <- find_grid(0, 26, .01, 1.74)[14:24]
-gg <- find_grid(0, 21, .01, 1.74)
+gg <- find_grid(0, 21, .01, 1.74)[11:20]
 
 N <- 2e6
 sim_grid <- expand.grid(
   N = N,
   changepoint = 1e5,
-  delta = c(.05, .07, seq(.1, 1, by = 0.1), .25, gg)
+  # delta = c(.05, .07, seq(.1, 1, by = 0.1), .25, gg),
+  delta = unique(c(seq(from = .02, to = .09, by = .01), seq(.1, 1, by = 0.05), .25, gg)) # fine grid
 )
 
 
 load(file = "simulations/pre-change-known/results/tlist.RData")
 
+# 11 was the run to produce the test plot
+output_file <- "./simulations/pre-change-known/results/dr_new12.RData"
 
-output_file <- "./simulations/pre-change-known/results/dr_new11.RData"
-
-if (F) {
+if (T) {
   NREP <- 100
   set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(N))
@@ -97,7 +98,6 @@ summ_table
 
 #write_excel_csv(summ_table, file = "table_out.csv")
 
-
 algs_to_compare <- names(summ_table)[-1]
 possible_comparisons <- expand.grid(alg1 = algs_to_compare,  alg2 = algs_to_compare) # this is the ratios to calculate
 plot_mat <- matrix(seq_len(nrow(possible_comparisons)), 5, 5) # this is to map the plots with the comparisons
@@ -116,24 +116,23 @@ for (i in plot_mat[to_plot]) {
 comp_table <- comp_table %>% as.data.frame
 to_plot2 <- lower.tri(plot_mat, diag = T)
 
+# this for cycle construct the matrix of plots that will then be arranged by ggarrange
+library(ggpubr)
 plot_list <- NULL
 for (i in seq_along(plot_mat)) {
 
-  if(to_plot2[i]) {
+  if(to_plot2[i]) { # this is if we have to actually make a visualization
 
     comp <- possible_comparisons[t(plot_mat)[i], ]
-    if (comp$alg1 == comp$alg2) {
+    if (comp$alg1 == comp$alg2) { # case one, the title plot
       plot_list[[length(plot_list) + 1]] <- ggplot(comp_table) +
-        geom_line(aes(x = magnitude, y = comp_table[, 1]), alpha = 0) +
-        scale_x_log10() +
-        annotate("text", x = .09, y = 1, size = 8, label = comp$alg1) +
+        annotate("text", x = 1, y = 1, size = 6, vjust = .5, hjust = 0.5,  label = comp$alg1) +
         theme_idris() +
-        ylim(.6, 1.5) +
         theme(axis.title=element_blank(),
               axis.text=element_blank(),
               axis.ticks=element_blank())
     } else {
-      comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2))
+      comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2)) # case two, the actual visualization of the ratio
       p <- ggplot(comp_table) +
         geom_line(aes(x = magnitude, y = comp_table[, comp_name])) +
         scale_x_log10() +
@@ -143,8 +142,8 @@ for (i in seq_along(plot_mat)) {
       plot_list[[length(plot_list) + 1]] <- ggarrange(p)
     }
 
-  } else {
-    plot_list[[length(plot_list) + 1]] <- ggplot() + annotate("text", x = 1, y = 1, size = 8, label = " ") +
+  } else { # to plot some white space
+    plot_list[[length(plot_list) + 1]] <- ggplot() + annotate("text", x = 1, y = 1, size = 8, label = " ") + # case three, just some empty white space
       xlim(min(comp_table$magnitude), max(comp_table$magnitude)) +
       ylim(.6, 1.5) + theme_void()
   }
@@ -154,7 +153,7 @@ for (i in seq_along(plot_mat)) {
 ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
 
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
+# cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
 
 # detection_delay <-
 #   ggplot(summary_df %>% filter(true_positive == 1, algo != "FOCuS0m",  algo != "FOCuS0-10p"),
@@ -175,62 +174,62 @@ cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
 #   xlim(0, .6) +
 #   theme_idris()
 
-detection_delay <-
-  ggplot(det_del_table %>% filter(algo != "FOCuS0-10p"),
-    aes(
-      x = magnitude,
-      y = dd,
-      group = algo,
-      col = algo
-    )
-  ) +
-  geom_vline(xintercept = gg, color = "grey") +
-  geom_line() +
-  scale_color_manual(values = cbPalette) +
-  xlab("magnitude") +
-  ylab("Detection Delay") +
-  scale_y_log10() +
-  xlim(0, 1.5) +
-  theme_idris()
-
-detection_delay
-
-algolist <- c("FOCuS0", "Page-25p")
-summary1 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
-  pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-  mutate(diff = FOCuS0 - `Page-25p`,
-         comparison = "FOCuS0 against Page-50p") %>%
-    select(sim, magnitude, diff, comparison)
-
-algolist <- c("FOCuS0", "FOCuS0-10p")
-summary2 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
-  pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-  mutate(diff = FOCuS0 - `FOCuS0-10p`,
-         comparison = "FOCuS0 against FOCuS0-10p") %>%
-    select(sim, magnitude, diff, comparison)
-
-algolist <- c("FOCuS0-10p", "Page-25p")
-summary3 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
-  pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-  mutate(diff = `FOCuS0-10p` - `Page-25p`,
-         comparison = "FOCuS0-10p against Page-50p") %>%
-  select(sim, magnitude, diff, comparison)
-
-tot_summary_diff <- rbind(summary1, summary2, summary3)
-
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4)]
-dec_diff <- ggplot(tot_summary_diff, aes(x = magnitude, y = - diff)) +
-  stat_summary(fun.data = "mean_se", geom = "line") +
-  stat_summary(fun.data = "mean_se", geom = "errorbar") +
-  scale_color_manual(values = cbPalette) +
-  facet_grid(~comparison) +
-  xlab("magnitude") +
-  ylab("detection advantage") +
-  theme_idris()
-
-ggsave(dec_diff, filename = "simulations/pre-change-known/results/1-dec-diff-known.pdf", width = 15, height = 5)
-
-tot_summary_diff %>%
-  group_by(comparison, magnitude) %>%
-  summarise(avg = mean(diff, na.rm = T)) %>%
-  filter(magnitude == .05)
+# detection_delay <-
+#   ggplot(det_del_table %>% filter(algo != "FOCuS0-10p"),
+#     aes(
+#       x = magnitude,
+#       y = dd,
+#       group = algo,
+#       col = algo
+#     )
+#   ) +
+#   geom_vline(xintercept = gg, color = "grey") +
+#   geom_line() +
+#   scale_color_manual(values = cbPalette) +
+#   xlab("magnitude") +
+#   ylab("Detection Delay") +
+#   scale_y_log10() +
+#   xlim(0, 1.5) +
+#   theme_idris()
+#
+# detection_delay
+#
+# algolist <- c("FOCuS0", "Page-25p")
+# summary1 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
+#   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
+#   mutate(diff = FOCuS0 - `Page-25p`,
+#          comparison = "FOCuS0 against Page-50p") %>%
+#     select(sim, magnitude, diff, comparison)
+#
+# algolist <- c("FOCuS0", "FOCuS0-10p")
+# summary2 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
+#   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
+#   mutate(diff = FOCuS0 - `FOCuS0-10p`,
+#          comparison = "FOCuS0 against FOCuS0-10p") %>%
+#     select(sim, magnitude, diff, comparison)
+#
+# algolist <- c("FOCuS0-10p", "Page-25p")
+# summary3 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
+#   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
+#   mutate(diff = `FOCuS0-10p` - `Page-25p`,
+#          comparison = "FOCuS0-10p against Page-50p") %>%
+#   select(sim, magnitude, diff, comparison)
+#
+# tot_summary_diff <- rbind(summary1, summary2, summary3)
+#
+# cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4)]
+# dec_diff <- ggplot(tot_summary_diff, aes(x = magnitude, y = - diff)) +
+#   stat_summary(fun.data = "mean_se", geom = "line") +
+#   stat_summary(fun.data = "mean_se", geom = "errorbar") +
+#   scale_color_manual(values = cbPalette) +
+#   facet_grid(~comparison) +
+#   xlab("magnitude") +
+#   ylab("detection advantage") +
+#   theme_idris()
+#
+# ggsave(dec_diff, filename = "simulations/pre-change-known/results/1-dec-diff-known.pdf", width = 15, height = 5)
+#
+# tot_summary_diff %>%
+#   group_by(comparison, magnitude) %>%
+#   summarise(avg = mean(diff, na.rm = T)) %>%
+#   filter(magnitude == .05)
