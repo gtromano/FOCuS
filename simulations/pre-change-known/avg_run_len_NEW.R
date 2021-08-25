@@ -40,7 +40,7 @@ avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 row.names(avg_run_len) <- thre_seq
 colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25', 'Page-CUSUM 10', 'MOSUM')
 
-if (F) {
+if (T) {
   for (i in seq_along(thre_seq)) {
     for (j in seq_along(totalRUN)) {
       cat(thre_seq[i], j, "\n")
@@ -49,9 +49,9 @@ if (F) {
   }
   avg_run_len
 
-  save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW2.RData")
+  save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW3.RData")
 
-  #load("simulations/pre-change-known/results/avg_run_len_NEW.RData")
+  load("simulations/pre-change-known/results/avg_run_len_NEW3.RData")
   plotDF <- as.data.frame(avg_run_len) %>%
     add_column(threshold = thre_seq) %>%
     pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
@@ -87,7 +87,7 @@ for (i in seq_along(thre_seq)) {
 tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 1e6)][1])
 tlist <- lapply(tlist, function (x) x)
 names(tlist) <- colnames(avg_run_len)
-save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
+#save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
 #load( "simulations/pre-change-known/results/tlist.RData")
 
 tlist

@@ -110,16 +110,55 @@ comp_table <- summ_table %>% select(magnitude)
 for (i in plot_mat[to_plot]) {
   comp <- possible_comparisons[i, ]
   comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2))
-  comp_table[, comp_name] <- summ_table[, comp$alg1] / summ_table[, comp$alg2]
+  comp_table[, comp_name] <- summ_table[, comp$alg1] / summ_table[, comp$alg2] # regular ratio
+  #comp_table[, comp_name] <- log(summ_table[, comp$alg1] / summ_table[, comp$alg2]) # log ratio
 }
 
 comp_table <- comp_table %>% as.data.frame
 to_plot2 <- lower.tri(plot_mat, diag = T)
 
 # this for cycle construct the matrix of plots that will then be arranged by ggarrange
-library(ggpubr)
 ggrid <- find_grid(0, 21, .01, 1.74)
+#
+# plot_list <- NULL
+# for (i in seq_along(plot_mat)) {
+#
+#   if(to_plot2[i]) { # this is if we have to actually make a visualization
+#
+#     comp <- possible_comparisons[t(plot_mat)[i], ]
+#     if (comp$alg1 == comp$alg2) { # case one, the title plot
+#       plot_list[[length(plot_list) + 1]] <- ggplot(comp_table) +
+#         annotate("text", x = 1, y = 1, size = 6, vjust = .5, hjust = 0.5,  label = comp$alg1) +
+#         theme_idris() +
+#         theme(axis.title=element_blank(),
+#               axis.text=element_blank(),
+#               axis.ticks=element_blank())
+#     } else {
+#       comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2)) # case two, the actual visualization of the ratio
+#       p <- ggplot(comp_table) +
+#         geom_hline(yintercept = 1, col = "grey", lty = 2) +
+#         geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid), alpha = .8, pch = 1) +
+#         geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]), alpha = .8, pch = 16) +
+#         geom_line(aes(x = magnitude, y = comp_table[, comp_name])) +
+#         scale_x_log10() +
+#         ylim(.6, 1.5) +
+#         theme_idris() +
+#         theme(axis.title=element_blank())
+#       plot_list[[length(plot_list) + 1]] <- ggarrange(p)
+#     }
+#
+#   } else { # to plot some white space
+#     plot_list[[length(plot_list) + 1]] <- ggplot() + annotate("text", x = 1, y = 1, size = 8, label = " ") + # case three, just some empty white space
+#       xlim(min(comp_table$magnitude), max(comp_table$magnitude)) +
+#       ylim(.6, 1.5) + theme_void()
+#   }
+#
+# }
+#
+# ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
 
+
+##### version with the residuals #########
 plot_list <- NULL
 for (i in seq_along(plot_mat)) {
 
@@ -147,14 +186,29 @@ for (i in seq_along(plot_mat)) {
       plot_list[[length(plot_list) + 1]] <- ggarrange(p)
     }
 
-  } else { # to plot some white space
-    plot_list[[length(plot_list) + 1]] <- ggplot() + annotate("text", x = 1, y = 1, size = 8, label = " ") + # case three, just some empty white space
-      xlim(min(comp_table$magnitude), max(comp_table$magnitude)) +
-      ylim(.6, 1.5) + theme_void()
+  } else { # to plot some instograms
+      comp <- possible_comparisons[plot_mat[i], ]
+
+      comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2)) # case two, the actual visualization of the ratio
+      p2 <- ggplot(comp_table) +
+        geom_histogram(aes(x = comp_table[, comp_name]), binwidth = .02) +
+        geom_vline(xintercept = 1, lty = 2, col = "grey") +
+        #xlim(1 - max(1 - abs(comp_table[, comp_name])), 1 + max(1 - abs(comp_table[, comp_name]))) +
+        xlim(.5, 1.5) +
+        theme_idris() +
+        theme(axis.title=element_blank(),
+              axis.text.y=element_blank(),
+              axis.ticks.y=element_blank())
+      plot_list[[length(plot_list) + 1]] <- ggarrange(p2)
   }
 
 }
 
+ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
+
+
+# logarithm
+source("simulations/pre-change-known/log-det-rate.R")
 ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
 
 
