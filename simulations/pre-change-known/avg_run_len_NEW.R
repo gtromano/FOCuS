@@ -117,12 +117,13 @@ set.seed(32)
 y <- c(rnorm(1e5,0 ,.1), rnorm(2e6, 0.48288614, .1))
 
 
-resF <- FOCuS_offline(y[1:maxY], thres = tlist["FOCuS"], mu0 = 0)
+resF <- FOCuS_offline(y[1:maxY], thres = 18.6, mu0 = 0)
 
-gridP <-  find_grid(0, 26, .01, 1.74)
+
+gridP <- find_grid(0, 21, .01, 1.74)
 #gridP[41] <- .5
 
-resP <- PageCUSUM_offline(y[1:maxY], thres = tlist["Page-CUSUM 25"], mu0 = 0, grid = gridP)
+resP <- PageCUSUM_offline(y[1:maxY], thres = 18.25, mu0 = 0, grid = gridP)
 
 # ggplot(mapping = aes(x = t, y = y),
 #        data = tibble(t = (1e5 - 200):maxY, y = y[(1e5 - 200):maxY])) +
@@ -140,15 +141,15 @@ plot1 <- ggplot(tibble(mu = -3:3)) +
   geom_text(aes(x = .45, y = round(tail(resF$maxs, 1), 2) + .1, label = round(tail(resF$maxs, 1), 2)), col = 4) +
   geom_vline(xintercept = .482, lty = 2)
 
-
+plot1
 # off grid
 
 set.seed(32)
-y2 <- c(rnorm(1e5,0 ,.1), rnorm(2e6, sum(grid[21:22])/2, .1))
+y2 <- c(rnorm(1e5,0 ,.1), rnorm(2e6, sum(gridP[18:19])/2, .1))
 
 
-resF2 <- FOCuS_offline(y2[1:maxY], thres = tlist["FOCuS"], mu0 = 0)
-resP2 <- PageCUSUM_offline(y2[1:maxY], thres = tlist["Page-CUSUM 25"], mu0 = 0, grid = gridP)
+resF2 <- FOCuS_offline(y2[1:maxY], thres = 18.6, mu0 = 0)
+resP2 <- PageCUSUM_offline(y2[1:maxY], thres = 18.25, mu0 = 0, grid = gridP)
 
 plot2 <- ggplot(tibble(mu = -3:3)) +
   stat_function(aes(x = mu), fun = function(x) plot_piecewise_quad(x, quad = resF2$Q1), col = 4) +
@@ -158,7 +159,7 @@ plot2 <- ggplot(tibble(mu = -3:3)) +
   xlab(expression(mu)) + ylab(expression(Q[t](mu))) +
   geom_text(aes(x = grid, y = y, label = Q), data = tibble(grid = gridP + .02, y = round(resP2$Q, 2) + .1, Q = round(resP2$Q, 2)), col = "grey", alpha = .8) +
   geom_text(aes(x = .61, y = round(tail(resF2$maxs, 1), 2) + .15, label = round(tail(resF2$maxs, 1), 2)), col = 4) +
-  geom_vline(xintercept = sum(grid[21:22])/2, lty = 2)
+  geom_vline(xintercept = sum(gridP[18:19])/2, lty = 2)
 
 plot2
 
