@@ -24,7 +24,7 @@ if (T) {
   FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], K = Inf, mc.cores = CORES)
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid, mc.cores = CORES)
   page10RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], mc.cores = CORES)
-  wins <- unique(14^2 / grid ^ 2) %>% round()
+  wins <- unique(abs(18 / grid)) %>% round()
   MOSUMRUN <- mclapply(data, MOSUM_offline_kirch2, thres = Inf, W = wins, mc.cores = CORES)
 
   # merging the total runs
@@ -44,19 +44,24 @@ if (T) {
   for (i in seq_along(thre_seq)) {
     for (j in seq_along(totalRUN)) {
       cat(thre_seq[i], j, "\n")
-      avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
+      if (colnames(avg_run_len)[j] == "MOSUM")
+        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = sqrt(thre_seq[i]), mc.cores = 6) %>% unlist)
+      else
+        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
     }
   }
   avg_run_len
 
-  save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW3.RData")
+  save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW4.RData")
 
-  load("simulations/pre-change-known/results/avg_run_len_NEW3.RData")
+  load("simulations/pre-change-known/results/avg_run_len_NEW4.RData")
   plotDF <- as.data.frame(avg_run_len) %>%
     add_column(threshold = thre_seq) %>%
     pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
 
-  cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 6, 5, 6)]
+  #plotDF[plotDF$algo == "MOSUM", ]$avg_run_len <- plotDF[plotDF$algo == "MOSUM", ]$avg_run_len %>% sqrt()
+
+  cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 6, 5)]
   ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
     geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
     scale_y_log10() +

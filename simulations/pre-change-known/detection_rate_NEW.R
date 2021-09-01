@@ -35,7 +35,8 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # MOSUM
   print("MOSUM")
-  wins <- unique(10^2 / grid ^ 2) %>% round()
+  #wins <- unique(10^2 / grid ^ 2) %>% round() # maybe remove the square here?
+  wins <- unique(abs(18 / grid)) %>% round()
   res <- mclapply(data, function (y) MOSUM_offline_kirch2(y, tlist$"MOSUM", wins), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
