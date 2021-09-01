@@ -44,22 +44,23 @@ if (T) {
   for (i in seq_along(thre_seq)) {
     for (j in seq_along(totalRUN)) {
       cat(thre_seq[i], j, "\n")
-      if (colnames(avg_run_len)[j] == "MOSUM")
-        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = sqrt(thre_seq[i]), mc.cores = 6) %>% unlist)
-      else
-        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
+#      if (colnames(avg_run_len)[j] == "MOSUM")
+#        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = sqrt(thre_seq[i]), mc.cores = 6) %>% unlist)
+#      else
+#        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
+      avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
     }
   }
   avg_run_len
 
-  save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW4.RData")
+  save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW5.RData")
 
-  load("simulations/pre-change-known/results/avg_run_len_NEW4.RData")
+  load("simulations/pre-change-known/results/avg_run_len_NEW5.RData")
   plotDF <- as.data.frame(avg_run_len) %>%
     add_column(threshold = thre_seq) %>%
     pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
 
-  #plotDF[plotDF$algo == "MOSUM", ]$avg_run_len <- plotDF[plotDF$algo == "MOSUM", ]$avg_run_len %>% sqrt()
+  #plotDF[plotDF$algo == "MOSUM", ]$avg_run_len <- plotDF[plotDF$algo == "MOSUM", ]$avg_run_len ^2
 
   cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 6, 5)]
   ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
@@ -92,7 +93,7 @@ for (i in seq_along(thre_seq)) {
 tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 1e6)][1])
 tlist <- lapply(tlist, function (x) x)
 names(tlist) <- colnames(avg_run_len)
-#save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
+save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
 #load( "simulations/pre-change-known/results/tlist.RData")
 
 tlist
