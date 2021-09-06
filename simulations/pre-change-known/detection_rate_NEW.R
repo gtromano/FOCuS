@@ -94,6 +94,8 @@ summary_df <- outDF %>% mutate(
 det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
 print(det_del_table, n = 100)
 
+det_del_table[is.na(det_del_table)] <- N - 1e5
+
 summ_table <- pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) #%>% mutate(FOCuSvPage = FOCuS0 - `Page-20p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
 summ_table
 
@@ -181,7 +183,7 @@ for (i in seq_along(plot_mat)) {
         geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]), alpha = .8, pch = 16) +
         geom_line(aes(x = magnitude, y = comp_table[, comp_name])) +
         scale_x_log10() +
-        ylim(.6, 1.5) +
+        #ylim(.01, 1.9) +
         theme_idris() +
         theme(axis.title=element_blank())
       plot_list[[length(plot_list) + 1]] <- ggarrange(p)

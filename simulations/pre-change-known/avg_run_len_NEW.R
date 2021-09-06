@@ -38,7 +38,7 @@ thre_seq <- seq(1, 20, by = .05)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(avg_run_len) <- thre_seq
-colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 25', 'Page-CUSUM 10', 'MOSUM')
+colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 20', 'Page-CUSUM 10', 'MOSUM')
 
 if (T) {
   for (i in seq_along(thre_seq)) {
