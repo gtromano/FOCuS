@@ -23,13 +23,15 @@ data <- lapply(1:REP, function (i) rnorm(N))
 if (T) {
   grid <- find_grid(0, 26, .01, 1.74)
   FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, grid = NA, K = Inf, mc.cores = CORES)
-  FOCuSRUN100 <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e2]), grid = NA, K = Inf), mc.cores = CORES)
+  FOCuSRUNtrain <- mclapply(data, FOCuS_offline, thres = Inf, training_data = train[[k]][1:1e5], grid = NA, K = Inf, mc.cores = CORES)
   FOCuSRUN1e3 <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e3]), grid = NA, K = Inf), mc.cores = CORES)
   FOCuSRUN1e4 <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e4]), grid = NA, K = Inf), mc.cores = CORES)
   FOCuSRUN1e5 <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e5]), grid = NA, K = Inf), mc.cores = CORES)
+  FOCuSRUNInf <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+
 }
 
-totalRUN <- list(FOCuSRUN, FOCuSRUN100, FOCuSRUN1e3, FOCuSRUN1e4, FOCuSRUN1e5)
+totalRUN <- list(FOCuSRUN, FOCuSRUNtrain, FOCuSRUN1e3, FOCuSRUN1e4, FOCuSRUN1e5, FOCuSRUNInf)
 
 thre_seq <- seq(1, 20, by = .05)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
@@ -46,7 +48,7 @@ for (i in seq_along(thre_seq)) {
 
 
 
-colnames(avg_run_len) <- c("FOCuS", paste("FOCuS0", 1e2), paste("FOCuS0", 1e3), paste("FOCuS0", 1e4), paste("FOCuS0", 1e5))
+colnames(avg_run_len) <- c("FOCuS", "FOCuS-tr", paste("FOCuS0", 1e3), paste("FOCuS0", 1e4), paste("FOCuS0", 1e5), paste("FOCuS0", Inf))
 avg_run_len
 
 save(avg_run_len, file = "simulations/pre-change-unknown/results/avg_run_len_NEW.RData")

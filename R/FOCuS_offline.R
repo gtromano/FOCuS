@@ -1,4 +1,4 @@
-FOCuS_offline <- function(y, thres, mu0 = NA, grid = NA, K = Inf) {
+FOCuS_offline <- function(y, thres, mu0 = NA, training_data = NA, grid = NA, K = Inf) {
   
   # checks on the data generating function
   if( !is.numeric(y))
@@ -25,7 +25,7 @@ FOCuS_offline <- function(y, thres, mu0 = NA, grid = NA, K = Inf) {
   
   
   # running the function
-  out <- .FoCUS_offline(y, thres, mu0, grid, K)
+  out <- .FoCUS_offline(y, thres, mu0, training_data, grid, K)
   out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
   return(out)
 }
