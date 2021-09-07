@@ -121,7 +121,7 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
     for (auto& y:Y) {
       t += 1;
       info = FOCuS_step(std::move(info), y, grid, K);
-      print(info.Q1.front());
+      //print(info.Q1.front());
       max_at_time_t.push_back(info.global_max);
       if (info.global_max >= thres) {
         cp = t;
