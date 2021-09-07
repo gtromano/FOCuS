@@ -11,67 +11,60 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   data <- lapply(1:REPS, function (k) c(rnorm(1e5 + p$changepoint, means[k]), rnorm(p$N - p$changepoint, means[k] + p$delta)))
 
   # FOCuS with no pruning constraint
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS", 1], grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS"], grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS", est = cp, real = p$changepoint, N = p$N)
   #print("FOCus done")
 
-  # FOCuS0 100 estimate
-  m <- 100
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m), 1], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS-t"], training_data = mean(y[1:100000]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
-  output <- rbind(output, 
-                  data.frame(sim = 1:REPS, magnitude = p$delta, algo = paste("FOCuS0", m), est = cp, real = p$changepoint, N = p$N)) 
+  output <- rbind(output,
+                  data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS-t", est = cp, real = p$changepoint, N = p$N))
 
-  # FOCuS0 100 estimate
+  # FOCuS0 1000 estimate
   m <- 1000
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m), 1], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, 
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = paste("FOCuS0", m), est = cp, real = p$changepoint, N = p$N)) 
   
   m <- 10000
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m), 1], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, 
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = paste("FOCuS0", m), est = cp, real = p$changepoint, N = p$N)) 
   
   m <- 100000
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS0 100000", 1], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, 
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = paste("FOCuS0", m), est = cp, real = p$changepoint, N = p$N)) 
-  
-  # res <- mclapply(data, function (y) yuCUSUM_v3(y, tlist["Yu-CUSUM", 1]), mc.cores = CORES)
-  # cp <- sapply(res, function (r) r$cp)
-  # res_yuCUSUM <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Yu-CUSUM", est = cp, real = p$changepoint, N = p$N)
 
+  res <- mclapply(1:REPS, function (k) FOCuS_offline(data[[k]][(1e5 + 1):length(data[[k]])], tlist["FOCuS0 Inf"], mu0 = means[k], grid = NA, K = Inf), mc.cores = CORES)
+  cp <- sapply(res, function (r) r$t)
+  output <- rbind(output,
+                  data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0 Inf", est = cp, real = p$changepoint, N = p$N))
 
   return(output)
 }
 
 
 
-output_file = "./simulations/pre-change-unknown/results/dr_ukn6.RData"
+output_file <- "./simulations/pre-change-unknown/results/dr_ukn7.RData"
 
 sim_grid <- expand.grid(
   N = 2e6,
   changepoint = 1e5,
-  delta = seq(.05, 2, by = 0.05)
+  delta = 0.5 ^ seq(8,0, length.out = 20)
 )
 
-load("simulations/pre-change-unknown/thresholds-unknown.RData")
+load("simulations/pre-change-unknown/tlist.RData")
 
-tlist <- thresholds %>%
-  filter(run_len == 1e6) %>%
-  group_by(algo) %>%
-  summarise(tres = mean(threshold)) %>%
-  column_to_rownames(var = "algo")
 
 #tlist[3,1] <- 12.5
 
 #run_simulation(sim_grid[10, ], 10, tlist = tlist) # test run
-if (F) {
+if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
