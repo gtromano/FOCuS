@@ -10,7 +10,7 @@ run_len_calculator <- function (res, thres) {
 }
 
 SEED <- 45
-CORES <- 6
+CORES <- 16
 REP <- 100
 N <- 2e6
 
