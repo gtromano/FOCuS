@@ -50,10 +50,10 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file <- "./simulations/pre-change-unknown/results/dr_ukn7.RData"
+output_file <- "./simulations/pre-change-unknown/results/dr_ukn8.RData"
 
 sim_grid <- expand.grid(
-  N = 2.5e6,
+  N = 4e6,
   changepoint = 1e5,
   delta = 0.5 ^ seq(8,0, length.out = 20)
 )
