@@ -53,7 +53,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 output_file <- "./simulations/pre-change-unknown/results/dr_ukn7.RData"
 
 sim_grid <- expand.grid(
-  N = 2e6,
+  N = 2.5e6,
   changepoint = 1e5,
   delta = 0.5 ^ seq(8,0, length.out = 20)
 )
@@ -80,21 +80,21 @@ load(output_file)
 
 summary_df <- outDF %>% mutate(
     run_len = if_else(est == -1, N, est),
-    det_delay = ifelse(est - real >= 0, est - real, N - real),
     no_detection = if_else(est == -1, 1, 0),
+    det_delay = ifelse(est - real >= 0, est - real, N - real),
     false_alarm = if_else(!no_detection & (det_delay == N - real), 1, 0),
     true_positive = if_else(!no_detection & !false_alarm,1, 0), # if it's not a missed detection nor it's a false alarm, then it's a true positive
   )
 
 
-grouped <- summary_df %>% group_by(algo, magnitude) %>%
+grouped <- summary_df %>% group_by(algo) %>%
   summarise(no_detection = mean(no_detection), false_alarm = mean(false_alarm), tp_rate = mean(true_positive), det_del = mean(det_delay, na.rm = T))
 print(grouped, n = 80)
 
 
 ### false alarm rate ####
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 1, 3, 4, 5, 6)]
 fa_rate <- ggplot(summary_df %>% filter(algo != "MOSUM"), aes(x = magnitude, y = false_alarm, group = algo, col = algo)) +
   stat_summary(fun.data = "mean_se", geom = "line") +
 #  stat_summary(fun.data = "mean_se", geom = "errorbar") +
@@ -121,8 +121,7 @@ tp_rate
 ### detection delay ####
 detection_delay <-
   ggplot(
-#    summary_df %>% filter(magnitude >= .3, true_positive == 1),
-    summary_df %>% filter(true_positive == 1),
+    summary_df,
     aes(
       x = magnitude,
       y = det_delay,
@@ -131,13 +130,13 @@ detection_delay <-
     )
   ) +
   stat_summary(fun.data = "mean_se", geom = "line") +
-#  stat_summary(fun.data = "mean_se", geom = "errorbar") +
   scale_color_manual(values = cbPalette) +
   xlab("magnitude") +
   ylab("Detection Delay") +
   scale_y_log10() +
-  theme_idris() + theme(legend.position = "none")
-
+  scale_x_log10() +
+  theme_idris() #+ theme(legend.position = "none")
+detection_delay
 
 
 ggsave(filename = "simulations/pre-change-unknown/results/2-det-delay.pdf", ggarrange(detection_delay, legend = F), width = 6, height = 6)

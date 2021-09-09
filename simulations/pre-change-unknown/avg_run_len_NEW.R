@@ -33,7 +33,7 @@ if (T) {
 
 totalRUN <- list(FOCuSRUN, FOCuSRUNtrain, FOCuSRUN1e3, FOCuSRUN1e4, FOCuSRUN1e5, FOCuSRUNInf)
 
-thre_seq <- seq(1, 20, by = .05)
+thre_seq <- seq(1, 20, by = .05, 239, 240)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(avg_run_len) <- thre_seq
