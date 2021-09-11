@@ -54,9 +54,9 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 output_file <- "./simulations/pre-change-unknown/results/dr_ukn9.RData"
 
 sim_grid <- expand.grid(
-  N = 5e6,
+  N = 4e6,
   changepoint = 1e5,
-  delta = 0.5 ^ seq(8,0, length.out = 20)
+  delta = c(- 0.5 ^ seq(5,0, length.out = 10), 0.5 ^ seq(5,0, length.out = 10)) %>% sort
 )
 
 load("simulations/pre-change-unknown/tlist.RData")
@@ -65,7 +65,7 @@ load("simulations/pre-change-unknown/tlist.RData")
 #tlist[3,1] <- 12.5
 
 #run_simulation(sim_grid[10, ], 10, tlist = tlist) # test run
-if (F) {
+if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
