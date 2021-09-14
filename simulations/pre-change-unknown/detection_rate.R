@@ -51,11 +51,12 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file <- "./simulations/pre-change-unknown/results/dr_ukn9.RData"
+output_file <- "./simulations/pre-change-unknown/results/dr_ukn10.RData"
 
 sim_grid <- expand.grid(
   N = 4e6,
-  changepoint = 1e5,
+  #changepoint = 1e5, # saved on dr_ukn9.RData
+  changepoint = 1e3, # saved on dr_ukn10.RData
   delta = c(- 0.5 ^ seq(5,0, length.out = 10), 0.5 ^ seq(5,0, length.out = 10)) %>% sort
 )
 
@@ -93,8 +94,8 @@ summary_df[(summary_df$no_detection) == 1, "det_delay"] <- sim_grid$N[1] - sim_g
 
 
 ###### checks ########
-summary_df %>% filter(algo == "FOCuS", no_detection == 1, magnitude < .004)
-summary_df %>% filter(algo == "FOCuS0 1e+05", no_detection == 1, magnitude < .004)
+summary_df %>% filter(algo == "FOCuS", false_alarm == 1, abs(magnitude) < .04)
+summary_df %>% filter(algo == "FOCuS0 1e+05", false_alarm == 1, abs(magnitude) < .04)
 ######################
 
 
@@ -103,13 +104,23 @@ grouped <- summary_df %>% group_by(magnitude, algo) %>%
 print(grouped, n = 200)
 
 
+grouped <- summary_df %>% mutate(magnitude = abs(magnitude)) %>% group_by(magnitude, algo) %>%
+  summarise(no_detection = mean(no_detection), false_alarm = mean(false_alarm), tp_rate = mean(true_positive), det_del = mean(det_delay, na.rm = T))
+print(grouped, n = 200)
+
+
+
 ### detection delay ####
+#cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2,1, 3, 4, 5, 6)]
+
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2,1, 3, 4, 5, 6)]
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
 
 detection_delay <-
   ggplot(
     #grouped ,
-    grouped %>% filter(algo != "FOCuS-t"),
+    #grouped %>% filter(!(algo %in% c("FOCuS-t", "FOCuS0 1000"))),
+    grouped %>% filter(!(algo %in% c("FOCuS-t"))),
     aes(
       x = magnitude,
       y = det_del,
@@ -129,8 +140,8 @@ detection_delay
 
 fp <-
   ggplot(
-    #grouped ,
-    grouped %>% filter(algo != "FOCuS-t"),
+    grouped,
+    #grouped %>% filter(algo != "FOCuS-t", algo != "FOCuS 1000"),
     aes(
       x = magnitude,
       y = false_alarm,
@@ -151,18 +162,25 @@ fp
 
 ##### ratio plot ####
 
-det_del_table <- summary_df %>% filter(magnitude > 0, magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
+det_del_table <- summary_df %>% filter(magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
 print(det_del_table, n = 100)
 
 summ_table <- pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) #%>% mutate(FOCuSvPage = FOCuS0 - `Page-20p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
 summ_table
 
-comp_table <- summ_table %>% mutate(FOCuSvFOCuS0 = FOCuS / `FOCuS-t`)
+comp_table <- summ_table %>% mutate(`FOCuS/FOCuS0 1000` = FOCuS / `FOCuS0 1000`,
+                                    `FOCuS/FOCuS0 10000` = FOCuS / `FOCuS0 10000`,
+                                    `FOCuS/FOCuS0 1e+05` = FOCuS / `FOCuS0 1e+05`,
+                                    `FOCuS/FOCuS0 Inf` = FOCuS / `FOCuS0 Inf`)
 
-ggplot(comp_table) +
+comp_table <- comp_table[, c(1, 8:11)] %>% pivot_longer(names_to = "ratio", values_to = "rval", -magnitude)
+
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 4, 5, 6)]
+ggplot(comp_table %>% filter(ratio != "FOCuS/FOCuS0 1000")) +
         geom_hline(yintercept = 0, col = "grey", lty = 2) +
-        geom_line(aes(x = magnitude, y = log(FOCuSvFOCuS0))) +
+        geom_line(aes(x = magnitude, y = log(rval), col = ratio)) +
         scale_x_log10() +
-        ylim(-1, 1) +
-        theme_idris() +
-        theme(axis.title=element_blank())
+        ylim(-.5, .5) +
+        ylab("log ratio") +
+        scale_color_manual(values = cbPalette) +
+        theme_idris()
