@@ -33,7 +33,7 @@ if (T) {
 
 totalRUN <- list(FOCuSRUN, FOCuSRUNtrain, FOCuSRUN1e3, FOCuSRUN1e4, FOCuSRUN1e5, FOCuSRUNInf)
 
-thre_seq <- seq(1, 20, by = .05, 239, 240)
+thre_seq <- seq(1, 20, by = .05)# , 239, 240)
 avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 
 row.names(avg_run_len) <- thre_seq
@@ -56,20 +56,19 @@ save(avg_run_len, file = "simulations/pre-change-unknown/results/avg_run_len_NEW
 load("simulations/pre-change-unknown/results/avg_run_len_NEW2.RData")
 tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len >= 1e6-1)][1])
 tlist
-save(tlist, file = "simulations/pre-change-unknown/tlist.RData")
+#save(tlist, file = "simulations/pre-change-unknown/tlist.RData")
 
 
 plotDF <- as.data.frame(avg_run_len) %>%
   add_column(threshold = thre_seq) %>%
   pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 1, 3, 4, 5, 6)]
-ggplot(plotDF %>% filter(algo != "FOCuSmelk")) +
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
+ggplot(plotDF %>% filter(algo != "FOCuS-t")) +
   geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
   scale_y_log10() +
   xlim(1, 15) +
   scale_color_manual(values = cbPalette) +
   ylab("Run Length") +
   geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
-  theme_idris()
-  #theme(legend.position = "none")
+  theme_idris() + theme(legend.position = "none")

@@ -7,7 +7,7 @@ N <- c(1e2, 5e2, 1e3, 2e3, 3e3, 5e3, (1:5) * 1e4)
   
 res <- list()
 
-if(T) {
+if(F) {
   for (n in N) {
     print(n)
     y <- rnorm(n)

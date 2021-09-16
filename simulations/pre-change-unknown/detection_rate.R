@@ -17,7 +17,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS", est = cp, real = p$changepoint, N = p$N)
   #print("FOCus done")
 
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS-t"], training_data = mean(y[1:100000]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS-t"], training_data = y[1:100000], grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS-t", est = cp, real = p$changepoint, N = p$N))
@@ -50,13 +50,13 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 }
 
 
-
-output_file <- "./simulations/pre-change-unknown/results/dr_ukn10.RData"
+output_file <- "./simulations/pre-change-unknown/results/dr_ukn9_bis.RData"
+#output_file <- "./simulations/pre-change-unknown/results/dr_ukn10.RData"
 
 sim_grid <- expand.grid(
   N = 4e6,
-  #changepoint = 1e5, # saved on dr_ukn9.RData
-  changepoint = 1e3, # saved on dr_ukn10.RData
+  changepoint = 1e5, # saved on dr_ukn9.RData
+  #changepoint = 1e2, # saved on dr_ukn10.RData
   delta = c(- 0.5 ^ seq(5,0, length.out = 10), 0.5 ^ seq(5,0, length.out = 10)) %>% sort
 )
 
@@ -109,18 +109,28 @@ grouped <- summary_df %>% mutate(magnitude = abs(magnitude)) %>% group_by(magnit
 print(grouped, n = 200)
 
 
-
 ### detection delay ####
 #cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2,1, 3, 4, 5, 6)]
+
+ # this is for the labels
+
+
+generate_labels <- function (dataset, var, XFUNC) {
+  library(ggrepel)
+  dataset <- dataset[which(dataset[, var] == XFUNC(dataset[, var])), ] %>% mutate(label = as.character(algo))
+  dataset
+}
+
+data_label <- generate_labels(grouped, "magnitude", max)
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2,1, 3, 4, 5, 6)]
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
 
 detection_delay <-
   ggplot(
-    #grouped ,
+    grouped ,
     #grouped %>% filter(!(algo %in% c("FOCuS-t", "FOCuS0 1000"))),
-    grouped %>% filter(!(algo %in% c("FOCuS-t"))),
+    #grouped %>% filter(!(algo %in% c("FOCuS-t"))),
     aes(
       x = magnitude,
       y = det_del,
@@ -130,57 +140,48 @@ detection_delay <-
   ) +
     geom_line() +
   scale_color_manual(values = cbPalette) +
+  #geom_label_repel(aes(label = label), nudge_x = 100000, force = 10, show.legend = F, data = data_label %>% filter(algo != "FOCuS-t")) +
   xlab("magnitude") +
   ylab("Detection Delay") +
   scale_y_log10() +
   scale_x_log10() +
-  theme_idris() #+ theme(legend.position = "none")
+  theme_idris() + theme(legend.position = "none")
 detection_delay
-
-
-fp <-
-  ggplot(
-    grouped,
-    #grouped %>% filter(algo != "FOCuS-t", algo != "FOCuS 1000"),
-    aes(
-      x = magnitude,
-      y = false_alarm,
-      group = algo,
-      col = algo
-    )
-  ) +
-    geom_line() +
-  scale_color_manual(values = cbPalette) +
-  xlab("magnitude") +
-  ylab("Detection Delay") +
-  scale_y_log10() +
-  scale_x_log10() +
-  theme_idris() #+ theme(legend.position = "none")
-fp
 
 
 
 ##### ratio plot ####
 
 det_del_table <- summary_df %>% filter(magnitude < 2) %>% group_by(magnitude, algo) %>% summarise(dd = mean(det_delay, na.rm = T), no_det = mean(no_detection, na.rm = T), fa = mean(false_alarm, na.rm = T))
-print(det_del_table, n = 100)
 
 summ_table <- pivot_wider(det_del_table[1:3], names_from = algo, values_from = dd) #%>% mutate(FOCuSvPage = FOCuS0 - `Page-20p`, FOCuSvMOSUM = FOCuS0 - MOSUM) %>%  print(n = 100)
 summ_table
 
 comp_table <- summ_table %>% mutate(`FOCuS/FOCuS0 1000` = FOCuS / `FOCuS0 1000`,
+                                    #`FOCuS/FOCuS-t` = `FOCuS`/ `FOCuS-t`,
                                     `FOCuS/FOCuS0 10000` = FOCuS / `FOCuS0 10000`,
                                     `FOCuS/FOCuS0 1e+05` = FOCuS / `FOCuS0 1e+05`,
                                     `FOCuS/FOCuS0 Inf` = FOCuS / `FOCuS0 Inf`)
 
-comp_table <- comp_table[, c(1, 8:11)] %>% pivot_longer(names_to = "ratio", values_to = "rval", -magnitude)
+comp_table <- comp_table[, c(1, 8:11)] %>%
+  pivot_longer(names_to = "ratio", values_to = "rval", -magnitude) %>%
+  mutate(rval = log(rval)) %>%
+  filter(ratio != "FOCuS/FOCuS0 1000")
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 4, 5, 6)]
+
+
+data_label <- comp_table %>%
+  filter(magnitude == max(comp_table$magnitude)) %>%
+  mutate(label = as.character(ratio))
+
+
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(4, 5, 6)]
 ggplot(comp_table %>% filter(ratio != "FOCuS/FOCuS0 1000")) +
         geom_hline(yintercept = 0, col = "grey", lty = 2) +
-        geom_line(aes(x = magnitude, y = log(rval), col = ratio)) +
+        geom_line(aes(x = magnitude, y = rval, col = ratio)) +
         scale_x_log10() +
+        geom_label_repel(aes(label = label, x = magnitude, y = rval, col = ratio),min.segment.length = .1, nudge_y = .1, force = 200, nudge_x = 1e3, data = data_label) +
         ylim(-.5, .5) +
         ylab("log ratio") +
         scale_color_manual(values = cbPalette) +
-        theme_idris()
+        theme_idris() + theme(legend.position = "none")
