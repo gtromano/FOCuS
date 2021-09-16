@@ -17,7 +17,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS", est = cp, real = p$changepoint, N = p$N)
   #print("FOCus done")
 
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS-t"], training_data = y[1:100000], grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS-t"], training_data = y[1:1e5], grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS-t", est = cp, real = p$changepoint, N = p$N))
@@ -145,7 +145,7 @@ detection_delay <-
   ylab("Detection Delay") +
   scale_y_log10() +
   scale_x_log10() +
-  theme_idris() + theme(legend.position = "none")
+  theme_idris() #+ theme(legend.position = "none")
 detection_delay
 
 
@@ -158,12 +158,12 @@ summ_table <- pivot_wider(det_del_table[1:3], names_from = algo, values_from = d
 summ_table
 
 comp_table <- summ_table %>% mutate(`FOCuS/FOCuS0 1000` = FOCuS / `FOCuS0 1000`,
-                                    #`FOCuS/FOCuS-t` = `FOCuS`/ `FOCuS-t`,
+                                    `FOCuS/FOCuS-t` = `FOCuS`/ `FOCuS-t`,
                                     `FOCuS/FOCuS0 10000` = FOCuS / `FOCuS0 10000`,
                                     `FOCuS/FOCuS0 1e+05` = FOCuS / `FOCuS0 1e+05`,
                                     `FOCuS/FOCuS0 Inf` = FOCuS / `FOCuS0 Inf`)
 
-comp_table <- comp_table[, c(1, 8:11)] %>%
+comp_table <- comp_table[, c(1, 8:12)] %>%
   pivot_longer(names_to = "ratio", values_to = "rval", -magnitude) %>%
   mutate(rval = log(rval)) %>%
   filter(ratio != "FOCuS/FOCuS0 1000")
@@ -175,7 +175,7 @@ data_label <- comp_table %>%
   mutate(label = as.character(ratio))
 
 
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(4, 5, 6)]
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(1, 4, 5, 6)]
 ggplot(comp_table %>% filter(ratio != "FOCuS/FOCuS0 1000")) +
         geom_hline(yintercept = 0, col = "grey", lty = 2) +
         geom_line(aes(x = magnitude, y = rval, col = ratio)) +
