@@ -65,7 +65,7 @@ load(file = "simulations/pre-change-known/results/tlist.RData")
 # 11 was the run to produce the test plot
 output_file <- "./simulations/pre-change-known/results/dr_new15.RData"
 
-if (T) {
+if (F) {
   NREP <- 100
   set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(N))

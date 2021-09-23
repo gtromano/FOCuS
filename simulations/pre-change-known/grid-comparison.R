@@ -33,7 +33,7 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 
-output_file = "./simulations/pre-change-known/results/dr_comp4.RData"
+output_file <- "./simulations/pre-change-known/results/dr_comp4.RData"
 
 grid <- find_grid(0, 50, .01, 1.3)
 
