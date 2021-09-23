@@ -36,7 +36,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
   # MOSUM
   print("MOSUM")
   #wins <- unique(10^2 / grid ^ 2) %>% round() # maybe remove the square here?
-  wins <- unique(abs(14 / grid^2)) %>% round()
+  wins <- unique(abs(18 / grid^2)) %>% round()
   res <- mclapply(data, function (y) MOSUM_offline_kirch2(y, tlist$"MOSUM", wins), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
@@ -63,9 +63,9 @@ sim_grid <- expand.grid(
 load(file = "simulations/pre-change-known/results/tlist.RData")
 
 # 11 was the run to produce the test plot
-output_file <- "./simulations/pre-change-known/results/dr_new13.RData"
+output_file <- "./simulations/pre-change-known/results/dr_new15.RData"
 
-if (F) {
+if (T) {
   NREP <- 100
   set.seed(SEED)
   noise <- lapply(1:NREP, function (i) rnorm(N))
@@ -107,14 +107,13 @@ plot_mat <- matrix(seq_len(nrow(possible_comparisons)), 5, 5) # this is to map t
 to_plot <- upper.tri(plot_mat)
 
 # now we make a dataframe with all the ratios
-
 comp_table <- summ_table %>% select(magnitude)
 
 for (i in plot_mat[to_plot]) {
   comp <- possible_comparisons[i, ]
   comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2))
-  comp_table[, comp_name] <- summ_table[, comp$alg1] / summ_table[, comp$alg2] # regular ratio
-  #comp_table[, comp_name] <- log(summ_table[, comp$alg1] / summ_table[, comp$alg2]) # log ratio
+  # comp_table[, comp_name] <- summ_table[, comp$alg1] / summ_table[, comp$alg2] # regular ratio
+  comp_table[, comp_name] <- log(summ_table[, comp$alg1] / summ_table[, comp$alg2]) # log ratio
 }
 
 comp_table <- comp_table %>% as.data.frame
