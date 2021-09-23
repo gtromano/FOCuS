@@ -100,8 +100,8 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
   }
     
   
-  long t = 0;
-  long cp = -1;
+  long t {0};
+  long cp {-1};
   
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};

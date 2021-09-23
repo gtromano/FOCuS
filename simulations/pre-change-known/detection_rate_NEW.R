@@ -16,7 +16,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # FoCUS 10
   print("FOCus0 p10")
-  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist$"FOCuS 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist$"FOCuS 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 10, 11, 13, 15, 17, 19)], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
   #print("page-CUSUM done")
@@ -29,14 +29,14 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # Page CUSUM 10
   print("Page 10p")
-  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]), mc.cores = CORES)
+  res <- mclapply(data, function (y) PageCUSUM_offline(y, tlist$"Page-CUSUM 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 10, 11, 13, 15, 17, 19)]), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <-  rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "Page-10p", est = cp, real = p$changepoint, N = p$N))
 
   # MOSUM
   print("MOSUM")
   #wins <- unique(10^2 / grid ^ 2) %>% round() # maybe remove the square here?
-  wins <- unique(abs(18 / grid)) %>% round()
+  wins <- unique(abs(14 / grid^2)) %>% round()
   res <- mclapply(data, function (y) MOSUM_offline_kirch2(y, tlist$"MOSUM", wins), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
@@ -122,44 +122,6 @@ to_plot2 <- lower.tri(plot_mat, diag = T)
 
 # this for cycle construct the matrix of plots that will then be arranged by ggarrange
 ggrid <- find_grid(0, 21, .01, 1.74)
-#
-# plot_list <- NULL
-# for (i in seq_along(plot_mat)) {
-#
-#   if(to_plot2[i]) { # this is if we have to actually make a visualization
-#
-#     comp <- possible_comparisons[t(plot_mat)[i], ]
-#     if (comp$alg1 == comp$alg2) { # case one, the title plot
-#       plot_list[[length(plot_list) + 1]] <- ggplot(comp_table) +
-#         annotate("text", x = 1, y = 1, size = 6, vjust = .5, hjust = 0.5,  label = comp$alg1) +
-#         theme_idris() +
-#         theme(axis.title=element_blank(),
-#               axis.text=element_blank(),
-#               axis.ticks=element_blank())
-#     } else {
-#       comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2)) # case two, the actual visualization of the ratio
-#       p <- ggplot(comp_table) +
-#         geom_hline(yintercept = 1, col = "grey", lty = 2) +
-#         geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid), alpha = .8, pch = 1) +
-#         geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]), alpha = .8, pch = 16) +
-#         geom_line(aes(x = magnitude, y = comp_table[, comp_name])) +
-#         scale_x_log10() +
-#         ylim(.6, 1.5) +
-#         theme_idris() +
-#         theme(axis.title=element_blank())
-#       plot_list[[length(plot_list) + 1]] <- ggarrange(p)
-#     }
-#
-#   } else { # to plot some white space
-#     plot_list[[length(plot_list) + 1]] <- ggplot() + annotate("text", x = 1, y = 1, size = 8, label = " ") + # case three, just some empty white space
-#       xlim(min(comp_table$magnitude), max(comp_table$magnitude)) +
-#       ylim(.6, 1.5) + theme_void()
-#   }
-#
-# }
-#
-# ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
-
 
 ##### version with the residuals #########
 plot_list <- NULL
@@ -178,12 +140,12 @@ for (i in seq_along(plot_mat)) {
     } else {
       comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2)) # case two, the actual visualization of the ratio
       p <- ggplot(comp_table) +
-        geom_hline(yintercept = 1, col = "grey", lty = 2) +
-        geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid), alpha = .8, pch = 1) +
-        geom_point(aes(x = g, y = 1), data = data.frame(g = ggrid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)]), alpha = .8, pch = 16) +
+        geom_hline(yintercept = 0, col = "grey", lty = 2) +
+        geom_point(aes(x = g, y = 0), data = data.frame(g = ggrid), alpha = .8, pch = 1) +
+        geom_point(aes(x = g, y = 0), data = data.frame(g = ggrid[c(1, 3, 6, 8, 10, 11, 13, 15, 17, 19)]), alpha = .8, pch = 16) +
         geom_line(aes(x = magnitude, y = comp_table[, comp_name])) +
         scale_x_log10() +
-        #ylim(.01, 1.9) +
+        ylim(-.5, .5) +
         theme_idris() +
         theme(axis.title=element_blank())
       plot_list[[length(plot_list) + 1]] <- ggarrange(p)
@@ -194,10 +156,10 @@ for (i in seq_along(plot_mat)) {
 
       comp_name <- paste0(as.character(comp$alg1), "v", as.character(comp$alg2)) # case two, the actual visualization of the ratio
       p2 <- ggplot(comp_table) +
-        geom_histogram(aes(x = comp_table[, comp_name]), binwidth = .02) +
-        geom_vline(xintercept = 1, lty = 2, col = "grey") +
-        #xlim(1 - max(1 - abs(comp_table[, comp_name])), 1 + max(1 - abs(comp_table[, comp_name]))) +
-        xlim(.5, 1.5) +
+        geom_histogram(aes(x = comp_table[, comp_name])) +
+        geom_vline(xintercept = 0, lty = 2, col = "grey") +
+        xlim(-max(abs(comp_table[, comp_name])), max(abs(comp_table[, comp_name]))) +
+        #xlim(.5, 1.5) +
         theme_idris() +
         theme(axis.title=element_blank(),
               axis.text.y=element_blank(),
@@ -207,11 +169,10 @@ for (i in seq_along(plot_mat)) {
 
 }
 
-ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
 
 
 # logarithm
-source("simulations/pre-change-known/log-det-rate.R")
+#source("simulations/pre-change-known/log-det-rate.R")
 ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
 
 

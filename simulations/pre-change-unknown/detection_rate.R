@@ -66,7 +66,7 @@ load("simulations/pre-change-unknown/tlist.RData")
 #tlist[3,1] <- 12.5
 
 #run_simulation(sim_grid[10, ], 10, tlist = tlist) # test run
-if (T) {
+if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
     p <- sim_grid[i, ]
@@ -128,9 +128,9 @@ cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 3, 4, 5, 6)]
 
 detection_delay <-
   ggplot(
-    grouped ,
+    #grouped ,
     #grouped %>% filter(!(algo %in% c("FOCuS-t", "FOCuS0 1000"))),
-    #grouped %>% filter(!(algo %in% c("FOCuS-t"))),
+    grouped %>% filter(!(algo %in% c("FOCuS-t"))),
     aes(
       x = magnitude,
       y = det_del,
@@ -182,6 +182,19 @@ ggplot(comp_table %>% filter(ratio != "FOCuS/FOCuS0 1000")) +
         scale_x_log10() +
         geom_label_repel(aes(label = label, x = magnitude, y = rval, col = ratio),min.segment.length = .1, nudge_y = .1, force = 200, nudge_x = 1e3, data = data_label) +
         ylim(-.5, .5) +
+        ylab("log ratio") +
+        scale_color_manual(values = cbPalette) +
+        theme_idris() + theme(legend.position = "none")
+
+
+# appendix plot
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(1, 5)]
+ggplot(comp_table %>% filter(!(ratio %in% c("FOCuS/FOCuS0 1000", "FOCuS/FOCuS0 10000", "FOCuS/FOCuS0 Inf")) )) +
+        geom_hline(yintercept = 0, col = "grey", lty = 2) +
+        geom_line(aes(x = magnitude, y = rval, col = ratio)) +
+        scale_x_log10() +
+        geom_label_repel(aes(label = label, x = magnitude, y = rval, col = ratio), min.segment.length = .01, force = 1000, nudge_x = 1, data = data_label %>% filter(!(ratio %in% c("FOCuS/FOCuS0 1000", "FOCuS/FOCuS0 10000", "FOCuS/FOCuS0 Inf")))) +
+        ylim(-.05, .4) +
         ylab("log ratio") +
         scale_color_manual(values = cbPalette) +
         theme_idris() + theme(legend.position = "none")
