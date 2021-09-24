@@ -51,21 +51,16 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
 
 
 output_file <- "./simulations/pre-change-unknown/results/dr_ukn9_bis.RData"
-#output_file <- "./simulations/pre-change-unknown/results/dr_ukn10.RData"
 
 sim_grid <- expand.grid(
   N = 4e6,
   changepoint = 1e5, # saved on dr_ukn9.RData
-  #changepoint = 1e2, # saved on dr_ukn10.RData
   delta = c(- 0.5 ^ seq(5,0, length.out = 10), 0.5 ^ seq(5,0, length.out = 10)) %>% sort
 )
 
 load("simulations/pre-change-unknown/tlist.RData")
 
 
-#tlist[3,1] <- 12.5
-
-#run_simulation(sim_grid[10, ], 10, tlist = tlist) # test run
 if (F) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
@@ -89,20 +84,12 @@ summary_df <- outDF %>% mutate(
   )
 
 
-# plug N minus the changepoint in case we get a missed detection!
+# plug (N - tau) in case we get a missed detection!
 summary_df[(summary_df$no_detection) == 1, "det_delay"] <- sim_grid$N[1] - sim_grid$changepoint[1]
-
-
-###### checks ########
-summary_df %>% filter(algo == "FOCuS", false_alarm == 1, abs(magnitude) < .04)
-summary_df %>% filter(algo == "FOCuS0 1e+05", false_alarm == 1, abs(magnitude) < .04)
-######################
-
 
 grouped <- summary_df %>% group_by(magnitude, algo) %>%
   summarise(no_detection = mean(no_detection), false_alarm = mean(false_alarm), tp_rate = mean(true_positive), det_del = mean(det_delay, na.rm = T))
 print(grouped, n = 200)
-
 
 grouped <- summary_df %>% mutate(magnitude = abs(magnitude)) %>% group_by(magnitude, algo) %>%
   summarise(no_detection = mean(no_detection), false_alarm = mean(false_alarm), tp_rate = mean(true_positive), det_del = mean(det_delay, na.rm = T))
@@ -110,10 +97,6 @@ print(grouped, n = 200)
 
 
 ### detection delay ####
-#cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2,1, 3, 4, 5, 6)]
-
- # this is for the labels
-
 
 generate_labels <- function (dataset, var, XFUNC) {
   library(ggrepel)

@@ -1,5 +1,6 @@
-library(parallel)
-library(tidyverse)
+# this scripts generates the average run length figure and thresholds for pre-change
+# unknown
+
 source("simulations/helper_functions.R")
 
 # calculates the run lenght, if it goes over the length of the sequence
@@ -46,8 +47,6 @@ for (i in seq_along(thre_seq)) {
 }
 
 
-
-
 colnames(avg_run_len) <- c("FOCuS", "FOCuS-t", paste("FOCuS0", 1e3), paste("FOCuS0", 1e4), paste("FOCuS0", 1e5), paste("FOCuS0", Inf))
 avg_run_len
 
@@ -56,7 +55,7 @@ save(avg_run_len, file = "simulations/pre-change-unknown/results/avg_run_len_NEW
 load("simulations/pre-change-unknown/results/avg_run_len_NEW2.RData")
 tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len >= 1e6-1)][1])
 tlist
-#save(tlist, file = "simulations/pre-change-unknown/tlist.RData")
+save(tlist, file = "simulations/pre-change-unknown/tlist.RData")
 
 
 plotDF <- as.data.frame(avg_run_len) %>%
