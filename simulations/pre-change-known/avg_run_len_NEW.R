@@ -1,5 +1,5 @@
-library(parallel)
-library(tidyverse)
+# this scripts generates the average run length figure and thresholds
+
 source("simulations/helper_functions.R")
 
 # calculates the run lenght, if it goes over the length of the sequence
@@ -40,14 +40,12 @@ avg_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
 row.names(avg_run_len) <- thre_seq
 colnames(avg_run_len) <- c("FOCuS", 'FOCuS 10', 'Page-CUSUM 20', 'Page-CUSUM 10', 'MOSUM')
 
+# a bit inefficient
 if (T) {
   for (i in seq_along(thre_seq)) {
     for (j in seq_along(totalRUN)) {
       cat(thre_seq[i], j, "\n")
-#      if (colnames(avg_run_len)[j] == "MOSUM")
-#        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = sqrt(thre_seq[i]), mc.cores = 6) %>% unlist)
-#      else
-#        avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
+
       avg_run_len[i, j] <- mean(mclapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i], mc.cores = 6) %>% unlist)
     }
   }
@@ -55,48 +53,52 @@ if (T) {
 
   save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_NEW5.RData")
 
-  load("simulations/pre-change-known/results/avg_run_len_NEW5.RData")
-  plotDF <- as.data.frame(avg_run_len) %>%
-    add_column(threshold = thre_seq) %>%
-    pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
-
-  #plotDF[plotDF$algo == "MOSUM", ]$avg_run_len <- plotDF[plotDF$algo == "MOSUM", ]$avg_run_len ^2
-
-  cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 6, 5)]
-  ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
-    geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
-    scale_y_log10() +
-    xlim(1, 15) +
-    scale_color_manual(values = cbPalette) +
-    ylab("Run Length") +
-    geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
-    theme_idris() +
-    theme(legend.position = "none")
-
+  # getting the threshold list
+  tlist <- apply(avg_run_len, 2, function (len) thre_seq[which(len >= 1e6)][1])
+  tlist <- lapply(tlist, function (x) x)
+  names(tlist) <- colnames(avg_run_len)
+  save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
+  tlist
 
 }
 
-### minimum run length to no false positives
-thre_seq <- c(seq(4, 6, by = .05), seq(17.5, 20, by =.05))
-#thre_seq <- seq(17.5, 20, by =.05)
-minimum_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
+load("simulations/pre-change-known/results/avg_run_len_NEW5.RData")
+plotDF <- as.data.frame(avg_run_len) %>%
+   add_column(threshold = thre_seq) %>%
+   pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
 
-row.names(minimum_run_len) <- thre_seq
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 6, 5)]
+ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
+   geom_line(aes(x = threshold, y = avg_run_len, group = algo, col = algo)) +
+   scale_y_log10() +
+   xlim(1, 15) +
+   scale_color_manual(values = cbPalette) +
+   ylab("Run Length") +
+   geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
+   theme_idris() +
+   theme(legend.position = "none")
 
-for (i in seq_along(thre_seq)) {
-  for (j in seq_along(totalRUN)) {
-    cat(thre_seq[i], j, "\n")
-    minimum_run_len[i, j] <- min(sapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i]))
-  }
-}
 
-tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 1e6)][1])
-tlist <- lapply(tlist, function (x) x)
-names(tlist) <- colnames(avg_run_len)
-save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
-#load( "simulations/pre-change-known/results/tlist.RData")
-
-tlist
+# ### minimum run length to no false positives
+# thre_seq <- c(seq(4, 6, by = .05), seq(17.5, 20, by =.05))
+# minimum_run_len <- matrix(nr = length(thre_seq), nc = length(totalRUN))
+#
+# row.names(minimum_run_len) <- thre_seq
+#
+# for (i in seq_along(thre_seq)) {
+#   for (j in seq_along(totalRUN)) {
+#     cat(thre_seq[i], j, "\n")
+#     minimum_run_len[i, j] <- min(sapply(totalRUN[[j]], run_len_calculator, thres = thre_seq[i]))
+#   }
+# }
+#
+# tlist <- apply(minimum_run_len, 2, function (len) thre_seq[which(len >= 1e6)][1])
+# tlist <- lapply(tlist, function (x) x)
+# names(tlist) <- colnames(avg_run_len)
+# save(tlist, file = "simulations/pre-change-known/results/tlist.RData")
+# #load( "simulations/pre-change-known/results/tlist.RData")
+#
+# tlist
 
 ###### plot of the detailed grid ########
 

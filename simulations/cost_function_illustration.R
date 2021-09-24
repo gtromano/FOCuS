@@ -45,10 +45,13 @@ getMinimum <- function(q, int) {
 ########    plotting      #########
 
 NPLOTS <- 4
+GGPLOT <- FALSE
+
 
 set.seed(42)
 y <- rnorm(1e3)
 y[c(500, 501, 502)] <- c(.25, .37, 0.001)
+#y[c(500, 501, 502)] <- c(.25, .37, 0.36)
 res <- NULL
 start <- 498
 
@@ -59,15 +62,16 @@ for (i in 1:NPLOTS) {
 
 }
 
-
+par(mfrow = c(1, 4))
 bigplotlist <- NULL
 for (K in 1:NPLOTS) {
-  bigplotlist[[K]] <- ggarrange(ggplot(tibble(mu = seq(0, 3, length.out = 1e4))) +
-                                  stat_function(aes(x = mu), fun = function(x) piecewise_quad(x, quad = res[[K]]), col = 4) +
-                                  theme_idris() +
-                                  xlim(0, 1) +
-                                  xlab(expression(mu)) +
-                                  ylab(expression(Q(mu))))
+  if (GGPLOT)
+    bigplotlist[[K]] <- ggarrange(ggplot(tibble(mu = seq(0, 3, length.out = 1e4))) +
+                                   stat_function(aes(x = mu), fun = function(x) piecewise_quad(x, quad = res[[K]]), col = 4) +
+                                    theme_idris() +
+                                    xlim(0, 1) +
+                                    xlab(expression(mu)) +
+                                    ylab(expression(Q(mu))))
 
   plot(NULL, type = "n", xlim = c(0, 2), ylim = c(0, max(piecewise_quad(seq(0, 2, length.out = 100), quad = res[[K]])) + .01),
        xlab = expression(mu), ylab = expression(Q(mu)))
@@ -77,6 +81,7 @@ for (K in 1:NPLOTS) {
       l <- max(0, i$l)
       u <- min(i$u, 5)
       xgr <- seq(l, u, length.out = 100)
+      #abline(v = q$ints[[1]]$l, col = "lightgrey")
       lines(xgr, piecewise_quad(xgr, quad = res[[K]]), col = (500 + K) + 2 * q$a)
 
 
@@ -89,7 +94,8 @@ for (K in 1:NPLOTS) {
 
 }
 
-ggarrange(bigplotlist[[1]], bigplotlist[[2]], bigplotlist[[3]], bigplotlist[[4]], nrow = 1)
+if (GGPLOT)
+  ggarrange(bigplotlist[[1]], bigplotlist[[2]], bigplotlist[[3]], bigplotlist[[4]], nrow = 1)
 
 
 #################################################
