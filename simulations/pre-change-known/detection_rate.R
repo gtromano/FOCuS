@@ -36,7 +36,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
   # MOSUM
   print("MOSUM")
   #wins <- unique(10^2 / grid ^ 2) %>% round() # maybe remove the square here?
-  wins <- unique(abs(18 / grid^2)) %>% round()
+  wins <- unique(abs(14.4 / grid^2)) %>% round()
   res <- mclapply(data, function (y) MOSUM_offline_kirch2(y, tlist$"MOSUM", wins), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
@@ -47,10 +47,7 @@ run_simulation <- function(p, REPS, noise, tlist) {
 }
 
 
-
-#gg <- find_grid(0, 26, .01, 1.74)[14:24]
-gg <- find_grid(0, 21, .01, 1.74)[11:20]
-
+gg <- find_grid(0, 21, .01, 1.74)[11:20] # adding gripoints magnitudes to the simulation
 N <- 2e6
 sim_grid <- expand.grid(
   N = N,
@@ -62,7 +59,6 @@ sim_grid <- expand.grid(
 
 load(file = "simulations/pre-change-known/results/tlist.RData")
 
-# 11 was the run to produce the test plot
 output_file <- "./simulations/pre-change-known/results/dr_new15.RData"
 
 if (F) {
@@ -168,90 +164,73 @@ for (i in seq_along(plot_mat)) {
 
 }
 
-
-
-# logarithm
-#source("simulations/pre-change-known/log-det-rate.R")
 ggarrange(plotlist=plot_list, ncol = 5, nrow = 5)
 
 
-# cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4, 3)]
 
-# detection_delay <-
-#   ggplot(summary_df %>% filter(true_positive == 1, algo != "FOCuS0m",  algo != "FOCuS0-10p"),
-#     aes(
-#       x = magnitude,
-#       y = log10(det_delay),
-#       group = algo,
-#       col = algo
-#     )
-#   ) +
-#   geom_vline(xintercept = gg, color = "grey") +
-#   stat_summary(fun.data = "mean_se", geom = "line") +
-#   stat_summary(fun.data = "mean_se", geom = "errorbar") +
-#   scale_color_manual(values = cbPalette) +
-#   xlab("magnitude") +
-#   ylab("Detection Delay") +
-#   scale_y_continuous(trans='log10') +
-#   xlim(0, .6) +
-#   theme_idris()
 
-# detection_delay <-
-#   ggplot(det_del_table %>% filter(algo != "FOCuS0-10p"),
-#     aes(
-#       x = magnitude,
-#       y = dd,
-#       group = algo,
-#       col = algo
-#     )
-#   ) +
-#   geom_vline(xintercept = gg, color = "grey") +
-#   geom_line() +
-#   scale_color_manual(values = cbPalette) +
-#   xlab("magnitude") +
-#   ylab("Detection Delay") +
-#   scale_y_log10() +
-#   xlim(0, 1.5) +
-#   theme_idris()
-#
-# detection_delay
-#
-# algolist <- c("FOCuS0", "Page-25p")
-# summary1 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
-#   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-#   mutate(diff = FOCuS0 - `Page-25p`,
-#          comparison = "FOCuS0 against Page-50p") %>%
-#     select(sim, magnitude, diff, comparison)
-#
-# algolist <- c("FOCuS0", "FOCuS0-10p")
-# summary2 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
-#   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-#   mutate(diff = FOCuS0 - `FOCuS0-10p`,
-#          comparison = "FOCuS0 against FOCuS0-10p") %>%
-#     select(sim, magnitude, diff, comparison)
-#
-# algolist <- c("FOCuS0-10p", "Page-25p")
-# summary3 <- summary_df %>% filter(algo %in% algolist) %>% select(sim, magnitude, real, N, algo, det_delay) %>%
-#   pivot_wider(names_from = "algo", values_from = "det_delay") %>%
-#   mutate(diff = `FOCuS0-10p` - `Page-25p`,
-#          comparison = "FOCuS0-10p against Page-50p") %>%
-#   select(sim, magnitude, diff, comparison)
-#
-# tot_summary_diff <- rbind(summary1, summary2, summary3)
-#
-# cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(2, 5, 6, 4)]
-# dec_diff <- ggplot(tot_summary_diff, aes(x = magnitude, y = - diff)) +
-#   stat_summary(fun.data = "mean_se", geom = "line") +
-#   stat_summary(fun.data = "mean_se", geom = "errorbar") +
-#   scale_color_manual(values = cbPalette) +
-#   facet_grid(~comparison) +
-#   xlab("magnitude") +
-#   ylab("detection advantage") +
-#   theme_idris()
-#
-# ggsave(dec_diff, filename = "simulations/pre-change-known/results/1-dec-diff-known.pdf", width = 15, height = 5)
-#
-# tot_summary_diff %>%
-#   group_by(comparison, magnitude) %>%
-#   summarise(avg = mean(diff, na.rm = T)) %>%
-#   filter(magnitude == .05)
+
+
+
+
+###### plot of the detailed cost comparison (Appendix) ########
+
+maxY <- 1e5 + 50
+### plotting
+
+plot_piecewise_quad <- function(x, quad) {
+  for (q in quad)
+    for (i in q$ints)
+      if (i$l < x && i$u >= x)
+        return(q$a * x^2 + q$b * x + q$c)
+}
+plot_piecewise_quad <- Vectorize(plot_piecewise_quad, vectorize.args = "x")
+
+
+set.seed(32)
+y <- c(rnorm(1e5,0 ,.1), rnorm(2e6, 0.48288614, .1))
+
+
+resF <- FOCuS_offline(y[1:maxY], thres = 18.6, mu0 = 0)
+
+
+gridP <- find_grid(0, 21, .01, 1.74)
+#gridP[41] <- .5
+
+resP <- PageCUSUM_offline(y[1:maxY], thres = 18.25, mu0 = 0, grid = gridP)
+
+
+plot1 <- ggplot(tibble(mu = -3:3)) +
+  stat_function(aes(x = mu), fun = function(x) plot_piecewise_quad(x, quad = resF$Q1), col = 4) +
+  theme_idris() +
+  xlim(0, 1.5) +
+  geom_vline(xintercept = gridP, col = "grey", alpha = .3) +
+  xlab(expression(mu)) + ylab(expression(Q[t](mu))) +
+  geom_text(aes(x = grid, y = y, label = Q), data = tibble(grid = gridP + .02, y = round(resP$Q, 2) + .1, Q = round(resP$Q, 2)), col = "grey", alpha = .8) +
+  geom_text(aes(x = .45, y = round(tail(resF$maxs, 1), 2) + .1, label = round(tail(resF$maxs, 1), 2)), col = 4) +
+  geom_vline(xintercept = .482, lty = 2)
+
+plot1
+# off grid
+
+set.seed(32)
+y2 <- c(rnorm(1e5,0 ,.1), rnorm(2e6, sum(gridP[18:19])/2, .1))
+
+
+resF2 <- FOCuS_offline(y2[1:maxY], thres = 18.6, mu0 = 0)
+resP2 <- PageCUSUM_offline(y2[1:maxY], thres = 18.25, mu0 = 0, grid = gridP)
+
+plot2 <- ggplot(tibble(mu = -3:3)) +
+  stat_function(aes(x = mu), fun = function(x) plot_piecewise_quad(x, quad = resF2$Q1), col = 4) +
+  theme_idris() +
+  xlim(0, 1.5) +
+  geom_vline(xintercept = gridP, col = "grey", alpha = .3) +
+  xlab(expression(mu)) + ylab(expression(Q[t](mu))) +
+  geom_text(aes(x = grid, y = y, label = Q), data = tibble(grid = gridP + .02, y = round(resP2$Q, 2) + .1, Q = round(resP2$Q, 2)), col = "grey", alpha = .8) +
+  geom_text(aes(x = .61, y = round(tail(resF2$maxs, 1), 2) + .15, label = round(tail(resF2$maxs, 1), 2)), col = 4) +
+  geom_vline(xintercept = sum(gridP[18:19])/2, lty = 2)
+
+plot2
+
+
+ggsave(ggarrange(plot1, plot2, nrow = 2), filename = "grid-comp.pdf", width = 18, height = 12)
