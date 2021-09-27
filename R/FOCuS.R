@@ -1,40 +1,16 @@
-FOCuS <- function(dataFUN, thres, mu0 = NA, grid = NA, K = Inf) {
-  
-  # checks on the data generating function
-  if(is.function(match.fun(dataFUN)))
-    out_check <- dataFUN()
-  else
-    stop("Please provvide a data generating function.")
-  if(!is.numeric(out_check)) stop("Data generating function provvided does not return a numeric output.")
-  if(length(out_check) != 1) {
-    warning("Length of the output from data generating function is greater than 1. Using only the first element.")
-    f <- function() return(dataFUN()[1])
-  } else {
-    f <- match.fun(dataFUN)
-  }
-  
-  # checks on the threshold
-  if( !is.numeric(thres) | thres < 0)
-    stop("thres must be a positive numeric")
-  
-  # checks on the mu0
-  if(!is.na(mu0))
-    if(!is.numeric(mu0) | length(mu0) > 1)
-      stop("mu0 must be a numeric value")
-  
-  # checks on the grid
-  if(!is.na(grid))
-    if(!is.numeric(grid))
-      stop("mu0 must be a numeric value")
-  
-  # checks on the K
-  if(!is.na(K))
-    if(!is.numeric(K) | K <= 0)
-      stop("K must be a positive numeric")
-  
-  
-  # running the function
-  out <- .FoCUS(dataFUN, thres, mu0, grid, K)
-  out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
-  return(out)
-}
+#'  Fast Online Changepoint Detection via Functional Pruning CUSUM statistics
+#'
+#' @param datasource Either a data generating function, for an online analysis, or a vector of observations, for offline testing. See \strong{Details}.
+#' @param thres The threshold for a detection.
+#' @param ... Other additional arguments passed to the method. 
+#' @param mu0 The value of the pre-change mean, if known. Defaulting to \code{NA}. When \code{NA}, the pre-change-mean unknown recursion will be employed. Pre-change mean is therefore estimated iteratively.
+#'
+#' @return
+#' @export
+#' @details FOCuS employs S4 method dispatch based on the data source to perform either an online or offline analysis. For running the algorithm online, \code{datasource} requires an object of class \code{'function'}. For running the algorithm offline, useful for testing purposes, the method expects an object of class \code{'vector'}.
+#'
+#' @examples
+setGeneric(
+  "FOCuS",
+  def = function(datasource, thres, ...) standardGeneric("FOCuS")
+)

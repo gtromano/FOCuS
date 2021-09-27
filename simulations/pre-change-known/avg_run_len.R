@@ -11,7 +11,7 @@ run_len_calculator <- function (res, thres) {
 
 SEED <- 45
 CORES <- 16
-REP <- 100
+REP <- 10#0
 N <- 2e6
 set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
@@ -19,9 +19,9 @@ data <- lapply(1:REP, function (i) rnorm(N))
 
 if (T) {
   grid <- find_grid(0, 21, .01, 1.74)
-  FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
+  FOCuSRUN <- mclapply(data, FOCuS, thres = Inf, mu0 = 0, grid = NA, K = Inf, mc.cores = CORES)
   #FOCuSMelkRUN <- mclapply(data, simpleMelkman, onlyPrune =  F, exportInR = T, mc.cores = CORES)
-  FOCuS10RUN <- mclapply(data, FOCuS_offline, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], K = Inf, mc.cores = CORES)
+  FOCuS10RUN <- mclapply(data, FOCuS, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], K = Inf, mc.cores = CORES)
   page25RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid, mc.cores = CORES)
   page10RUN <- mclapply(data, PageCUSUM_offline, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], mc.cores = CORES)
   wins <- unique(abs(18 / grid)) %>% round()

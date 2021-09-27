@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // FOCuS
 List FOCuS(Rcpp::Function dataGen, const double thres, const double& mu0, std::list<double>& grid, const double& K);
 RcppExport SEXP _FOCuS_FOCuS(SEXP dataGenSEXP, SEXP thresSEXP, SEXP mu0SEXP, SEXP gridSEXP, SEXP KSEXP) {
