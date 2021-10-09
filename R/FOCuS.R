@@ -1,15 +1,48 @@
-#'  Fast Online Changepoint Detection via Functional Pruning CUSUM statistics
-#'
+#' Fast Online Changepoint Detection via Functional Pruning CUSUM statistics
+#' 
+#' @description FOCuS is an algorithm for detecting changes in mean in real-time. This is achieved by a recursive update of a piecewise quadratic, whose maximum is the CUSUM test statistic for a change. FOCuS can be applied to settings where either the pre-change mean is known or unknown. Furthermore, FOCuS can detect changes in presence of point outliers.  
+#' 
 #' @param datasource Either a data generating function, for an online analysis, or a vector of observations, for offline testing. See \strong{Details}.
 #' @param thres The threshold for a detection.
 #' @param ... Other additional arguments passed to the method. 
 #' @param mu0 The value of the pre-change mean, if known. Defaulting to \code{NA}. When \code{NA}, the pre-change-mean unknown recursion will be employed. Pre-change mean is therefore estimated iteratively.
-#'
+#' @param grid A vector of values of change magnitudes for enabling the FOCuS grid approximation. Defaults to \code{NA}, such that by default FOCuS runs exactly. See \strong{Details}.
+#' @param K The value of the bi-weight cost function. Defaulting to \code{Inf}. This is to provide robustness to outliers. FOCuS will ignore point outliers larger then K.
 #' @return
 #' @export
-#' @details FOCuS employs S4 method dispatch based on the data source to perform either an online or offline analysis. For running the algorithm online, \code{datasource} requires an object of class \code{'function'}. For running the algorithm offline, useful for testing purposes, the method expects an object of class \code{'vector'}.
-#'
+#' @details FOCuS employs S4 method dispatch based on the data source to perform either an online or offline analysis. 
+#'  \describe{
+#'   \item{Online analysis}{For an online analysis \code{datasource} requires an object of class \linkS4class{function}. A valid function needs to provide a data point at each call, and should take no additional arguments. At each iteration, FOCuS will pull one observations through a function call, process the new observation, and repeat. The procedure terminates as a changepoint is returned. Buffering and scheduling are therefore to be handled trough the data generating function. See \strong{Examples}.
+#'   \item{Offline analysis}{For an offline analysis, useful for testing purposes, the method expects an object of class \linkS4class{vector}. In such case the data will be analysed entirely within a C++ cycle.}
+#' } 
+#' FOCuS shows an average computational cost per iteration that is logarithmic in the number of data points (\eqn{O(\log(n)) with \eqn{n} being the number of data points}).  Whilst it is unlikely that this will pose a problem in practical applications, it is possible to run the algorithm with a minor approximation that will bound the complexity to \eqn{O(P)}. This is done through specifying a grid of \eqn{P} change magnitudes, and when necessary (i.e. \eqn{P \seq \log{n}}), removing the first quadratics whose interval does not contain a grid point. \code{\link{find_grid}} is a function that generates a simple geometric grid.
+#' A minor remark: a computational overhead is present for calling R functions within \code{C++}. This can impact an online application of the method. Should the user need a fast \code{C++} implementation, refer to function \code{FOCuS_step} in \code{"src\FOCuS.h"}}.
 #' @examples
+#' 
+#' ###################
+#' ###   offline   ###
+#' ###################
+#' 
+#' set.seed(42)
+#' y <- c(rnorm(3e5, 1), rnorm(1e4, 0))
+#' FOCuS(y, 18)
+#' 
+#' 
+#' ##################
+#' ###   online   ###
+#' ##################
+#' 
+#' set.seed(42)
+#' databuffer <- c(rnorm(3e5, 1), rnorm(1e4, 0))
+#' 
+#' f <- function() {
+#'   out <- databuffer[i]     # simulating a pull from a buffer
+#'   i <<- i + 1
+#'   out
+#' }
+#' 
+#' i <- 1; FOCuS(f, 18)
+
 setGeneric(
   "FOCuS",
   def = function(datasource, thres, ...) standardGeneric("FOCuS")

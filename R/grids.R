@@ -1,4 +1,15 @@
-find_grid <- function(h0_m, max_ints, smallest_mag, g) {
+#' Compute a geometric grid of values.
+#'
+#' @param mu0 
+#' @param max_ints 
+#' @param smallest_mag 
+#' @param g 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+find_grid <- function(mu0 = 0, max_ints = 20, smallest_mag = .001, g = .5) {
   
   interval_lengths <- vector(length = max_ints/2)
   interval_lengths[1] <- smallest_mag
