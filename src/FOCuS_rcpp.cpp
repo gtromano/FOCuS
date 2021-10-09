@@ -151,7 +151,7 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
                       Rcpp::Named("maxs") = max_at_time_t);
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(.FOCuS_Melk)]]
 List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K) {
   
   if (!std::isnan(grid.front())) {

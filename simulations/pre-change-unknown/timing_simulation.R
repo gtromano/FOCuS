@@ -11,9 +11,9 @@ if(F) {
   for (n in N) {
     print(n)
     y <- rnorm(n)
-    res[[length(res) + 1]] <- microbenchmark(FOCuS_offline(y, Inf, mu0 = 0),
-                                             FOCuS_offline(y, Inf),
-                                             FOCuS_offline(y, Inf, K = 5),
+    res[[length(res) + 1]] <- microbenchmark(FOCuS(y, Inf, mu0 = 0),
+                                             FOCuS(y, Inf),
+                                             FOCuS(y, Inf, K = 5),
                                              YuCUSUM_offline(y, Inf),
                                              times = 30, unit = "ms")
     save.image("TIMING.RData")

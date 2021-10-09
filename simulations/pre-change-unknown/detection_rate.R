@@ -12,36 +12,36 @@ run_simulation <- function(p, REPS, seed = 42, tlist) {
   data <- lapply(1:REPS, function (k) c(rnorm(1e5 + p$changepoint, means[k]), rnorm(p$N - p$changepoint, means[k] + p$delta)))
 
   # FOCuS with no pruning constraint
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS"], grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS(y[(1e5 + 1):length(y)], tlist["FOCuS"], grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS", est = cp, real = p$changepoint, N = p$N)
   #print("FOCus done")
 
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist["FOCuS-t"], training_data = y[1:1e5], grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS(y[(1e5 + 1):length(y)], tlist["FOCuS-t"], training_data = y[1:1e5], grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS-t", est = cp, real = p$changepoint, N = p$N))
 
   # FOCuS0 1000 estimate
   m <- 1000
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, 
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = paste("FOCuS0", m), est = cp, real = p$changepoint, N = p$N)) 
   
   m <- 10000
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, 
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = paste("FOCuS0", m), est = cp, real = p$changepoint, N = p$N)) 
   
   m <- 100000
-  res <- mclapply(data, function (y) FOCuS_offline(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS(y[(1e5 + 1):length(y)], tlist[paste("FOCuS0", m)], mu0 = mean(y[1:m]), grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, 
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = paste("FOCuS0", m), est = cp, real = p$changepoint, N = p$N)) 
 
-  res <- mclapply(1:REPS, function (k) FOCuS_offline(data[[k]][(1e5 + 1):length(data[[k]])], tlist["FOCuS0 Inf"], mu0 = means[k], grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(1:REPS, function (k) FOCuS(data[[k]][(1e5 + 1):length(data[[k]])], tlist["FOCuS0 Inf"], mu0 = means[k], grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0 Inf", est = cp, real = p$changepoint, N = p$N))

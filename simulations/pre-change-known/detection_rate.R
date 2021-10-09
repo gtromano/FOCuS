@@ -10,13 +10,13 @@ run_simulation <- function(p, REPS, noise, tlist) {
 
   # FOCuS with no pruning costraint
   print("FOCus0")
-  res <- mclapply(data, function (y) FOCuS_offline(y, tlist$"FOCuS", mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS(y, tlist$"FOCuS", mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0", est = cp, real = p$changepoint, N = p$N)
 
   # FoCUS 10
   print("FOCus0 p10")
-  res <- mclapply(data, function (y) FOCuS_offline(y,  tlist$"FOCuS 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 10, 11, 13, 15, 17, 19)], K = Inf), mc.cores = CORES)
+  res <- mclapply(data, function (y) FOCuS(y,  tlist$"FOCuS 10", mu0 = 0, grid = grid[c(1, 3, 6, 8, 10, 11, 13, 15, 17, 19)], K = Inf), mc.cores = CORES)
   cp <- sapply(res, function (r) r$t)
   output <- rbind(output, data.frame(sim = 1:REPS, magnitude = p$delta, algo = "FOCuS0-10p", est = cp, real = p$changepoint, N = p$N))
   #print("page-CUSUM done")
@@ -191,7 +191,7 @@ set.seed(32)
 y <- c(rnorm(1e5,0 ,.1), rnorm(2e6, 0.48288614, .1))
 
 
-resF <- FOCuS_offline(y[1:maxY], thres = 18.6, mu0 = 0)
+resF <- FOCuS(y[1:maxY], thres = 18.6, mu0 = 0)
 
 
 gridP <- find_grid(0, 21, .01, 1.74)
@@ -217,7 +217,7 @@ set.seed(32)
 y2 <- c(rnorm(1e5,0 ,.1), rnorm(2e6, sum(gridP[18:19])/2, .1))
 
 
-resF2 <- FOCuS_offline(y2[1:maxY], thres = 18.6, mu0 = 0)
+resF2 <- FOCuS(y2[1:maxY], thres = 18.6, mu0 = 0)
 resP2 <- PageCUSUM_offline(y2[1:maxY], thres = 18.25, mu0 = 0, grid = gridP)
 
 plot2 <- ggplot(tibble(mu = -3:3)) +

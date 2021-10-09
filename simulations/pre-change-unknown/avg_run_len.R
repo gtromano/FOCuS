@@ -23,12 +23,12 @@ data <- lapply(1:REP, function (i) rnorm(N))
 
 if (T) {
   grid <- find_grid(0, 26, .01, 1.74)
-  FOCuSRUN <- mclapply(data, FOCuS_offline, thres = Inf, grid = NA, K = Inf, mc.cores = CORES)
-  FOCuSRUNtrain <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, training_data =  train[[k]][1:1e3], grid = NA, K = Inf), mc.cores = CORES)
-  FOCuSRUN1e3 <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e3]), grid = NA, K = Inf), mc.cores = CORES)
-  FOCuSRUN1e4 <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e4]), grid = NA, K = Inf), mc.cores = CORES)
-  FOCuSRUN1e5 <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e5]), grid = NA, K = Inf), mc.cores = CORES)
-  FOCuSRUNInf <- mclapply(1:REP, function (k) FOCuS_offline(data[[k]], thres = Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
+  FOCuSRUN <- mclapply(data, FOCuS, thres = Inf, grid = NA, K = Inf, mc.cores = CORES)
+  FOCuSRUNtrain <- mclapply(1:REP, function (k) FOCuS(data[[k]], thres = Inf, training_data =  train[[k]][1:1e3], grid = NA, K = Inf), mc.cores = CORES)
+  FOCuSRUN1e3 <- mclapply(1:REP, function (k) FOCuS(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e3]), grid = NA, K = Inf), mc.cores = CORES)
+  FOCuSRUN1e4 <- mclapply(1:REP, function (k) FOCuS(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e4]), grid = NA, K = Inf), mc.cores = CORES)
+  FOCuSRUN1e5 <- mclapply(1:REP, function (k) FOCuS(data[[k]], thres = Inf, mu0 = mean(train[[k]][1:1e5]), grid = NA, K = Inf), mc.cores = CORES)
+  FOCuSRUNInf <- mclapply(1:REP, function (k) FOCuS(data[[k]], thres = Inf, mu0 = 0, grid = NA, K = Inf), mc.cores = CORES)
 
 }
 
