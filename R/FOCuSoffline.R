@@ -29,6 +29,7 @@ setMethod("FOCuS",
             # running the function
             out <- .FoCUS_offline(datasource, thres, mu0, training_data, grid, K)
             out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
+            class(out) <-  c("FOCuSout", class(out))
             return(out)
             
           }
