@@ -17,10 +17,6 @@ MOSUM_offline_kirch <- function(Y, thres, W) {
     .Call(`_FOCuS_MOSUM_offline_kirch`, Y, thres, W)
 }
 
-MOSUM_offline_kirch2 <- function(Y, thres, W) {
-    .Call(`_FOCuS_MOSUM_offline_kirch2`, Y, thres, W)
-}
-
 PageCUSUM_offline <- function(Y, thres, mu0, grid) {
     .Call(`_FOCuS_PageCUSUM_offline`, Y, thres, mu0, grid)
 }
@@ -56,10 +52,6 @@ NULL
 #' @return Product of v1 and v2
 .simpleMelkman <- function(x, onlyPrune, exportInR) {
     .Call(`_FOCuS_simpleMelkman`, x, onlyPrune, exportInR)
-}
-
-test <- function() {
-    invisible(.Call(`_FOCuS_test`))
 }
 
 YuCUSUM_offline <- function(Y, thres) {
