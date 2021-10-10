@@ -25,6 +25,9 @@ List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR){
   std::vector<double> sumDw(0);
   sumUp.reserve(initSize);
   sumDw.reserve(initSize);
+
+  // MIN TOTAL TRACE
+  std::list<double> min_trace;
   /*.................................................................................*/
   /* INITIALIZE >> */
   /*.................................................................................*/
@@ -69,6 +72,7 @@ List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR){
 			getBestCost(i+1, sumAllX, tauUp, sumUp),  // best cost-up
 			getBestCost(i+1, -sumAllX, tauDw, sumDw)  // best cost-dw
 			);
+	  min_trace.push_back(- minCurrent / 2);
     }
 
   }
@@ -88,6 +92,7 @@ List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR){
     out["sumUp"] = sumUp;
     out["sumDw"] = sumDw;
     out["minCurrent"] = minCurrent;
+    out["maxs"] = min_trace;
   }
   return(out);
 }

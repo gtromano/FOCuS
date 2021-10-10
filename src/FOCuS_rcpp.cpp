@@ -91,20 +91,29 @@ List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::
 -------------------------------------------------------------- */
 
 // [[Rcpp::export(.FoCUS_offline)]]
-List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K) {
-  
+List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
+
+  // checks if we have a grid, if so adds infinity on both ends to avoid deletions
   if (!std::isnan(grid.front())) {
     grid.push_back(INFINITY);
     grid.push_front(-INFINITY);
   }
     
   
-  long t = 0;
-  long cp = -1;
+  long t {0};
+  long cp {-1};
   
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};
   std::list<double> max_at_time_t;
+  
+  // if we have previous training data for FOCuS pre-change-unknown, then updates the Q0 accordingly
+  if (!std::isnan(training_data.front())) {
+    for (auto& y_train:training_data) {
+      info = FOCuS_training_step(std::move(info), y_train, grid, K);
+    }
+    info.Q1 = {Q0};
+  }
   
 
   // pre-change mean not known 
@@ -112,6 +121,7 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
     for (auto& y:Y) {
       t += 1;
       info = FOCuS_step(std::move(info), y, grid, K);
+      //print(info.Q1.front());
       max_at_time_t.push_back(info.global_max);
       if (info.global_max >= thres) {
         cp = t;
@@ -141,7 +151,7 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
                       Rcpp::Named("maxs") = max_at_time_t);
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(.FOCuS_Melk)]]
 List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K) {
   
   if (!std::isnan(grid.front())) {

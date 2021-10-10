@@ -1,40 +1,60 @@
-FOCuS <- function(dataFUN, thres, mu0 = NA, grid = NA, K = Inf) {
-  
-  # checks on the data generating function
-  if(is.function(match.fun(dataFUN)))
-    out_check <- dataFUN()
-  else
-    stop("Please provvide a data generating function.")
-  if(!is.numeric(out_check)) stop("Data generating function provvided does not return a numeric output.")
-  if(length(out_check) != 1) {
-    warning("Length of the output from data generating function is greater than 1. Using only the first element.")
-    f <- function() return(dataFUN()[1])
-  } else {
-    f <- match.fun(dataFUN)
-  }
-  
-  # checks on the threshold
-  if( !is.numeric(thres) | thres < 0)
-    stop("thres must be a positive numeric")
-  
-  # checks on the mu0
-  if(!is.na(mu0))
-    if(!is.numeric(mu0) | length(mu0) > 1)
-      stop("mu0 must be a numeric value")
-  
-  # checks on the grid
-  if(!is.na(grid))
-    if(!is.numeric(grid))
-      stop("mu0 must be a numeric value")
-  
-  # checks on the K
-  if(!is.na(K))
-    if(!is.numeric(K) | K <= 0)
-      stop("K must be a positive numeric")
-  
-  
-  # running the function
-  out <- .FoCUS(dataFUN, thres, mu0, grid, K)
-  out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
-  return(out)
-}
+#' @title Fast Online Changepoint Detection via Functional Pruning CUSUM statistics
+#' 
+#' @description FOCuS is an algorithm for detecting changes in mean in real-time. This is achieved by a recursive update of a piecewise quadratic, whose maximum is the CUSUM test statistic for a change. FOCuS can be applied to settings where either the pre-change mean is known or unknown. Furthermore, FOCuS can detect changes in presence of point outliers.
+#' 
+#' @param datasource Either a data generating function, for an online analysis, or a vector of observations, for offline testing. See \strong{Details}.
+#' @param thres The threshold for a detection.
+#' @param ... Other additional arguments passed to the method. 
+#' @param mu0 The value of the pre-change mean, if known. Defaulting to \code{NA}. When \code{NA}, the pre-change-mean unknown recursion will be employed. Pre-change mean is therefore estimated iteratively.
+#' @param grid A vector of values of change magnitudes for enabling the FOCuS grid approximation. Defaults to \code{NA}, such that by default FOCuS runs exactly. See \strong{Details}.
+#' @param K The value of the bi-weight cost function. Defaulting to \code{Inf}. This is to provide robustness to outliers. FOCuS will ignore point outliers larger then K.
+#'
+#'
+#' @details FOCuS employs S4 method dispatch based on the data source to perform either an online or offline analysis. 
+#'  \describe{
+#'   \item{Online analysis}{For an online analysis \code{datasource} requires an object of class \linkS4class{function}. A valid function needs to provide a data point at each call, and should take no additional arguments. At each iteration, FOCuS will pull one observations through a function call, process the new observation, and repeat. The procedure terminates as a changepoint is returned. Buffering and scheduling are therefore to be handled trough the data generating function. See \strong{Examples}.}
+#'   \item{Offline analysis}{For an offline analysis, useful for testing purposes, the method expects an object of class \linkS4class{vector}. In such case the data will be analysed entirely within a C++ cycle.}
+#' }
+#' FOCuS shows an average computational cost per iteration that is logarithmic in the number of data points (\eqn{O(\log(n))} with \eqn{n} being the number of data points).  Whilst it is unlikely that this will pose a problem in practical applications, it is possible to run the algorithm with a minor approximation that will bound the complexity to \eqn{O(P)}. This is done through specifying a grid of \eqn{P} change magnitudes, and when necessary (i.e. \eqn{P \seq \log{n}}), removing the first quadratics whose interval does not contain a grid point. \code{\link{find_grid}} is a function that generates a simple geometric grid.
+#' A minor remark: a computational overhead is present for calling R functions within \code{C++}.
+#' This can impact an online application of the method. Should the user need a fast \code{C++} implementation, refer to function \code{FOCuS_step} in \code{"src\FOCuS.h"}.
+#' 
+#' 
+#' @return Returns an s3 object of class FOCuSout where:
+#' \describe{
+#' \item{\code{$t}}{is the stopping time at the detection,}
+#' \item{\code{$changepoint}}{is the an estimate of the changepoint location,}
+#' \item{\code{$Q1}}{is the optimal cost in form of piecewise quadratics at the end of the sequence at the time of the detection,} 
+#' \item{\code{$maxs}}{is the trace of the statistics (max of the cost, available only offline).} 
+#' }
+#' @export
+#'
+#' @examples
+#' ###################
+#' ###   offline   ###
+#' ###################
+#' 
+#' set.seed(42)
+#' y <- c(rnorm(3e5, 1), rnorm(1e4, 0))
+#' FOCuS(y, 18)
+#' 
+#' 
+#' ##################
+#' ###   online   ###
+#' ##################
+#' 
+#' set.seed(42)
+#' databuffer <- c(rnorm(3e5, 1), rnorm(1e4, 0))
+#' 
+#' f <- function() {
+#'   out <- databuffer[i]     # simulating a pull from a buffer
+#'   i <<- i + 1
+#'   out
+#' }
+#' 
+#' i <- 1; FOCuS(f, 18)
+
+setGeneric(
+  "FOCuS",
+  def = function(datasource, thres, ...) standardGeneric("FOCuS")
+)

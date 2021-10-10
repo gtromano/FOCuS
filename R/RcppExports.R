@@ -5,12 +5,16 @@
     .Call(`_FOCuS_FOCuS`, dataGen, thres, mu0, grid, K)
 }
 
-.FoCUS_offline <- function(Y, thres, mu0, grid, K) {
-    .Call(`_FOCuS_FOCuS_offline`, Y, thres, mu0, grid, K)
+.FoCUS_offline <- function(Y, thres, mu0, training_data, grid, K) {
+    .Call(`_FOCuS_FOCuS_offline`, Y, thres, mu0, training_data, grid, K)
 }
 
-FOCuS_melk <- function(Y, thres, mu0, grid, K) {
+.FOCuS_Melk <- function(Y, thres, mu0, grid, K) {
     .Call(`_FOCuS_FOCuS_melk`, Y, thres, mu0, grid, K)
+}
+
+MOSUM_offline_kirch <- function(Y, thres, W) {
+    .Call(`_FOCuS_MOSUM_offline_kirch`, Y, thres, W)
 }
 
 PageCUSUM_offline <- function(Y, thres, mu0, grid) {
@@ -46,12 +50,8 @@ NULL
 #' @param onlyPrune if TRUE only update intervals and does not compute the best cost at each step
 #' @param exportInR if TRUE results (tau, bound and sum) are exported in R
 #' @return Product of v1 and v2
-simpleMelkman <- function(x, onlyPrune, exportInR) {
+.simpleMelkman <- function(x, onlyPrune, exportInR) {
     .Call(`_FOCuS_simpleMelkman`, x, onlyPrune, exportInR)
-}
-
-test <- function() {
-    invisible(.Call(`_FOCuS_test`))
 }
 
 YuCUSUM_offline <- function(Y, thres) {

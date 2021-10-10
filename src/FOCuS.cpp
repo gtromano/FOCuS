@@ -284,3 +284,27 @@ mInfo FOCuS_step_melk(mInfo info, const double& new_point, const std::list<doubl
   return info;
 }
 
+
+
+// FOCuS sequential training step
+
+Info FOCuS_training_step(Info info, const double& new_point, const std::list<double>& grid, const double& K = INFINITY) {
+  
+  // update the quad for the null
+  // add std::move after testing
+
+  auto m0 = - (info.Q0.b + new_point) / (2.0 * (info.Q0.a - 0.5)); // argmax of updated quad
+  if (-.5 * (m0 * m0 - 2 * m0 * new_point + new_point * new_point) > - 2 * K) // if max of new quad is greater than -2 * K
+    update_quad(info.Q0, new_point);
+  else
+    update_quad(info.Q0, - 2 * K);
+  
+  // find the max of Q0
+  info.Q0.max = std::get<0>(get_minimum(info.Q0, info.Q0.ints.front()));
+  
+  // lowering Q0 by the max of Q0
+  info.Q0.c -= info.Q0.max;
+  
+  // and we're done!
+  return info;
+}

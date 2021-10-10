@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <list>
 
 using namespace Rcpp;
 
@@ -37,5 +38,5 @@ double getBestCost(
 //' @param onlyPrune if TRUE only update intervals and does not compute the best cost at each step
 //' @param exportInR if TRUE results (tau, bound and sum) are exported in R
 //' @return Product of v1 and v2
-// [[Rcpp::export]]
+// [[Rcpp::export(.simpleMelkman)]]
 List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR);

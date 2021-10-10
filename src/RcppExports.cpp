@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // FOCuS
 List FOCuS(Rcpp::Function dataGen, const double thres, const double& mu0, std::list<double>& grid, const double& K);
 RcppExport SEXP _FOCuS_FOCuS(SEXP dataGenSEXP, SEXP thresSEXP, SEXP mu0SEXP, SEXP gridSEXP, SEXP KSEXP) {
@@ -21,17 +26,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // FOCuS_offline
-List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K);
-RcppExport SEXP _FOCuS_FOCuS_offline(SEXP YSEXP, SEXP thresSEXP, SEXP mu0SEXP, SEXP gridSEXP, SEXP KSEXP) {
+List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K);
+RcppExport SEXP _FOCuS_FOCuS_offline(SEXP YSEXP, SEXP thresSEXP, SEXP mu0SEXP, SEXP training_dataSEXP, SEXP gridSEXP, SEXP KSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const double >::type thres(thresSEXP);
     Rcpp::traits::input_parameter< const double& >::type mu0(mu0SEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type training_data(training_dataSEXP);
     Rcpp::traits::input_parameter< std::list<double>& >::type grid(gridSEXP);
     Rcpp::traits::input_parameter< const double& >::type K(KSEXP);
-    rcpp_result_gen = Rcpp::wrap(FOCuS_offline(Y, thres, mu0, grid, K));
+    rcpp_result_gen = Rcpp::wrap(FOCuS_offline(Y, thres, mu0, training_data, grid, K));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -47,6 +53,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::list<double>& >::type grid(gridSEXP);
     Rcpp::traits::input_parameter< const double& >::type K(KSEXP);
     rcpp_result_gen = Rcpp::wrap(FOCuS_melk(Y, thres, mu0, grid, K));
+    return rcpp_result_gen;
+END_RCPP
+}
+// MOSUM_offline_kirch
+List MOSUM_offline_kirch(NumericVector Y, const double thres, std::vector<int> W);
+RcppExport SEXP _FOCuS_MOSUM_offline_kirch(SEXP YSEXP, SEXP thresSEXP, SEXP WSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const double >::type thres(thresSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type W(WSEXP);
+    rcpp_result_gen = Rcpp::wrap(MOSUM_offline_kirch(Y, thres, W));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -90,15 +109,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// test
-void test();
-RcppExport SEXP _FOCuS_test() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    test();
-    return R_NilValue;
-END_RCPP
-}
 // YuCUSUM_offline
 List YuCUSUM_offline(NumericVector Y, const double thres);
 RcppExport SEXP _FOCuS_YuCUSUM_offline(SEXP YSEXP, SEXP thresSEXP) {
@@ -114,12 +124,12 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_FOCuS", (DL_FUNC) &_FOCuS_FOCuS, 5},
-    {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 5},
+    {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 6},
     {"_FOCuS_FOCuS_melk", (DL_FUNC) &_FOCuS_FOCuS_melk, 5},
+    {"_FOCuS_MOSUM_offline_kirch", (DL_FUNC) &_FOCuS_MOSUM_offline_kirch, 3},
     {"_FOCuS_PageCUSUM_offline", (DL_FUNC) &_FOCuS_PageCUSUM_offline, 4},
     {"_FOCuS_CUSUM_offline", (DL_FUNC) &_FOCuS_CUSUM_offline, 3},
     {"_FOCuS_simpleMelkman", (DL_FUNC) &_FOCuS_simpleMelkman, 3},
-    {"_FOCuS_test", (DL_FUNC) &_FOCuS_test, 0},
     {"_FOCuS_YuCUSUM_offline", (DL_FUNC) &_FOCuS_YuCUSUM_offline, 2},
     {NULL, NULL, 0}
 };
