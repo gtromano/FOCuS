@@ -12,4 +12,6 @@ LinkingTo: Rcpp
 Suggests: 
     testthat (>= 2.0.0)
 Config/testthat/edition: 2
+BugReports: https://github.com/gtromano/DeCAFS/issues
+NeedsCompilation: yes
 RoxygenNote: 7.1.1

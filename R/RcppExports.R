@@ -54,7 +54,7 @@ NULL
 #' @param onlyPrune if TRUE only update intervals and does not compute the best cost at each step
 #' @param exportInR if TRUE results (tau, bound and sum) are exported in R
 #' @return Product of v1 and v2
-simpleMelkman <- function(x, onlyPrune, exportInR) {
+.simpleMelkman <- function(x, onlyPrune, exportInR) {
     .Call(`_FOCuS_simpleMelkman`, x, onlyPrune, exportInR)
 }
 

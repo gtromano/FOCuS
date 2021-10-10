@@ -12,6 +12,7 @@ using namespace std;
  
  -------------------------------------------------------------- */
 
+/*
 // [[Rcpp::export]]
 List MOSUM_offline_kirch(NumericVector Y, const double thres, std::vector<int> W) {
   
@@ -52,11 +53,11 @@ List MOSUM_offline_kirch(NumericVector Y, const double thres, std::vector<int> W
                       Rcpp::Named("maxs") = maxs);
   
 }
-
+*/
 
 
 // [[Rcpp::export]]
-List MOSUM_offline_kirch2(NumericVector Y, const double thres, std::vector<int> W) {
+List MOSUM_offline_kirch(NumericVector Y, const double thres, std::vector<int> W) {
 
   long cp = -1;
 
@@ -75,9 +76,6 @@ List MOSUM_offline_kirch2(NumericVector Y, const double thres, std::vector<int> 
 
       if (w <= t) {
         cusum[j] = cusum[j] + Y[t] - Y[t-w];
-
-        //cout << "adding:" << t << " removing: " << t-w << " cusum: " << cusum[j] << endl;
-
 
         stat[j] = std::abs(cusum[j]) / sqrt(w);
 
