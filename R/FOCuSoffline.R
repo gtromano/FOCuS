@@ -31,6 +31,10 @@ setMethod("FOCuS",
             out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
             class(out) <-  c("FOCuSout", class(out))
             class(out$Q1) <- c("PiecewiseQuadratic", class(out))
+            
+            if (!is.null(out$warning_message))
+              warning(out$warning_message)
+            
             return(out)
             
           }
