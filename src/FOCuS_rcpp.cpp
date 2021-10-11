@@ -51,32 +51,42 @@ List FOCuS (Rcpp::Function dataGen, const double thres, const double& mu0, std::
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};  
   
-
-  // if we don't know the pre-change mean then replace the f with a lambda  
-  if (std::isnan(mu0)) {
-    while(true) {
-      t++;
-      double y = Rcpp::as<double>(dataGen());
-      info = FOCuS_step(std::move(info), y, grid, K);
-      if (info.global_max >= thres) {
-        cp = t;
-        break;
+  try {
+    // if we don't know the pre-change mean then replace the f with a lambda  
+    if (std::isnan(mu0)) {
+      while(true) {
+        t++;
+        double y = Rcpp::as<double>(dataGen());
+        info = FOCuS_step(std::move(info), y, grid, K);
+        if (info.global_max >= thres) {
+          cp = t;
+          break;
+        }
+      }
+    } else {
+      while(true) {
+        t++;
+        double y = Rcpp::as<double>(dataGen());
+        info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
+        if (info.global_max >= thres) {
+          cp = t;
+          break;
+        }
       }
     }
-  } else {
-    while(true) {
-      t++;
-      double y = Rcpp::as<double>(dataGen());
-      info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
-      if (info.global_max >= thres) {
-        cp = t;
-        break;
-      }
-    }
+    
+  }
+  catch (std::bad_alloc &e) {
+    Rcpp::stop("insufficient memory");
+  }
+  catch (...) {
+    auto last_Q1 = convert_output_to_R(info.Q1);
+    return List::create(Rcpp::Named("t") = cp,
+                        Rcpp::Named("Q1") = last_Q1,
+                        Rcpp::Named("warning_message") = "The procedure was interrupted or terminated unexpectedly. The output was successfully returned, however there is a possibility it can be possibly corrupted.");;
   }
   
 
-  
   auto last_Q1 = convert_output_to_R(info.Q1);
   return List::create(Rcpp::Named("t") = cp,
                       Rcpp::Named("Q1") = last_Q1);
@@ -107,42 +117,53 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
   Info info = {Q0, {q1}, 0};
   std::list<double> max_at_time_t;
   
-  // if we have previous training data for FOCuS pre-change-unknown, then updates the Q0 accordingly
-  if (!std::isnan(training_data.front())) {
-    for (auto& y_train:training_data) {
-      info = FOCuS_training_step(std::move(info), y_train, grid, K);
+  try {
+    // if we have previous training data for FOCuS pre-change-unknown, then updates the Q0 accordingly
+    if (!std::isnan(training_data.front())) {
+      for (auto& y_train:training_data) {
+        info = FOCuS_training_step(std::move(info), y_train, grid, K);
+      }
+      info.Q1 = {Q0};
     }
-    info.Q1 = {Q0};
+    
+    
+    // pre-change mean not known 
+    if (std::isnan(mu0)) {
+      for (auto& y:Y) {
+        t += 1;
+        info = FOCuS_step(std::move(info), y, grid, K);
+        //print(info.Q1.front());
+        max_at_time_t.push_back(info.global_max);
+        if (info.global_max >= thres) {
+          cp = t;
+          break;
+        }
+      }
+    } else { // pre change mean known
+      for (auto& y:Y) {
+        t += 1;
+        info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
+        max_at_time_t.push_back(info.global_max);
+        if (info.global_max >= thres) {
+          cp = t;
+          break;
+        }
+      }
+    }
+    
+  }
+  catch (std::bad_alloc &e) {
+    Rcpp::stop("insufficient memory");
+  }
+  catch (...) {
+    auto last_Q1 = convert_output_to_R(info.Q1);
+    return List::create(Rcpp::Named("t") = cp,
+                        Rcpp::Named("Q1") = last_Q1,
+                        Rcpp::Named("maxs") = max_at_time_t,
+                        Rcpp::Named("warning_message") = "The procedure was interrupted or terminated unexpectedly. The output was successfully returned, however there is a possibility it can be possibly corrupted.");;
   }
   
 
-  // pre-change mean not known 
-  if (std::isnan(mu0)) {
-    for (auto& y:Y) {
-      t += 1;
-      info = FOCuS_step(std::move(info), y, grid, K);
-      //print(info.Q1.front());
-      max_at_time_t.push_back(info.global_max);
-      if (info.global_max >= thres) {
-        cp = t;
-        break;
-      }
-    }
-  } else { // pre change mean known
-    for (auto& y:Y) {
-      t += 1;
-      info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
-      max_at_time_t.push_back(info.global_max);
-      if (info.global_max >= thres) {
-        cp = t;
-        break;
-      }
-    }
-  }
-  
-
-  // std::cout << info.Q1.size() << std::endl;
-  // std::cout << info.global_max << std::endl;
 
   auto last_Q1 = convert_output_to_R(info.Q1);
   

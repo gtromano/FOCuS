@@ -1,3 +1,6 @@
 useDynLib(FOCuS, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
 exportPattern("^[[:alpha:]]+")
+S3method(print,FOCuSout)
+export(FOCuS)
+export(find_grid)
