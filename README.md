@@ -1,16 +1,4 @@
----
-title: "FOCuS README"
-author: "Gaetano Romano, Idris Eckley, Paul Fernhead and Guillem Rigaill"
-date: "2021-12-20"
-output:
-  rmarkdown::html_vignette:
-    fig_width: 7
-    fig_height: 5
-vignette: >
-  %\VignetteIndexEntry{FOCuS README}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
+
 
 
 
@@ -48,7 +36,7 @@ The packages requires `Rcpp (>= 1.0.5)` with compiler support for the `std` libr
 
 ### Bugs and further queries
 
-If any bug should be spotted, or for any information regarding this package, please email the package mantainer: `g` dot `romano` at `lancaster.ac.uk`.
+If any bug should be spotted, feel free to open an issue on this repo. For any information regarding this package, please email the package mantainer: `g` dot `romano` at `lancaster.ac.uk`.
 
 
 ## Usage and examples
