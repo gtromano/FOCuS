@@ -77,7 +77,7 @@ List MOSUM_offline_kirch(NumericVector Y, const double thres, std::vector<int> W
       if (w <= t) {
         cusum[j] = cusum[j] + Y[t] - Y[t-w];
 
-        stat[j] = std::abs(cusum[j]) / sqrt(w);
+        stat[j] = 1/2 * std::abs(cusum[j]) / sqrt(w);
 
         if (stat[j] > max)
           max = stat[j];

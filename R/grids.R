@@ -22,5 +22,5 @@ find_grid <- function(mu0 = 0, max_ints = 21, smallest_mag = .01, g = 1.74) {
   for (i in 2:length(interval_lengths))
     interval_lengths[i] <- interval_lengths[i - 1] * g
   
-  return(c(h0_m - interval_lengths[length(interval_lengths):1], h0_m + interval_lengths))
+  return(c(mu0 - interval_lengths[length(interval_lengths):1], mu0 + interval_lengths))
 }
