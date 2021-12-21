@@ -27,15 +27,15 @@ if (T) {
 
     FOCuSRUN <- FOCuS(y, thres = Inf, mu0 = 0, grid = NA, K = Inf)$maxs
     FOCuS10RUN <- FOCuS(y, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)], K = Inf)$maxs
-    cat("FOCuS done")
+    cat("FOCuS done\n")
 
     page20RUN <- PageCUSUM_offline(y, thres = Inf, mu0 = 0, grid = grid)$maxs
     page10RUN <- PageCUSUM_offline(y, thres = Inf, mu0 = 0, grid = grid[c(1, 3, 6, 8, 11, 10, 13, 15, 18, 20)])$maxs
-    cat("Page done")
+    cat("Page done\n")
 
     wins <- unique(abs(18 / grid)) %>% round()
     MOSUMRUN <- MOSUM_offline_kirch(y, thres = Inf, W = wins)$maxs
-    cat("MOSUM done")
+    cat("MOSUM done\n")
 
 
     return(data.frame(FOCuS = FOCuSRUN, "FOCuS 10" = FOCuS10RUN, 'Page-CUSUM 20' = page20RUN, 'Page-CUSUM 10' = page10RUN, 'MOSUM' = MOSUMRUN))
@@ -46,6 +46,9 @@ if (T) {
   save(simRUN, file = "simulations/pre-change-known/results/avg_run_len_NEW7.RData")
 
 }
+
+cat("All done\n")
+
 
 
 load("simulations/pre-change-known/results/avg_run_len_NEW7.RData")
