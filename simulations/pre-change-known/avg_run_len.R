@@ -62,12 +62,12 @@ if (T) {
 }
 
 ### ggplot ###
-load("simulations/pre-change-known/results/avg_run_len_NEW6.RData")
+load("simulations/pre-change-known/results/avg_run_len_NEW5.RData")
 plotDF <- as.data.frame(avg_run_len) %>%
    add_column(threshold = thre_seq) %>%
    pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
 
-#plotDF[plotDF$algo == "MOSUM", ]$avg_run_len <- sqrt(plotDF[plotDF$algo == "MOSUM", ]$avg_run_len)
+plotDF[plotDF$algo == "MOSUM", ]$avg_run_len <- sqrt(plotDF[plotDF$algo == "MOSUM", ]$avg_run_len)
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 6, 5)]
 ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
