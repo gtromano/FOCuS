@@ -11,7 +11,7 @@ run_len_calculator <- function (res, thres) {
 SEED <- 45
 CORES <- 16
 REP <- 80   # replicates per experiment
-N <- 2e6
+N <- 2.5e6
 change_factor <- 10
 set.seed(SEED)
 data <- lapply(1:REP, function (i) rnorm(N))
@@ -74,6 +74,9 @@ avg_run_len <- mclapply(thre_seq, function (thres) {
 avg_run_len <- Reduce(rbind, avg_run_len)
 
 save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_summ.RData")
+
+load("simulations/pre-change-known/results/avg_run_len_summ.RData")
+
 
 avg_run_len <- avg_run_len %>% mutate(fp = run_len < 500)
 
