@@ -43,7 +43,7 @@ if (T) {
   }, mc.cores = CORES)
 
 
-  save(simRUN, file = "simulations/pre-change-known/results/avg_run_len_NEW8.RData")
+  #save(simRUN, file = "simulations/pre-change-known/results/avg_run_len_NEW8.RData")
 
 }
 
