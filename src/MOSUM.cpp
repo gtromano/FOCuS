@@ -88,7 +88,8 @@ List MOSUM_offline_kirch(NumericVector Y, const double thres, std::vector<int> W
       j++; // incrementing the j index (for the various window sizes)
     }
 
-    maxs.push_back(max);
+    //maxs.push_back(max);
+    maxs.push_back(max * max); // squared
 
     if (maxs.back() >= thres) {
       cp = t;

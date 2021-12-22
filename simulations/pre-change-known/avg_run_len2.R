@@ -10,7 +10,7 @@ run_len_calculator <- function (res, thres) {
 
 SEED <- 45
 CORES <- 16
-REP <- 50   # replicates per experiment
+REP <- 80   # replicates per experiment
 N <- 2e6
 change_factor <- 10
 set.seed(SEED)
@@ -70,17 +70,26 @@ avg_run_len <- mclapply(thre_seq, function (thres) {
 
   Reduce(rbind, focusdf)
 
-}, mc.cores = 4)
+}, mc.cores = 16)
 avg_run_len <- Reduce(rbind, avg_run_len)
 
+save(avg_run_len, file = "simulations/pre-change-known/results/avg_run_len_summ.RData")
 
 avg_run_len <- avg_run_len %>% mutate(fp = run_len < 500)
 
 summary_1 <- avg_run_len %>% group_by(threshold, algo) %>% summarise(avgrun = mean(run_len), fpr = mean(fp))
 
+
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(3, 4, 2, 6, 5)]
 ggplot(summary_1, aes(x = threshold, y = avgrun, col = algo)) +
   geom_line() +
-  scale_y_log10()
+  scale_y_log10() +
+   xlim(1, 15) +
+   scale_color_manual(values = cbPalette) +
+   ylab("Run Length") +
+   geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
+   theme_idris() +
+   theme(legend.position = "none")
 
 ggplot(summary_1, aes(x = threshold, y = fpr, col = algo)) +
   geom_line() +
