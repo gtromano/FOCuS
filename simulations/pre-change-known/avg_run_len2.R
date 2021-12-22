@@ -8,9 +8,9 @@ run_len_calculator <- function (res, thres) {
   ifelse(is.na(cp), n, cp)
 }
 
-SEED <- 42
+SEED <- 45
 CORES <- 16
-REP <- 100   # replicates per experiment
+REP <- 50   # replicates per experiment
 N <- 2e6
 change_factor <- 10
 set.seed(SEED)
@@ -51,7 +51,7 @@ cat("All done\n")
 
 
 
-load("simulations/pre-change-known/results/avg_run_len_NEW7.RData")
+#load("simulations/pre-change-known/results/avg_run_len_NEW7.RData")
 
 
 # checking broken sims
