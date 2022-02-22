@@ -58,7 +58,7 @@ start <- 498
 # getting 3 iterations (running FOCuS 3 times)
 for (i in 1:NPLOTS) {
 
-  res[[i]] <- FOCuS_offline(y = y[1:(start + i)], mu0 = 0, thres = Inf)$Q1
+  res[[i]] <- FOCuS(y[1:(start + i)], thres = Inf, mu0 = 0)$Q1
 
 }
 
@@ -96,46 +96,3 @@ for (K in 1:NPLOTS) {
 
 if (GGPLOT)
   ggarrange(bigplotlist[[1]], bigplotlist[[2]], bigplotlist[[3]], bigplotlist[[4]], nrow = 1)
-
-
-#################################################
-# ADDITIONAL STUFF
-
-
-NPLOTS <- 4
-
-set.seed(42)
-y <- rnorm(1e3)
-y[c(500, 501, 502)] <- c(.25, .37, 0.001)
-res <- NULL
-start <- 498
-for (i in 1:NPLOTS) {
-
-  res[[i]] <- FOCuS_offline(y = y[1:(start + i)], training_data = rnorm(1e3), thres = Inf)$Q1
-
-}
-
-
-for (K in 1:NPLOTS) {
-
-
-  plot(NULL, type = "n", xlim = c(-2, 2), ylim = c(0, max(piecewise_quad(seq(-2, 2, length.out = 100), quad = res[[K]])) + .01),
-       xlab = expression(mu), ylab = expression(Q(mu)))
-  for (q in res[[K]]) {
-    for (i in q$ints) {
-      #if (i$u < 0) next
-      l <- max(-5, i$l)
-      u <- min(i$u, 5)
-      xgr <- seq(l, u, length.out = 100)
-      lines(xgr, piecewise_quad(xgr, quad = res[[K]]), col = (500 + K) + 2 * q$a)
-
-
-      lab <- getMinimum(q, i)
-      if (lab$at > 0) text(x = lab$at + 0.1, y = lab$minim + 0.003, labels = (500 + K) + 2 * q$a, col = (500 + K) + 2 * q$a)
-
-
-    }
-  }
-
-}
-
