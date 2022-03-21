@@ -40,7 +40,7 @@ List YuCUSUM_offline(NumericVector Y, const double thres) {
       if (t == s) 
         test = 0;
       else 
-        test = sqrt((t)/(s * (t - s))) * std::abs(((double) s / (double) t) * cusums.back() - par_sum);
+        test = sqrt(((double) t)/((double) s * (double) (t - s))) * std::abs(((double) s / (double) t) * cusums.back() - par_sum);
       
 
       if (test > maximum)
