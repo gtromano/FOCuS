@@ -2,20 +2,24 @@
 //#include "quadratic.h"
 
 void update_cost_biweight(std::list<Quadratic>& Q, const double& x, const double& K, const double& m0 = 0.0) {
-  auto k = sqrt(2 * K);
+  auto k = sqrt(2.0 * K);
   //auto scaling = std::max(-.5 * (x * x), - k * k);
-  auto scaling = std::max(-.5 * (m0 * m0 - 2 * m0 * x + x * x), - k * k);
+  auto scaling = std::max(-.5 * (m0 * m0 - 2.0 * m0 * x + x * x), - k * k);
   
   Quadratic new_q;
   new_q.a = - .5; new_q.b = x; new_q.c = -.5 * (x * x) - scaling;
   
   // this is some experimental shenanigans (handling of the entirety of the update in update_cost_biweight)
+  // dropped in the current version!
   if (std::isinf(K)) {
     // if K is infinity then we simply update with the quadratic
     for(auto& q:Q) {
+      
+
       q.a += new_q.a;
       q.b += new_q.b;
-      q.c += new_q.c;
+      q.c += new_q.c; // here we need a fix to perform the rescaling
+
     }
     return; // this is the end here you have the update and that's all folks no intersections are ever expected
   }

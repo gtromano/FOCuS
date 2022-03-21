@@ -20,11 +20,11 @@ typedef struct {
   private:
     Interval I = {-INFINITY, INFINITY};
   public:
-    double a = 0; // a coefficient
-    double b = 0; // b coefficient
-    double c = 0; // c coefficient
+    double a = 0.0; // a coefficient
+    double b = 0.0; // b coefficient
+    double c = 0.0; // c coefficient
     std::list<Interval> ints = {I}; // intervals list
-    double max = 0; // maximum of the quadratic
+    double max = 0.0; // maximum of the quadratic
 
 } Quadratic;
 

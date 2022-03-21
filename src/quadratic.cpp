@@ -181,7 +181,7 @@ std::list<Quadratic> get_max_of_cost(std::list<Quadratic> cost, Quadratic newq) 
 }
 
 
-// MELKMANS LIKE ALGORITHM ****   experimental crap   *****
+// MELKMANS LIKE ALGORITHM ****   experimental stuff   *****
 /*
 void get_max_of_cost_melk_right(std::list<Quadratic>& cost, Quadratic newq) {
   
@@ -374,7 +374,7 @@ void get_max_of_cost_melk_left(std::list<Quadratic>& cost, Quadratic newq) {
 
 
 
-// ********* end of the experimental crap *************
+// ********* end of the experimental stuff *************
 
 // function for the approximation
 void approximation_grid (std::list<Quadratic>& Q, const std::list<double>& grid) {
