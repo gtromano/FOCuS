@@ -13,9 +13,6 @@
 
 \item{...}{further argument to be passed to the data.frame print call.}
 }
-\value{
-
-}
 \description{
 Title
 }
