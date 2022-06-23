@@ -13,7 +13,7 @@
     .Call(`_FOCuS_FOCuS_melk`, Y, thres, mu0, grid, K)
 }
 
-.FoCUS_offline <- function(Y, thres, mu0, training_data, grid, K) {
+.FoCUS_mult_offline <- function(Y, thres, mu0, training_data, grid, K) {
     .Call(`_FOCuS_FOCuS_mult_offline`, Y, thres, mu0, training_data, grid, K)
 }
 

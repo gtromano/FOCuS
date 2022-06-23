@@ -265,8 +265,8 @@ List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::lis
 
 
 
-// [[Rcpp::export(.FoCUS_offline)]]
-List FOCuS_mult_offline(NumericVector Y, const double thres, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
+// [[Rcpp::export(.FoCUS_mult_offline)]]
+List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
   
   // checks if we have a grid, if so adds infinity on both ends to avoid deletions
   if (!std::isnan(grid.front())) {
@@ -275,64 +275,85 @@ List FOCuS_mult_offline(NumericVector Y, const double thres, const double& mu0, 
   }
   
   
-  long t {0};
+  //long t {0};
   long cp {-1};
   
-  Quadratic Q0, q1;
-  Info info = {Q0, {q1}, 0};
+  
+  auto nr = Y.nrow();
+  auto nc = Y.ncol();
+
   std::list<double> max_at_time_t;
   
+  //std::vector<std::list<double>> maxs_at_time_t(nr, std::list<double>());
+  NumericMatrix maxs_at_time_t(nr,nc);
+  
+  Quadratic Q0, q1;
+  
+  Info temp = {Q0, {q1}, 0};
+  std::vector<Info> m_info(nr, temp); // Initializing the storage for the independent FOCuS traces
+  
+  
+  
   try {
-    // if we have previous training data for FOCuS pre-change-unknown, then updates the Q0 accordingly
-    if (!std::isnan(training_data.front())) {
-      for (auto& y_train:training_data) {
-        info = FOCuS_training_step(std::move(info), y_train, grid, K);
+    
+    
+    for (auto t = 0; t<nc; t++) { // t indexes time (the columns of the matrix) 
+      
+      std::multiset<double> f_stats;
+      
+      for (auto j = 0; j<nr; j++) {      // j indexes the different sequences (the rows of the matrix)
+        
+        
+        
+        if (std::isnan(mu0)) {
+          
+          
+          std::cout << "y: " << Y(j ,t) << " j: " << j << " t: " << t << std::endl;
+          
+          m_info[j] = FOCuS_step(m_info[j], Y(j, t), grid, K);
+          //print(info.Q1.front());
+          
+          f_stats.insert(m_info[j].global_max);
+          
+          
+          maxs_at_time_t(j, t) = m_info[j].global_max;
+
+        }
+        
+        // just some printing for debugging
+        if (j == (nr - 1)) {
+          std::cout << "time: " << t << " - The elements within the set are: ";
+          for (auto pr_ = f_stats.rbegin(); pr_ != f_stats.rend(); pr_++)
+            std::cout << *pr_ << " ";
+          std::cout << std::endl << "_________________________________" << std::endl;
+          
+        }
+        
+
       }
-      info.Q1 = {Q0};
     }
     
     
-    // pre-change mean not known
-    if (std::isnan(mu0)) {
-      for (auto& y:Y) {
-        t += 1;
-        info = FOCuS_step(std::move(info), y, grid, K);
-        //print(info.Q1.front());
-        max_at_time_t.push_back(info.global_max);
-        if (info.global_max >= thres) {
-          cp = t;
-          break;
-        }
-      }
-    } else { // pre change mean known
-      for (auto& y:Y) {
-        t += 1;
-        info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
-        max_at_time_t.push_back(info.global_max);
-        if (info.global_max >= thres) {
-          cp = t;
-          break;
-        }
-      }
-    }
+    
     
   }
   catch (std::bad_alloc &e) {
     Rcpp::stop("insufficient memory");
   }
   catch (...) {
-    auto last_Q1 = convert_output_to_R(info.Q1);
-    return List::create(Rcpp::Named("t") = cp,
-                        Rcpp::Named("Q1") = last_Q1,
-                        Rcpp::Named("maxs") = max_at_time_t,
-                        Rcpp::Named("warning_message") = "The procedure was interrupted or terminated unexpectedly. The output was successfully returned, however there is a possibility it can be possibly corrupted.");;
+    // auto last_Q1 = convert_output_to_R(info.Q1);
+    // return List::create(Rcpp::Named("t") = cp,
+    //                     Rcpp::Named("Q1") = last_Q1,
+    //                     Rcpp::Named("maxs") = max_at_time_t,
+    //                     Rcpp::Named("warning_message") = "The procedure was interrupted or terminated unexpectedly. The output was successfully returned, however there is a possibility it can be possibly corrupted.");;
   }
   
   
   
-  auto last_Q1 = convert_output_to_R(info.Q1);
+  //auto last_Q1 = convert_output_to_R(info.Q1);
   
   return List::create(Rcpp::Named("t") = cp,
-                      Rcpp::Named("Q1") = last_Q1,
-                      Rcpp::Named("maxs") = max_at_time_t);
+                      //Rcpp::Named("Q1") = last_Q1,
+                      Rcpp::Named("maxs") = maxs_at_time_t
+                      );
 }
