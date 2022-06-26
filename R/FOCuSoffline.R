@@ -73,11 +73,33 @@ setMethod("FOCuS",
               if(!is.numeric(K) | K <= 0)
                 stop("K must be a positive numeric")
             
+            p <- nrow(datasource)
             
-            P2 <- function(j)  a * thres + 2 *  a * j * log(nrow(datasource))
             
-            thresholds <- P2(1:nrow(datasource))
+            P2 <- function(j)  2 * a * thres + 2 *  a * j * log(p)
+            
+            
+            P3 <- function(j) {
+              nu <- 2
+              cj <- qchisq(j/p, nu, lower.tail = F)
+              fcj <-  dchisq(cj, nu)
+              a * (2 * (thres + log(p))  + j * nu + 2*p*cj*fcj + 2 * sqrt((j * nu + 2*p*cj*fcj) * (thres + log(p))))
+            }
+            P3 <- Vectorize(P3)
+            
+            
+            plot(1:p, P2(1:p), type = "l", col = 2)
+            lines(1:p, P3(1:p), col = 3)
+            
+            get_threshold <- function(j) min(P2(j), P3(j))
+            get_threshold <- Vectorize(get_threshold)
+            
+            
 
+            thresholds <- get_threshold(1:nrow(datasource))
+            
+            lines(1:p, thresholds, col = 5, lty = 2)
+            
 
             warning("Going multivariate!")
             out <- .FoCUS_mult_offline(datasource, thresholds, a, mu0, training_data, grid, K)

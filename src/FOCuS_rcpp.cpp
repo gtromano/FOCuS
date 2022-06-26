@@ -351,7 +351,7 @@ List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const
         //std::cout << "S: " << S << " p2: " << thres[j] << " - ";
         
         if (S >= thres[j]) {
-          cp = t;
+          cp = t + 1;
           //break;
           goto ending;   //// **** I KNOW THIS IS A GOTO STATEMENT BUT HERE WE NEED TO QUIT - see end of function ***** 
         }
