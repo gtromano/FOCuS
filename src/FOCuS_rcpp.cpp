@@ -266,7 +266,7 @@ List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::lis
 
 
 // [[Rcpp::export(.FoCUS_mult_offline)]]
-List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double a, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
+List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const double a, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
   
   // checks if we have a grid, if so adds infinity on both ends to avoid deletions
   if (!std::isnan(grid.front())) {
@@ -332,21 +332,22 @@ List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double a, con
       
       
       // penalty regime 3 from Fish & al. (2022)
-      auto P2 = [thres, t, nr, a](int j)
-      {
-        return  a * thres + 2 *  a * j * log(nr);
-      };
+      // auto P2 = [thres, t, nr, a](int j)
+      // {
+      //   return  a * thres + 2 *  a * j * log(nr);
+      // };
       
-      auto j = 1;
+      //auto j = 1;
+      auto j = 0;
       auto S = 0.0;
       // Fish & al. (2022) stopping condition 
       for (auto s_ = f_stats.rbegin(); s_ != f_stats.rend(); s_++) {
         
         S += *s_;
         
-       // std::cout << "S: " << S << " p2: " << P2(j) << " - ";
+        std::cout << "S: " << S << " p2: " << thres[j] << " - ";
         
-        if (S >= P2(j)) {
+        if (S >= thres[j]) {
           cp = t;
           //break;
           goto ending;   //// **** I KNOW THIS IS A GOTO STATEMENT BUT HERE WE NEED TO QUIT - see end of function ***** 
@@ -355,7 +356,7 @@ List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double a, con
       }
       
       
-      //std::cout << std::endl << "_________________________________" << std::endl;
+      std::cout << std::endl << "_________________________________" << std::endl;
       
       
 

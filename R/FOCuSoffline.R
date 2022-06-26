@@ -70,10 +70,15 @@ setMethod("FOCuS",
             if(!is.na(K))
               if(!is.numeric(K) | K <= 0)
                 stop("K must be a positive numeric")
+            
+            
+            P2 <- function(j)  a * thres + 2 *  a * j * log(nrow(datasource))
+            
+            thresholds <- P2(1:nrow(datasource))
 
 
             warning("Going multivariate!")
-            out <- .FoCUS_mult_offline(datasource, thres, a, mu0, training_data, grid, K)
+            out <- .FoCUS_mult_offline(datasource, thresholds, a, mu0, training_data, grid, K)
             
             # running the function
             # out <- .FoCUS_offline(datasource, thres, mu0, training_data, grid, K)
