@@ -57,9 +57,11 @@ setMethod("FOCuS",
               stop("thres must be a positive numeric")
 
             # checks on the mu0
-            if(!is.na(mu0))
-              if(!is.numeric(mu0) | length(mu0) > 1)
-                stop("mu0 must be a numeric value")
+            if(!is.na(mu0[1])) {
+              if(!is.numeric(mu0) | length(mu0) != nrow(datasource))
+                stop(paste("mu0 must be a numeric vector of length", nrow(datasource)))
+            }
+              
 
             # checks on the grid
             if(!is.na(grid[1]))

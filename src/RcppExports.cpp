@@ -57,7 +57,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // FOCuS_mult_offline
-List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const double a, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K);
+List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const double a, const std::vector<double>& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K);
 RcppExport SEXP _FOCuS_FOCuS_mult_offline(SEXP YSEXP, SEXP thresSEXP, SEXP aSEXP, SEXP mu0SEXP, SEXP training_dataSEXP, SEXP gridSEXP, SEXP KSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -65,7 +65,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const std::vector<double>& >::type thres(thresSEXP);
     Rcpp::traits::input_parameter< const double >::type a(aSEXP);
-    Rcpp::traits::input_parameter< const double& >::type mu0(mu0SEXP);
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type mu0(mu0SEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type training_data(training_dataSEXP);
     Rcpp::traits::input_parameter< std::list<double>& >::type grid(gridSEXP);
     Rcpp::traits::input_parameter< const double& >::type K(KSEXP);
