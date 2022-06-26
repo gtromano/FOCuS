@@ -266,7 +266,7 @@ List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::lis
 
 
 // [[Rcpp::export(.FoCUS_mult_offline)]]
-List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
+List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double a, const double& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
   
   // checks if we have a grid, if so adds infinity on both ends to avoid deletions
   if (!std::isnan(grid.front())) {
@@ -299,7 +299,7 @@ List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double& mu0, 
     
     for (auto t = 0; t<nc; t++) { // t indexes time (the columns of the matrix) 
       
-      std::multiset<double> f_stats;
+      std::multiset<double> f_stats;     // initialize a multiset for storing the values of the focus statistics at each iteration
       
       for (auto j = 0; j<nr; j++) {      // j indexes the different sequences (the rows of the matrix)
         
@@ -308,7 +308,7 @@ List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double& mu0, 
         if (std::isnan(mu0)) {
           
           
-          std::cout << "y: " << Y(j ,t) << " j: " << j << " t: " << t << std::endl;
+          // std::cout << "y: " << Y(j ,t) << " j: " << j << " t: " << t << std::endl;
           
           m_info[j] = FOCuS_step(m_info[j], Y(j, t), grid, K);
           //print(info.Q1.front());
@@ -320,18 +320,46 @@ List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double& mu0, 
 
         }
         
-        // just some printing for debugging
-        if (j == (nr - 1)) {
-          std::cout << "time: " << t << " - The elements within the set are: ";
-          for (auto pr_ = f_stats.rbegin(); pr_ != f_stats.rend(); pr_++)
-            std::cout << *pr_ << " ";
-          std::cout << std::endl << "_________________________________" << std::endl;
-          
-        }
-        
-
       }
-    }
+      
+      /*
+      // just some printing for debugging
+      std::cout << "time: " << t << " - The elements within the set are: ";
+      for (auto pr_ = f_stats.rbegin(); pr_ != f_stats.rend(); pr_++)
+        std::cout << *pr_ << " ";
+      std::cout << std::endl << "_____" << std::endl;
+      */
+      
+      
+      // penalty regime 3 from Fish & al. (2022)
+      auto P2 = [thres, t, nr, a](int j)
+      {
+        return  a * thres + 2 *  a * j * log(nr);
+      };
+      
+      auto j = 1;
+      auto S = 0.0;
+      // Fish & al. (2022) stopping condition 
+      for (auto s_ = f_stats.rbegin(); s_ != f_stats.rend(); s_++) {
+        
+        S += *s_;
+        
+       // std::cout << "S: " << S << " p2: " << P2(j) << " - ";
+        
+        if (S >= P2(j)) {
+          cp = t;
+          //break;
+          goto ending;   //// **** I KNOW THIS IS A GOTO STATEMENT BUT HERE WE NEED TO QUIT - see end of function ***** 
+        }
+         j++;
+      }
+      
+      
+      //std::cout << std::endl << "_________________________________" << std::endl;
+      
+      
+
+    } // end t
     
     
     
@@ -351,7 +379,7 @@ List FOCuS_mult_offline(NumericMatrix Y, const double thres, const double& mu0, 
   
   
   //auto last_Q1 = convert_output_to_R(info.Q1);
-  
+  ending:
   return List::create(Rcpp::Named("t") = cp,
                       //Rcpp::Named("Q1") = last_Q1,
                       Rcpp::Named("maxs") = maxs_at_time_t

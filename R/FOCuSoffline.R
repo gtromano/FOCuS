@@ -46,7 +46,7 @@ setMethod("FOCuS",
 
 setMethod("FOCuS",
           signature(data = "matrix", thres = "numeric"),
-          function (datasource, thres, mu0 = NA, training_data = NA, grid = NA, K = Inf)
+          function (datasource, thres, a, mu0 = NA, training_data = NA, grid = NA, K = Inf)
           {
             # checks on the data generating function
             if( !is.numeric(datasource))
@@ -73,7 +73,7 @@ setMethod("FOCuS",
 
 
             warning("Going multivariate!")
-            out <- .FoCUS_mult_offline(datasource, thres, mu0, training_data, grid, K)
+            out <- .FoCUS_mult_offline(datasource, thres, a, mu0, training_data, grid, K)
             
             # running the function
             # out <- .FoCUS_offline(datasource, thres, mu0, training_data, grid, K)
