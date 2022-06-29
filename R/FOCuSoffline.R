@@ -46,7 +46,7 @@ setMethod("FOCuS",
 
 setMethod("FOCuS",
           signature(data = "matrix", thres = "numeric"),
-          function (datasource, thres, a, mu0 = NA, training_data = NA, grid = NA, K = Inf)
+          function (datasource, thres, a = .8, mu0 = NA, training_data = NA, grid = NA, K = Inf)
           {
             # checks on the data generating function
             if( !is.numeric(datasource))
@@ -76,11 +76,15 @@ setMethod("FOCuS",
             p <- nrow(datasource)
             
             
-            P2 <- function(j)  2 * a * thres + 2 *  a * j * log(p)
+            nu <- 2
+
+            P1 <- function(j) (a * p * nu + a * 2 * sqrt(p * nu * thres) + 2 * thres)
+            P1 <- Vectorize(P1)
+            
+            P2 <- function(j) (2 * thres + a *  2 * j * log(p))
             
             
             P3 <- function(j) {
-              nu <- 2
               cj <- qchisq(j/p, nu, lower.tail = F)
               fcj <-  dchisq(cj, nu)
               a * (2 * (thres + log(p))  + j * nu + 2*p*cj*fcj + 2 * sqrt((j * nu + 2*p*cj*fcj) * (thres + log(p))))
@@ -88,21 +92,32 @@ setMethod("FOCuS",
             P3 <- Vectorize(P3)
             
             
-            plot(1:p, P2(1:p), type = "l", col = 2)
-            lines(1:p, P3(1:p), col = 3)
             
-            get_threshold <- function(j) min(P2(j), P3(j))
+            
+            get_threshold <- function(j) min(P1(j),
+                                             P2(j),
+                                             P3(j))
             get_threshold <- Vectorize(get_threshold)
             
             
 
             thresholds <- get_threshold(1:nrow(datasource))
             
-            lines(1:p, thresholds, col = 5, lty = 2)
             
 
-            warning("Going multivariate!")
-            out <- .FoCUS_mult_offline(datasource, thresholds, a, mu0, training_data, grid, K)
+            #warning("Going multivariate!")
+            out <- .FoCUS_mult_offline(datasource, thresholds, mu0, training_data, grid, K)
+
+            out$sortStat <- cumsum(sort(out$maxs[, out$t], decreasing = T))
+            out$threshold <- thresholds
+            
+            if (T) {
+              plot(1:p, P2(1:p), type = "l", col = 2)
+              lines(1:p, P3(1:p), col = 3)
+              lines(1:p, P1(1:p), col = 1)
+              lines(1:p, thresholds, col = 5, lty = 2, lwd = 2)
+              abline(v = which(out$sortStat >= out$threshold))
+            }
             
             # running the function
             # out <- .FoCUS_offline(datasource, thres, mu0, training_data, grid, K)

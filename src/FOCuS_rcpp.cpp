@@ -266,7 +266,7 @@ List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::lis
 
 
 // [[Rcpp::export(.FoCUS_mult_offline)]]
-List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const double a, const std::vector<double>& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
+List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const std::vector<double>& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K) {
   
   // checks if we have a grid, if so adds infinity on both ends to avoid deletions
   if (!std::isnan(grid.front())) {
@@ -319,8 +319,6 @@ List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const
         
         f_stats.insert(m_info[j].global_max);
         maxs_at_time_t(j, t) = m_info[j].global_max;
-        
-        
         
         
       }
