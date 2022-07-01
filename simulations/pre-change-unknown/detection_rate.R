@@ -159,7 +159,7 @@ data_label <- comp_table %>%
 
 
 cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(1, 4, 5, 6)]
-ggplot(comp_table %>% filter(ratio != "FOCuS/FOCuS0 1000")) +
+ggplot(comp_table %>% filter(!(ratio %in% c("FOCuS/FOCuS-t", "FOCuS/FOCuS0 1000")))) +
         geom_hline(yintercept = 0, col = "grey", lty = 2) +
         geom_line(aes(x = magnitude, y = rval, col = ratio)) +
         scale_x_log10() +
