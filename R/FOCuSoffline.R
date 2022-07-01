@@ -46,7 +46,7 @@ setMethod("FOCuS",
 
 setMethod("FOCuS",
           signature(data = "matrix", thres = "numeric"),
-          function (datasource, thres, a = .8, mu0 = NA, training_data = NA, grid = NA, K = Inf)
+          function (datasource, thres, a = .8, MC_thres = NA, mu0 = NA, training_data = NA, grid = NA, K = Inf)
           {
             # checks on the data generating function
             if( !is.numeric(datasource))
@@ -78,10 +78,10 @@ setMethod("FOCuS",
             
             nu <- 2
 
-            P1 <- function(j) (a * p * nu + a * 2 * sqrt(p * nu * thres) + 2 * thres)
+            P1 <- function(j) 2 * thres + (p * nu + 2 * sqrt(p * nu * thres))
             P1 <- Vectorize(P1)
             
-            P2 <- function(j) (2 * thres + a *  2 * j * log(p))
+            P2 <- function(j) 2 * thres + a *  2 * j * log(p)
             
             
             P3 <- function(j) {
@@ -95,26 +95,28 @@ setMethod("FOCuS",
             
             
             get_threshold <- function(j) min(P1(j),
-                                             P2(j),
-                                             P3(j))
+                                             P2(j))#,
+                                             #P3(j))
             get_threshold <- Vectorize(get_threshold)
             
             
-
-            thresholds <- get_threshold(1:nrow(datasource))
+            if(is.na(MC_thres[1]))
+              thresholds <- get_threshold(1:nrow(datasource))
+            else 
+              thresholds <- MC_thres
             
             
 
             #warning("Going multivariate!")
             out <- .FoCUS_mult_offline(datasource, thresholds, mu0, training_data, grid, K)
 
-            out$sortStat <- cumsum(sort(out$maxs[, out$t], decreasing = T))
+            out$sortStat <- cumsum(sort(out$maxs[, ifelse(out$t == -1, ncol(datasource), out$t)], decreasing = T))
             out$threshold <- thresholds
             
-            if (T) {
-              plot(1:p, P2(1:p), type = "l", col = 2)
+            if (F) {
+              plot(1:p, P1(1:p), type = "l", col = 2)
               lines(1:p, P3(1:p), col = 3)
-              lines(1:p, P1(1:p), col = 1)
+              lines(1:p, P2(1:p), col = 1)
               lines(1:p, thresholds, col = 5, lty = 2, lwd = 2)
               abline(v = which(out$sortStat >= out$threshold))
             }
