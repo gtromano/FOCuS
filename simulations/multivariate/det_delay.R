@@ -17,7 +17,7 @@ run_simulation <- function(simu, REPS) {
     ifelse(r$t == -1, simu$N, r$t)
   }, mc.cores = CORES)
   res <- unlist(res)
-  output <- data.frame(sim = 1:REPS, magnitude = simu$delta, algo = "FOCuS0 Inf", est = res, real = simu$changepoint, N = simu$N)
+  output <- data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS0 Inf", est = res, real = simu$changepoint, N = simu$N)
   #print("FOCus done")
 
   # FOCuS0 - estimating mu0
@@ -29,7 +29,7 @@ run_simulation <- function(simu, REPS) {
   }, mc.cores = CORES)
   res <- unlist(res)
   output <- rbind(output,
-                  data.frame(sim = 1:REPS, magnitude = simu$delta, algo = "FOCuS0 500", est = res, real = simu$changepoint, N = simu$N))
+                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS0 500", est = res, real = simu$changepoint, N = simu$N))
   
   # FOCuS - pre-change unkown
   res <- mclapply(1:REPS, function(i) {
@@ -39,7 +39,7 @@ run_simulation <- function(simu, REPS) {
   }, mc.cores = CORES)
   res <- unlist(res)
   output <- rbind(output,
-                  data.frame(sim = 1:REPS, magnitude = simu$delta, algo = "FOCuS", est = res, real = simu$changepoint, N = simu$N))
+                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS", est = res, real = simu$changepoint, N = simu$N))
   
   # ocd oracle
   res <- mclapply(1:REPS, function(i) {
@@ -50,7 +50,7 @@ run_simulation <- function(simu, REPS) {
   }, mc.cores = CORES)
   res <- unlist(res)
   output <- rbind(output,
-                  data.frame(sim = 1:REPS, magnitude = simu$delta, algo = "odc Inf", est = res, real = simu$changepoint, N = simu$N))
+                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "odc Inf", est = res, real = simu$changepoint, N = simu$N))
 
   res <- mclapply(1:REPS, function(i) {
     y <- Y[[i]]
@@ -62,7 +62,7 @@ run_simulation <- function(simu, REPS) {
   }, mc.cores = CORES)
   res <- unlist(res)
   output <- rbind(output,
-                  data.frame(sim = 1:REPS, magnitude = simu$delta, algo = "odc 500", est = res, real = simu$changepoint, N = simu$N))
+                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "odc 500", est = res, real = simu$changepoint, N = simu$N))
   
   
   return(output)
@@ -97,3 +97,5 @@ if (T) {
   outDF <- Reduce(rbind, outDF)
   save(outDF, file = output_file)
 }
+
+load("./simulations/multivariate/results/r1.RData")
