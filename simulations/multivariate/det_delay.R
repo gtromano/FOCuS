@@ -29,7 +29,7 @@ run_simulation <- function(simu, REPS) {
   }, mc.cores = CORES)
   res <- unlist(res)
   output <- rbind(output,
-                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS0 500", est = res, real = simu$changepoint, N = simu$N))
+                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS0 est", est = res, real = simu$changepoint, N = simu$N))
   
   # FOCuS - pre-change unkown
   res <- mclapply(1:REPS, function(i) {
@@ -62,7 +62,7 @@ run_simulation <- function(simu, REPS) {
   }, mc.cores = CORES)
   res <- unlist(res)
   output <- rbind(output,
-                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "odc 500", est = res, real = simu$changepoint, N = simu$N))
+                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "odc est", est = res, real = simu$changepoint, N = simu$N))
   
   
   return(output)
@@ -72,7 +72,7 @@ run_simulation <- function(simu, REPS) {
 
 sim_grid <- expand.grid(
   delta = c(1, .5, .25, .1),  # magnitude of a change
-  prop = c(0.1, .05, .1, .15),   # proportion of sequences with a change
+  prop = c(0.01, .05, .1, .15),   # proportion of sequences with a change
   changepoint = 500,
   N = 2000
 )
@@ -99,3 +99,9 @@ if (T) {
 }
 
 load("./simulations/multivariate/results/r1.RData")
+
+
+outDF %>%
+  mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
+  group_by(magnitude, algo) %>%
+  summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
