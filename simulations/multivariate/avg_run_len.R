@@ -1,5 +1,6 @@
 source("simulations/multivariate/helper_functions.R")
 
+CORES <- 16
 
 ##################################################
 ############ training false positives ############
@@ -24,7 +25,7 @@ source("simulations/multivariate/helper_functions.R")
 
 # data with no change
 Y_nc <- lapply(1:100, function(i) generate_sequence(n = 2000, cp = 500, magnitude = 0, dens = 0, seed = i))
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 250, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 # we keep increasing the threshold until we either hit 1% false positives and avg run leng > 1000
 
@@ -41,7 +42,7 @@ while (length(Y_to_check) > 1) {
   focus_res <- mclapply(Y_to_check, function(y) {
     res_focus0 <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
     ifelse(res_focus0$t == -1, 2000, res_focus0$t)
-  }, mc.cores = 8)
+  }, mc.cores = CORES)
   
   fp <- which(unlist(focus_res) < 500)
   cat("False positives:", fp, "\n")
@@ -66,7 +67,7 @@ while (length(to_check) > 1) {
     mu0hat <- apply(y_tr, 1, mean)
     res_focus0 <- FOCuS(y, foc0_est_thres, mu0 = mu0hat)
     ifelse(res_focus0$t == -1, 2000, res_focus0$t)
-  }, mc.cores = 8)
+  }, mc.cores = CORES)
   
   fp <- which(unlist(focus_res) < 500)
   cat("False positives:", fp, "\n")
@@ -89,7 +90,7 @@ while (length(Y_to_check) > 1) {
   focus_res <- mclapply(Y_to_check, function(y) {
     res_focus <- FOCuS(y, foc_thres)  # here we do not provide any information about mu0 
     ifelse(res_focus$t == -1, 2000, res_focus$t)
-  }, mc.cores = 8)
+  }, mc.cores = CORES)
   
   fp <- which(unlist(focus_res) < 500)
   cat("False positives:", fp, "\n")
@@ -116,7 +117,7 @@ while (length(Y_to_check) > 1) {
     ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
     res_ocd <- ocd_detecting(y, ocd_det)
     res_ocd$t
-  }, mc.cores = 8)
+  }, mc.cores = CORES)
   
   
   fp <- which(unlist(ocd_res) < 500)
@@ -144,7 +145,7 @@ while (length(to_check) > 1) {
     res_ocd <- ocd_detecting(y, ocd_det)
     res_ocd$t
 
-  }, mc.cores = 8)
+  }, mc.cores = CORES)
   
   fp <- which(unlist(ocd_res) < 500)
   cat("False positives:", fp, "\n")
@@ -159,34 +160,34 @@ save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, ocd_est_thres, file = "si
 
 load("simulations/multivariate/thres.RData")
 
-
-################### sparse change ########################
-
-Y <- lapply(1:100, function(i) generate_sequence(n = 2000, cp = 500, magnitude = 1, dens = .05, seed = i))
-
-focus_res <- mclapply(Y, function(y) {
-  res_focus <- FOCuS(y, foc_thres)
-  ifelse(res_focus$t == -1, 2000, res_focus$t)
-}, mc.cores = 8)
-ddfoc <- sapply(focus_res, function(r) ifelse(r-500 > 0, r-500, NA))
-
-
-focus0_res <- mclapply(Y, function(y) {
-  res_focus0 <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
-  ifelse(res_focus0$t == -1, 2000, res_focus0$t)
-}, mc.cores = 8)
-ddfoc0 <- sapply(focus0_res, function(r) ifelse(r-500 > 0, r-500, NA))
-
-
-ocd_res <- mclapply(Y, function(y) {
-  ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
-  res_ocd <- ocd_detecting(y, ocd_det)
-  res_ocd$t
-}, mc.cores = 8)
-ddocd <- sapply(ocd_res, function(r) ifelse(r-500 > 0, r-500, NA))
-
-mean(ddfoc, na.rm = T)
-mean(ddocd, na.rm = T)
-
-cbind(ddfoc, ddocd)
-mean(log(ddfoc / ddocd), na.rm = T)
+#
+# ################### sparse change ########################
+#
+# Y <- lapply(1:100, function(i) generate_sequence(n = 2000, cp = 500, magnitude = 1, dens = .05, seed = i))
+#
+# focus_res <- mclapply(Y, function(y) {
+#   res_focus <- FOCuS(y, foc_thres)
+#   ifelse(res_focus$t == -1, 2000, res_focus$t)
+# }, mc.cores = CORES)
+# ddfoc <- sapply(focus_res, function(r) ifelse(r-500 > 0, r-500, NA))
+#
+#
+# focus0_res <- mclapply(Y, function(y) {
+#   res_focus0 <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
+#   ifelse(res_focus0$t == -1, 2000, res_focus0$t)
+# }, mc.cores = CORES)
+# ddfoc0 <- sapply(focus0_res, function(r) ifelse(r-500 > 0, r-500, NA))
+#
+#
+# ocd_res <- mclapply(Y, function(y) {
+#   ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
+#   res_ocd <- ocd_detecting(y, ocd_det)
+#   res_ocd$t
+# }, mc.cores = CORES)
+# ddocd <- sapply(ocd_res, function(r) ifelse(r-500 > 0, r-500, NA))
+#
+# mean(ddfoc, na.rm = T)
+# mean(ddocd, na.rm = T)
+#
+# cbind(ddfoc, ddocd)
+# mean(log(ddfoc / ddocd), na.rm = T)

@@ -79,7 +79,7 @@ sim_grid <- expand.grid(
 
 
 # training data for reconstructing the value of mu0
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 250, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 
 load("simulations/multivariate/thres.RData")
@@ -101,7 +101,8 @@ if (T) {
 load("./simulations/multivariate/results/r1.RData")
 
 
-outDF %>%
+library(tidyverse)
+summary <- outDF %>%
   mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
-  group_by(magnitude, algo) %>%
+  group_by(magnitude, density, algo) %>%
   summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
