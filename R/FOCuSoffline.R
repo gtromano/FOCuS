@@ -46,7 +46,7 @@ setMethod("FOCuS",
 
 setMethod("FOCuS",
           signature(data = "matrix", thres = "numeric"),
-          function (datasource, thres, a = .8, MC_thres = NA, mu0 = NA, training_data = NA, grid = NA, K = Inf)
+          function (datasource, thres, a = 1, MC_thres = NA, mu0 = NA, training_data = NA, grid = NA, K = Inf)
           {
             # checks on the data generating function
             if( !is.numeric(datasource))
