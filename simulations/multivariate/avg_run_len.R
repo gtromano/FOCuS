@@ -17,12 +17,12 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnit
 foc0_thres <- 4.1
 increment <- .02
 
-Y_to_check <- Y_nc
+avg_run_len <- 0
 while (avg_run_len < 2000) {
 
   foc0_thres <- foc0_thres + increment
   
-  focus_res <- mclapply(Y_to_check, function(y) {
+  focus_res <- mclapply(Y_nc, function(y) {
     res_focus0 <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
     ifelse(res_focus0$t == -1, 2000, res_focus0$t)
   }, mc.cores = CORES)
