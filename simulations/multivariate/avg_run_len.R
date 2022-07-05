@@ -58,9 +58,10 @@ while (avg_run_len < 2000) {
 
 ### FOCuS - pre change mean unknown ###
 
-foc_thres <- 8.5
-increment <- .05
+foc_thres <- 11.9
+increment <- .1
 
+avg_run_len <- 0
 while(avg_run_len < 2000) {
   foc_thres <- foc_thres + increment
   
@@ -78,8 +79,9 @@ while(avg_run_len < 2000) {
 ### ocd - pre change mean oracle ###
 
 # let's get an initial estimate of the threshold
-ocd_thres <- MC_ocd_v2(100, 2000, 1, "auto", 50)
+ocd_thres <- c(11.10404, 175.39738, 53.33820)
 
+#ocd_thres <- MC_ocd_v2(100, 2000, 1, "auto", 50)
 ocd_res <- mclapply(Y_nc, function(y) {
   ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
   res_ocd <- ocd_detecting(y, ocd_det)
@@ -109,60 +111,13 @@ while (avg_run_len < 2000) {
 
 save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, file = "simulations/multivariate/thres.RData")
 
-# 
-# # a small increment for all 3 thresholds
-# increment <- c(.1, .5, .3)
-# 
-# Y_to_check <- Y_nc
-# while (length(Y_to_check) > 1) {
-#   
-#   ocd_thres <- ocd_thres + increment
-#   
-#   ocd_res <- mclapply(Y_to_check, function(y) {
-#     ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
-#     res_ocd <- ocd_detecting(y, ocd_det)
-#     res_ocd$t
-#   }, mc.cores = CORES)
-#   
-#   
-#   fp <- which(unlist(ocd_res) < 500)
-#   cat("False positives:", fp, "\n")
-#   Y_to_check <- Y_to_check[fp]
-#   
-# }
-
 
 #### ocd - pre change mean estimated ####
 
-ocd_est_thres <-  c(89, 568, 249)
-
-# to_check <- 1:100
-# while (length(to_check) > 1) {
-#   
-#   ocd_est_thres <- ocd_est_thres + increment
-#   
-#   ocd_res <- mclapply(to_check, function(i) {
-#     y_tr <- Y_train[[i]]
-#     y <- Y_nc[[i]]
-#     
-#     ocd_det <- ocd_training(y_tr, ocd_est_thres) # this function trains ocd
-#     res_ocd <- ocd_detecting(y, ocd_det)
-#     res_ocd$t
-# 
-#   }, mc.cores = CORES)
-#   
-#   fp <- which(unlist(ocd_res) < 500)
-#   cat("False positives:", fp, "\n")
-#   to_check <- to_check[fp]
-#   
-# }
-
-# we tune now up to guaranteed average run length of minimum 1000
-
-avg_run_len <- 0
-
+ocd_est_thres <-  c(103, 708, 319)
 increment <- c(1, 10, 5)
 
+avg_run_len <- 0
 while (avg_run_len < 2000) {
   
   ocd_est_thres <- ocd_est_thres + increment
