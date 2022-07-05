@@ -84,7 +84,7 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnit
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r2.RData"
+output_file <- "./simulations/multivariate/results/r3.RData"
 
 
 if (T) {
@@ -106,4 +106,5 @@ summ <- outDF %>%
   mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
   group_by(magnitude, density, algo) %>%
   summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
-summ
+summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps)
+write_csv(summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps), file = "./simulations/multivariate/results/summary.csv")

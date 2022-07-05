@@ -109,6 +109,25 @@ while (avg_run_len < 2000) {
 }
 
 
+
+Y_to_check <- Y_nc
+while (length(Y_to_check) > 1) {
+  
+  ocd_thres <- ocd_thres + increment
+  
+  ocd_res <- mclapply(Y_to_check, function(y) {
+    ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
+    res_ocd <- ocd_detecting(y, ocd_det)
+    res_ocd$t
+  }, mc.cores = CORES)
+  
+  
+  fp <- which(unlist(ocd_res) < 500)
+  cat("False positives:", fp, "\n")
+  Y_to_check <- Y_to_check[fp]
+  
+}
+
 save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, file = "simulations/multivariate/thres.RData")
 
 
