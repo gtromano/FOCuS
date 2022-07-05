@@ -64,7 +64,7 @@ increment <- .05
 while(avg_run_len < 2000) {
   foc_thres <- foc_thres + increment
   
-  focus_res <- mclapply(Y_to_check, function(y) {
+  focus_res <- mclapply(Y_nc, function(y) {
     res_focus <- FOCuS(y, foc_thres)  # here we do not provide any information about mu0 
     ifelse(res_focus$t == -1, 2000, res_focus$t)
   }, mc.cores = CORES)
