@@ -75,9 +75,27 @@ while (length(to_check) > 1) {
   
 }
 
+avg_run_len <- 0
+increment <- .5
 
 
-### FOCuS - pre change mean unkown ###
+while (avg_run_len < 1000) {
+  foc0_est_thres <- foc0_est_thres + increment
+  
+  focus_res <- mclapply(1:100, function(i) {
+    y_tr <- Y_train[[i]]
+    y <- Y_nc[[i]]
+    mu0hat <- apply(y_tr, 1, mean)
+    res_focus0 <- FOCuS(y, foc0_est_thres, mu0 = mu0hat)
+    ifelse(res_focus0$t == -1, 2000, res_focus0$t)
+  }, mc.cores = CORES)
+  
+  avg_run_len <- mean(unlist(focus_res), na.rm = T)
+  print(avg_run_len)
+}
+
+
+### FOCuS - pre change mean unknown ###
 
 foc_thres <- 8.5
 increment <- .05
@@ -103,7 +121,7 @@ while (length(Y_to_check) > 1) {
 ### ocd - pre change mean oracle ###
 
 # let's get an initial estimate of the threshold
-ocd_thres <- MC_ocd_v2(100, 2500, 1, "auto", 5)
+ocd_thres <- MC_ocd_v2(100, 5000, 1, "auto", 5)
 
 # a small increment for all 3 thresholds
 increment <- c(.1, .5, .3)
@@ -129,7 +147,7 @@ while (length(Y_to_check) > 1) {
 
 #### ocd - pre change mean estimated ####
 
-ocd_est_thres <-  c(19.95634, 221.05078, 75.78118)
+ocd_est_thres <-  c(89, 568, 249)
 increment <- c(.2, 1, .5)
 
 to_check <- 1:100
@@ -152,6 +170,32 @@ while (length(to_check) > 1) {
   to_check <- to_check[fp]
   
 }
+
+# we tune now up to guaranteed average run length of minimum 1000
+
+avg_run_len <- 0
+
+increment <- c(.5, 2, 1)
+
+while (avg_run_len < 1000) {
+  
+  ocd_est_thres <- ocd_est_thres + increment
+  
+  
+  ocd_res <- mclapply(1:100, function(i) {
+    y_tr <- Y_train[[i]]
+    y <- Y_nc[[i]]
+    
+    ocd_det <- ocd_training(y_tr, ocd_est_thres) # this function trains ocd
+    res_ocd <- ocd_detecting(y, ocd_det)
+    res_ocd$t
+    
+  }, mc.cores = CORES)
+  
+  avg_run_len <- mean(unlist(ocd_res), na.rm = T)
+  print(avg_run_len)
+}
+
 
 
 save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, ocd_est_thres, file = "simulations/multivariate/thres.RData")

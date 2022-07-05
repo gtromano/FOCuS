@@ -98,11 +98,12 @@ if (T) {
   save(outDF, file = output_file)
 }
 
-load("./simulations/multivariate/results/r1.RData")
+load(output_file)
 
 
 library(tidyverse)
-summary <- outDF %>%
+summ <- outDF %>%
   mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
   group_by(magnitude, density, algo) %>%
   summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
+summ
