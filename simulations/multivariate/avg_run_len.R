@@ -16,7 +16,7 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnit
 
 ### FOCuS0 - pre-change mean oracle ###
 
-foc0_thres <- 4.1
+foc0_thres <- 6
 increment <- .02
 
 avg_run_len <- 0
@@ -31,6 +31,7 @@ while (avg_run_len < 5000) {
   
   avg_run_len <- mean(unlist(focus_res), na.rm = T)
   print(avg_run_len)
+  print(foc0_thres)
   
   
 }
@@ -38,7 +39,7 @@ while (avg_run_len < 5000) {
 
 ### FOCuS0 - pre-change mean estimated ###
 
-foc0_est_thres <- 30
+foc0_est_thres <- 40
 increment <- .5
 
 avg_run_len <- 0
@@ -55,12 +56,13 @@ while (avg_run_len < 5000) {
   
   avg_run_len <- mean(unlist(focus_res), na.rm = T)
   print(avg_run_len)
+  print(focus_est_thres)
 }
 
 
 ### FOCuS - pre change mean unknown ###
 
-foc_thres <- 11.9
+foc_thres <- 14
 increment <- .1
 
 avg_run_len <- 0
@@ -74,8 +76,11 @@ while(avg_run_len < 5000) {
   
   avg_run_len <- mean(unlist(focus_res), na.rm = T)
   print(avg_run_len)
+  print(foc_thres)
   
 }
+
+save(foc_thres, foc0_thres, foc0_est_thres, file = "simulations/multivariate/thres.RData")
 
 
 ### ocd - pre change mean oracle ###
@@ -108,6 +113,7 @@ while (avg_run_len < 5000) {
   
   avg_run_len <- mean(unlist(ocd_res), na.rm = T)
   print(avg_run_len)
+  print(ocd_thres)
 }
 
 
@@ -156,6 +162,7 @@ while (avg_run_len < 5000) {
   
   avg_run_len <- mean(unlist(ocd_res), na.rm = T)
   print(avg_run_len)
+  print(ocd_est_thres)
 }
 
 
