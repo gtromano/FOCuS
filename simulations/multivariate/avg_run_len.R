@@ -7,8 +7,8 @@ CORES <- 16
 #####################################################
 
 # data with no change
-Y_nc <- lapply(1:100, function(i) generate_sequence(n = 5000, cp = 500, magnitude = 0, dens = 0, seed = i))
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_nc <- lapply(1:100, function(i) generate_sequence(n = 5005, cp = 500, magnitude = 0, dens = 0, seed = i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 # we keep increasing the threshold until we either hit 1% false positives and avg run leng > 1000
 
@@ -18,7 +18,7 @@ foc0_thres <- 4.1
 increment <- .02
 
 avg_run_len <- 0
-while (avg_run_len < 2000) {
+while (avg_run_len < 5000) {
 
   foc0_thres <- foc0_thres + increment
   
@@ -40,7 +40,7 @@ foc0_est_thres <- 30
 increment <- .5
 
 avg_run_len <- 0
-while (avg_run_len < 2000) {
+while (avg_run_len < 5000) {
   foc0_est_thres <- foc0_est_thres + increment
   
   focus_res <- mclapply(1:100, function(i) {
@@ -62,7 +62,7 @@ foc_thres <- 11.9
 increment <- .1
 
 avg_run_len <- 0
-while(avg_run_len < 2000) {
+while(avg_run_len < 5000) {
   foc_thres <- foc_thres + increment
   
   focus_res <- mclapply(Y_nc, function(y) {
@@ -94,7 +94,7 @@ avg_run_len <-  mean(unlist(ocd_res), na.rm = T)
 # fine tuning
 increment <- c(.5, 2, 1)
 
-while (avg_run_len < 2000) {
+while (avg_run_len < 5000) {
   
   ocd_thres <- ocd_thres + increment
 
@@ -109,24 +109,24 @@ while (avg_run_len < 2000) {
 }
 
 
-
-Y_to_check <- Y_nc
-while (length(Y_to_check) > 1) {
-  
-  ocd_thres <- ocd_thres + increment
-  
-  ocd_res <- mclapply(Y_to_check, function(y) {
-    ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
-    res_ocd <- ocd_detecting(y, ocd_det)
-    res_ocd$t
-  }, mc.cores = CORES)
-  
-  
-  fp <- which(unlist(ocd_res) < 500)
-  cat("False positives:", fp, "\n")
-  Y_to_check <- Y_to_check[fp]
-  
-}
+# 
+# Y_to_check <- Y_nc
+# while (length(Y_to_check) > 1) {
+#   
+#   ocd_thres <- ocd_thres + increment
+#   
+#   ocd_res <- mclapply(Y_to_check, function(y) {
+#     ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
+#     res_ocd <- ocd_detecting(y, ocd_det)
+#     res_ocd$t
+#   }, mc.cores = CORES)
+#   
+#   
+#   fp <- which(unlist(ocd_res) < 500)
+#   cat("False positives:", fp, "\n")
+#   Y_to_check <- Y_to_check[fp]
+#   
+# }
 
 save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, file = "simulations/multivariate/thres.RData")
 
@@ -137,7 +137,7 @@ ocd_est_thres <-  c(103, 708, 319)
 increment <- c(1, 10, 5)
 
 avg_run_len <- 0
-while (avg_run_len < 2000) {
+while (avg_run_len < 5000) {
   
   ocd_est_thres <- ocd_est_thres + increment
   

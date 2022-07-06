@@ -7,7 +7,7 @@ CORES <- 16
 run_simulation <- function(simu, REPS) {
   print(simu)
 
-  Y <- lapply(1:REPS, function(i) generate_sequence(n = 2000, cp = 500, magnitude = simu$delta, dens = simu$prop, seed = i))
+  Y <- lapply(1:REPS, function(i) generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i))
 
   
   # FOCuS0 - oracle mean
@@ -73,18 +73,18 @@ run_simulation <- function(simu, REPS) {
 sim_grid <- expand.grid(
   delta = c(1, .5, .25, .1),  # magnitude of a change
   prop = c(0.01, .05, .1, .15),   # proportion of sequences with a change
-  changepoint = 500,
+  changepoint = 200,
   N = 2000
 )
 
 
 # training data for reconstructing the value of mu0
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r3.RData"
+output_file <- "./simulations/multivariate/results/r4.RData"
 
 
 if (T) {
@@ -106,5 +106,6 @@ summ <- outDF %>%
   mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
   group_by(magnitude, density, algo) %>%
   summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
-summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps)
-write_csv(summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps), file = "./simulations/multivariate/results/summary.csv")
+(out_table <- summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps))
+
+write_csv(out_table, file = "./simulations/multivariate/results/summary.csv")
