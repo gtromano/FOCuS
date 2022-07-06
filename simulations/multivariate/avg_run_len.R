@@ -6,8 +6,10 @@ CORES <- 16
 ############ training average run length ############
 #####################################################
 
+N <- 5005
+
 # data with no change
-Y_nc <- lapply(1:100, function(i) generate_sequence(n = 5005, cp = 500, magnitude = 0, dens = 0, seed = i))
+Y_nc <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 0, dens = 0, seed = i))
 Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 # we keep increasing the threshold until we either hit 1% false positives and avg run leng > 1000
@@ -24,7 +26,7 @@ while (avg_run_len < 5000) {
   
   focus_res <- mclapply(Y_nc, function(y) {
     res_focus0 <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
-    ifelse(res_focus0$t == -1, 2000, res_focus0$t)
+    ifelse(res_focus0$t == -1, N, res_focus0$t)
   }, mc.cores = CORES)
   
   avg_run_len <- mean(unlist(focus_res), na.rm = T)
@@ -48,7 +50,7 @@ while (avg_run_len < 5000) {
     y <- Y_nc[[i]]
     mu0hat <- apply(y_tr, 1, mean)
     res_focus0 <- FOCuS(y, foc0_est_thres, mu0 = mu0hat)
-    ifelse(res_focus0$t == -1, 2000, res_focus0$t)
+    ifelse(res_focus0$t == -1, N, res_focus0$t)
   }, mc.cores = CORES)
   
   avg_run_len <- mean(unlist(focus_res), na.rm = T)
@@ -67,7 +69,7 @@ while(avg_run_len < 5000) {
   
   focus_res <- mclapply(Y_nc, function(y) {
     res_focus <- FOCuS(y, foc_thres)  # here we do not provide any information about mu0 
-    ifelse(res_focus$t == -1, 2000, res_focus$t)
+    ifelse(res_focus$t == -1, N, res_focus$t)
   }, mc.cores = CORES)
   
   avg_run_len <- mean(unlist(focus_res), na.rm = T)
@@ -79,9 +81,9 @@ while(avg_run_len < 5000) {
 ### ocd - pre change mean oracle ###
 
 # let's get an initial estimate of the threshold
-ocd_thres <- c(11.10404, 175.39738, 53.33820)
+#ocd_thres <- c(11.10404, 175.39738, 53.33820)
 
-#ocd_thres <- MC_ocd_v2(100, 2000, 1, "auto", 50)
+ocd_thres <- MC_ocd_v2(100, N, 1, "auto", 50)
 ocd_res <- mclapply(Y_nc, function(y) {
   ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
   res_ocd <- ocd_detecting(y, ocd_det)
@@ -167,18 +169,18 @@ load("simulations/multivariate/thres.RData")
 #
 # ################### sparse change ########################
 #
-# Y <- lapply(1:100, function(i) generate_sequence(n = 2000, cp = 500, magnitude = 1, dens = .05, seed = i))
+# Y <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 1, dens = .05, seed = i))
 #
 # focus_res <- mclapply(Y, function(y) {
 #   res_focus <- FOCuS(y, foc_thres)
-#   ifelse(res_focus$t == -1, 2000, res_focus$t)
+#   ifelse(res_focus$t == -1, N, res_focus$t)
 # }, mc.cores = CORES)
 # ddfoc <- sapply(focus_res, function(r) ifelse(r-500 > 0, r-500, NA))
 #
 #
 # focus0_res <- mclapply(Y, function(y) {
 #   res_focus0 <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
-#   ifelse(res_focus0$t == -1, 2000, res_focus0$t)
+#   ifelse(res_focus0$t == -1, N, res_focus0$t)
 # }, mc.cores = CORES)
 # ddfoc0 <- sapply(focus0_res, function(r) ifelse(r-500 > 0, r-500, NA))
 #
