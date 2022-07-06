@@ -12,13 +12,13 @@ target_arl <- 5000
 
 # data with no change
 Y_nc <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 0, dens = 0, seed = i))
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 # we keep increasing the threshold until we either hit 1% false positives and avg run leng > 1000
 
 ### FOCuS0 - pre-change mean oracle ###
 
-foc0_thres <- 6
+foc0_thres <- 6.4
 increment <- .02
 
 avg_run_len <- 0
@@ -41,8 +41,8 @@ while (avg_run_len < target_arl) {
 
 ### FOCuS0 - pre-change mean estimated ###
 
-foc0_est_thres <- 40
-increment <- .5
+foc0_est_thres <- 106
+increment <- .1
 
 avg_run_len <- 0
 while (avg_run_len < target_arl) {
@@ -58,14 +58,14 @@ while (avg_run_len < target_arl) {
   
   avg_run_len <- mean(unlist(focus_res), na.rm = T)
   print(avg_run_len)
-  print(focus_est_thres)
+  print(foc0_est_thres)
 }
 
 
 ### FOCuS - pre change mean unknown ###
 
-foc_thres <- 14
-increment <- .1
+foc_thres <- 14.9
+increment <- .01
 
 avg_run_len <- 0
 while(avg_run_len < target_arl) {
@@ -90,7 +90,7 @@ save(foc_thres, foc0_thres, foc0_est_thres, file = "simulations/multivariate/thr
 # let's get an initial estimate of the threshold
 #ocd_thres <- c(11.10404, 175.39738, 53.33820)
 
-ocd_thres <- MC_ocd_v2(100, N, 1, "auto", 50)
+ocd_thres <- MC_ocd_v2(100, target_arl, 1, "auto", 10)
 ocd_res <- mclapply(Y_nc, function(y) {
   ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
   res_ocd <- ocd_detecting(y, ocd_det)

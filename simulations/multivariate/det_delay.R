@@ -73,13 +73,13 @@ run_simulation <- function(simu, REPS) {
 sim_grid <- expand.grid(
   delta = c(1, .5, .25, .1),  # magnitude of a change
   prop = c(0.01, .05, .1, .15),   # proportion of sequences with a change
-  changepoint = 200,
-  N = 2000
+  changepoint = 500,
+  N = 5000
 )
 
 
 # training data for reconstructing the value of mu0
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 
 load("simulations/multivariate/thres.RData")
