@@ -6,7 +6,9 @@ CORES <- 16
 ############ training average run length ############
 #####################################################
 
-N <- 5005
+N <- 2e4
+
+target_arl <- 5000
 
 # data with no change
 Y_nc <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 0, dens = 0, seed = i))
@@ -20,7 +22,7 @@ foc0_thres <- 6
 increment <- .02
 
 avg_run_len <- 0
-while (avg_run_len < 5000) {
+while (avg_run_len < target_arl) {
 
   foc0_thres <- foc0_thres + increment
   
@@ -43,7 +45,7 @@ foc0_est_thres <- 40
 increment <- .5
 
 avg_run_len <- 0
-while (avg_run_len < 5000) {
+while (avg_run_len < target_arl) {
   foc0_est_thres <- foc0_est_thres + increment
   
   focus_res <- mclapply(1:100, function(i) {
@@ -66,7 +68,7 @@ foc_thres <- 14
 increment <- .1
 
 avg_run_len <- 0
-while(avg_run_len < 5000) {
+while(avg_run_len < target_arl) {
   foc_thres <- foc_thres + increment
   
   focus_res <- mclapply(Y_nc, function(y) {
@@ -101,7 +103,7 @@ avg_run_len <-  mean(unlist(ocd_res), na.rm = T)
 # fine tuning
 increment <- c(.5, 2, 1)
 
-while (avg_run_len < 5000) {
+while (avg_run_len < target_arl) {
   
   ocd_thres <- ocd_thres + increment
 
@@ -145,7 +147,7 @@ ocd_est_thres <-  c(103, 708, 319)
 increment <- c(1, 10, 5)
 
 avg_run_len <- 0
-while (avg_run_len < 5000) {
+while (avg_run_len < target_arl) {
   
   ocd_est_thres <- ocd_est_thres + increment
   
