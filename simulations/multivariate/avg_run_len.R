@@ -64,7 +64,7 @@ while (avg_run_len < target_arl) {
 
 ### FOCuS - pre change mean unknown ###
 
-foc_thres <- 14.37
+foc_thres <- 14.4
 increment <- .01
 
 avg_run_len <- 0
@@ -144,7 +144,7 @@ save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, file = "simulations/multi
 
 #### ocd - pre change mean estimated ####
 
-ocd_est_thres <-  c(180, 4000, 2000)
+ocd_est_thres <-  c(180, 3800, 1900)
 
 increment <- c(1, 20, 10)
 

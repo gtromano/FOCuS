@@ -79,12 +79,12 @@ sim_grid <- expand.grid(
 
 
 # training data for reconstructing the value of mu0
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))
 
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r4.RData"
+output_file <- "./simulations/multivariate/results/r5.RData"
 
 
 if (T) {
