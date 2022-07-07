@@ -74,7 +74,7 @@ sim_grid <- expand.grid(
   delta = c(1, .5, .25, .1),  # magnitude of a change
   prop = c(.05, .1, .15, .5),   # proportion of sequences with a change
   changepoint = 200,
-  N = 2000
+  N = 4000
 )
 
 
