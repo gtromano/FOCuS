@@ -88,9 +88,9 @@ save(foc_thres, foc0_thres, foc0_est_thres, file = "simulations/multivariate/thr
 ### ocd - pre change mean oracle ###
 
 # let's get an initial estimate of the threshold
-#ocd_thres <- c(11.10404, 175.39738, 53.33820)
+ocd_thres <- c(11.54811, 182.48931, 56.36725)
 
-ocd_thres <- MC_ocd_v2(100, target_arl, 1, "auto", 10)
+#ocd_thres <- MC_ocd_v2(100, target_arl, 1, "auto", 10)
 ocd_res <- mclapply(Y_nc, function(y) {
   ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
   res_ocd <- ocd_detecting(y, ocd_det)
@@ -143,7 +143,8 @@ save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, file = "simulations/multi
 
 #### ocd - pre change mean estimated ####
 
-ocd_est_thres <-  c(103, 708, 319)
+ocd_est_thres <-  c(226, 1938, 933)
+
 increment <- c(1, 10, 5)
 
 avg_run_len <- 0
