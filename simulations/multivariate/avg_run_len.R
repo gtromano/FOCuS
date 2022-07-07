@@ -12,7 +12,7 @@ target_arl <- 5000
 
 # data with no change
 Y_nc <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 0, dens = 0, seed = i))
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 200, magnitude = 0, dens = 0, seed = 600 + i))
 
 # we keep increasing the threshold until we either hit 1% false positives and avg run leng > 1000
 
