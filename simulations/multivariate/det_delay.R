@@ -13,7 +13,7 @@ run_simulation <- function(simu, REPS) {
   # FOCuS0 - oracle mean
   res <- mclapply(1:REPS, function(i) {
     y <- Y[[i]]
-    r <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
+    r <- FOCuS(y, foc0_thres, a = .7, mu0 = rep(0, 100))
     ifelse(r$t == -1, simu$N, r$t)
   }, mc.cores = CORES)
   res <- unlist(res)
@@ -79,12 +79,12 @@ sim_grid <- expand.grid(
 
 
 # training data for reconstructing the value of mu0
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))
 
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r5.RData"
+output_file <- "./simulations/multivariate/results/r6.RData"
 
 
 if (T) {
@@ -104,7 +104,7 @@ load(output_file)
 library(tidyverse)
 summ <- outDF %>%
   mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
-  group_by(magnitude, density, algo) %>%
+  group_by(density, magnitude, algo) %>%
   summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
 
 summ %>% pivot_wider(names_from = algo, values_from = fps, - avg_det_delay)

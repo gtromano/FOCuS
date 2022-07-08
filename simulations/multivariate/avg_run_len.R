@@ -12,11 +12,27 @@ target_arl <- 4000
 
 # data with no change
 Y_nc <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 0, dens = 0, seed = i))
-Y_train <- lapply(1:100, function(i) generate_sequence(n = 200, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))
 
 # we keep increasing the threshold until we either hit 1% false positives and avg run leng > 1000
 
 ### FOCuS0 - pre-change mean oracle ###
+
+# Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 0, dens = 0, seed = i))
+# 
+# monte_carlo_focus <- function(Y_monte_carlo) {
+#   focus_MC_res <- mclapply(Y, function(y) {
+#     res_focus0 <- FOCuS(y, Inf, a = 1, mu0 = rep(0, 100))
+#     sortd <- apply(res_focus0$maxs, 2, sort, decreasing = T)
+#     cums <- apply(sortd, 2, cumsum)
+#     apply(cums, 1, max)
+#   }, mc.cores = 8)
+#   Reduce(rbind, focus_MC_res)
+# }
+# 
+# focus_thres <- monte_carlo_focus(Y)
+# mc_thres <- apply(focus_thres, 2, quantile, probs = .93)
+
 
 foc0_thres <- 5.87
 increment <- .01
@@ -27,7 +43,8 @@ while (avg_run_len < target_arl) {
   foc0_thres <- foc0_thres + increment
   
   focus_res <- mclapply(Y_nc, function(y) {
-    res_focus0 <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
+    res_focus0 <- FOCuS(y, foc0_thres, a = .7, mu0 = rep(0, 100))
+    #res_focus0 <- FOCuS(y, Inf, MC_thres = mc_thres, mu0 = rep(0, 100))
     ifelse(res_focus0$t == -1, N, res_focus0$t)
   }, mc.cores = CORES)
   
@@ -90,7 +107,7 @@ save(foc_thres, foc0_thres, foc0_est_thres, file = "simulations/multivariate/thr
 # let's get an initial estimate of the threshold
 #ocd_thres <- MC_ocd_v2(100, target_arl, 1, "auto", 10)
 
-ocd_thres <- c(10.54811, 181.48931, 55.36725)
+ocd_thres <- c(11.24811, 195.48931, 62.36725)
 
 ocd_res <- mclapply(Y_nc, function(y) {
   ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
