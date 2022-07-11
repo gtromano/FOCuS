@@ -84,7 +84,7 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnit
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r6.RData"
+output_file <- "./simulations/multivariate/results/r7.RData"
 
 
 if (T) {
