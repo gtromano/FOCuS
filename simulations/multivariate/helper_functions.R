@@ -184,7 +184,7 @@ MC_ocd_v5 <- function (Y, beta, sparsity, training_data = NA, CORES = 16)
   colnames(peak_stat) <- c("diag", "off_d", "off_s")
   
   cat("\n")
-  thresh_est <- function(v) quantile(sort(v), .95)
+  thresh_est <- function(v) quantile(sort(v), .5)
   th_individual <- apply(peak_stat, 2, thresh_est)
   th_multiplier <- thresh_est(apply(t(peak_stat)/th_individual, 
                                     2, max))

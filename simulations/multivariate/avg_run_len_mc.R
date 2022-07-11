@@ -123,7 +123,7 @@ while (avg_run_len < target_arl) {
 
 
 
-Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = target_arl + 200, cp = 500, magnitude = 0, dens = 0, seed = i))       # to train the monte carlo treshold
+Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = target_arl + 100, cp = 500, magnitude = 0, dens = 0, seed = i))       # to train the monte carlo treshold
 
 ###################################
 ######### ocd oracle ##############
