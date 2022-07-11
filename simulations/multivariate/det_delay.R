@@ -13,7 +13,7 @@ run_simulation <- function(simu, REPS) {
   # FOCuS0 - oracle mean
   res <- mclapply(1:REPS, function(i) {
     y <- Y[[i]]
-    r <- FOCuS(y, foc0_thres, a = .7, mu0 = rep(0, 100))
+    r <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
     ifelse(r$t == -1, simu$N, r$t)
   }, mc.cores = CORES)
   res <- unlist(res)
