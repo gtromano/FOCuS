@@ -37,7 +37,7 @@ focus0_mc <- mclapply(Y_nc, function(y) {
 }, mc.cores = 8)
 
 foc0_thres <- 5.36
-threshold <- compute_mvfocus_thres(foc0_thres, a = .7, nu = 2, p = 100)
+threshold <- compute_mvfocus_thres(foc0_thres, a = .7, nu = 2.1, p = 100)
 runs <- sapply(focus0_mc, function (stat) {
   for(t in seq_len(ncol(stat))) {
     over_the_treshold <- which(stat[ , t] >= threshold)
@@ -53,8 +53,26 @@ hitted <- sapply(focus0_mc, function (stat) {
   }
   return("none")
 })
-mean(runs)
 table(hitted)
+
+(avg_run_len <- mean(runs))
+increment <- .01
+
+while (avg_run_len < target_arl) {
+  foc0_thres <- foc0_thres + increment
+  
+  runs <- mclapply(focus0_mc, function (stat) {
+    for(t in seq_len(ncol(stat))) {
+      over_the_treshold <- which(stat[ , t] >= compute_mvfocus_thres(foc0_thres, a = .7, nu = 2.1, p = 100))
+      if(sum(over_the_treshold > 0)) return(t)
+    }
+    return(t)
+  }, mc.cores = CORES)
+  avg_run_len <- mean(unlist(runs), na.rm = T)
+  print(avg_run_len)
+  print(foc0_est_thres)
+}
+
 
 
 ######################################
@@ -79,7 +97,7 @@ while (avg_run_len < target_arl) {
   
   runs <- mclapply(focus0_est_mc, function (stat) {
     for(t in seq_len(ncol(stat))) {
-      over_the_treshold <- which(stat[ , t] >= compute_mvfocus_thres(foc0_est_thres, a = .7, nu = 2, p = 100))
+      over_the_treshold <- which(stat[ , t] >= compute_mvfocus_thres(foc0_est_thres, a = .7, nu = 2.1, p = 100))
       if(sum(over_the_treshold > 0)) return(t)
     }
     return(t)
@@ -110,7 +128,7 @@ while (avg_run_len < target_arl) {
   
   runs <- mclapply(focus_mc, function (stat) {
     for(t in seq_len(ncol(stat))) {
-      over_the_treshold <- which(stat[ , t] >= compute_mvfocus_thres(foc_thres, a = .7, nu = 2, p = 100))
+      over_the_treshold <- which(stat[ , t] >= compute_mvfocus_thres(foc_thres, a = .7, nu = 2.1, p = 100))
       if(sum(over_the_treshold > 0)) return(t)
     }
     return(t)
