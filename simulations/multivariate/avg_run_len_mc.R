@@ -15,8 +15,6 @@ Y_nc <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude =
 Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))     # to train the mu0 value
 
 
-Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = target_arl + 100, cp = 500, magnitude = 0, dens = 0, seed = i))       # to train the monte carlo treshold
-
 
 compute_mvfocus_thres <- function (thres, a, nu, p) {
   P1 <- function(j) 2 * thres + (p * nu + 2 * sqrt(p * nu * thres))
@@ -31,7 +29,7 @@ compute_mvfocus_thres <- function (thres, a, nu, p) {
 ###### FOCUS0 oracle #############
 ##################################
 
-focus0_mc <- mclapply(Y, function(y) {
+focus0_mc <- mclapply(Y_nc, function(y) {
   res_focus0 <- FOCuS(y, Inf, mu0 = rep(0, 100))
   sortd <- apply(res_focus0$maxs, 2, sort, decreasing = T)   # sorting the maxs of the statistics
   apply(sortd, 2, cumsum)                            # applying cumulative sums
@@ -72,7 +70,7 @@ focus0_est_mc <- mclapply(1:100, function(i) {
   apply(sortd, 2, cumsum)                            # applying cumulative sums
   }, mc.cores = CORES)
 
-foc0_est_thres <- 96
+foc0_est_thres <- 96.9
 increment <- .1
 avg_run_len <- 0
 
@@ -92,9 +90,9 @@ while (avg_run_len < target_arl) {
 }
 
 
-#####################################
-########## FOCuS est ################
-#####################################
+#################################
+########## FOCuS ################
+#################################
 
 focus_mc <- mclapply(1:100, function(i) {
   y <- Y_nc[[i]]
@@ -103,7 +101,7 @@ focus_mc <- mclapply(1:100, function(i) {
   apply(sortd, 2, cumsum)                            # applying cumulative sums
 }, mc.cores = CORES)
 
-foc_thres <- 8
+foc_thres <- 12.28
 increment <- .01
 avg_run_len <- 0
 
@@ -125,16 +123,20 @@ while (avg_run_len < target_arl) {
 
 
 
+Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = target_arl + 200, cp = 500, magnitude = 0, dens = 0, seed = i))       # to train the monte carlo treshold
 
 ###################################
 ######### ocd oracle ##############
 ###################################
 
-ocd_thres <- MC_ocd_v4(Y_monte_carlo, 1, "auto")
+ocd_thres <- MC_ocd_v5(Y_monte_carlo, 1, "auto")
 
 ################################
 ######### ocd est ##############
 ################################
 
-ocd_est_thres <- MC_ocd_v4(Y_monte_carlo, 1, "auto", training_data = Y_train)
+ocd_est_thres <- MC_ocd_v5(Y_monte_carlo, 1, "auto", training_data = Y_train)
 
+
+
+save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, ocd_est_thres, file = "simulations/multivariate/thres.RData")
