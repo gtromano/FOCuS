@@ -79,6 +79,81 @@ MC_ocd_v2 <- function (dim, patience, beta, sparsity, MC_reps)
 }
 
 
+# takes a list of matrices rather then generating the observations at random
+MC_ocd_v3 <- function (Y, beta, sparsity) 
+{
+  peak_stat <- matrix(0, length(Y), 3)
+  colnames(peak_stat) <- c("diag", "off_d", "off_s")
+  if (sparsity == "sparse") 
+    peak_stat <- peak_stat[, -2]
+  if (sparsity == "dense") 
+    peak_stat <- peak_stat[, -3]
+  for (rep in 1:length(Y)) {
+    cat(rep, " ")
+    y <- Y[[rep]]
+    dim <- nrow(y)
+    A <- matrix(0, dim, 1)
+    tail <- matrix(0, dim, floor(log2(dim)) * 2 + 4)
+    for (i in 1:ncol(y)) {
+      x_new <- y[, i]
+      ret <- ocd_update(x_new, A, tail, beta, sparsity)
+      A <- ret$A
+      tail <- ret$tail
+      peak_stat[rep, ] <- pmax(peak_stat[rep, ], ret$stat)
+    }
+  }
+  cat("\n")
+  thresh_est <- function(v) quantile(sort(v), exp(-1))
+  th_individual <- apply(peak_stat, 2, thresh_est)
+  th_multiplier <- thresh_est(apply(t(peak_stat)/th_individual, 
+                                    2, max))
+  th <- th_individual * th_multiplier
+  names(th) <- colnames(peak_stat)
+  return(th)
+}
+
+MC_ocd_v4 <- function (Y, beta, sparsity, training_data = NA, CORES = 16) 
+{
+
+  peak_stat <- mclapply(1:length(Y), function(rep) {
+    cat(rep, " ")
+    ps <- c(0, 0, 0)
+    y <- Y[[rep]]
+    dim <- nrow(y)
+    A <- matrix(0, dim, 1)
+    
+    if(is.na(training_data[1])){
+      mu0 <- rep(0, dim)
+    } else {
+      mu0 <- apply(training_data[[rep]], 1, mean)
+    }
+    
+    tail <- matrix(0, dim, floor(log2(dim)) * 2 + 4)
+    for (i in 1:ncol(y)) {
+      x_new <- y[, i] - mu0
+      ret <- ocd_update(x_new, A, tail, beta, sparsity)
+      A <- ret$A
+      tail <- ret$tail
+      ps <- pmax(ps, ret$stat)
+    }
+    return(ps)
+  }, mc.cores = CORES)
+  
+  peak_stat <- Reduce(rbind, peak_stat)
+  colnames(peak_stat) <- c("diag", "off_d", "off_s")
+  
+  cat("\n")
+  thresh_est <- function(v) quantile(sort(v), exp(-1))
+  th_individual <- apply(peak_stat, 2, thresh_est)
+  th_multiplier <- thresh_est(apply(t(peak_stat)/th_individual, 
+                                    2, max))
+  th <- th_individual * th_multiplier
+  names(th) <- colnames(peak_stat)
+  return(th)
+}
+
+
+
 
 get_ocd_thres <- function(gamma, p) {
   psi <- function(t) p - 1 + t + sqrt(2 * (p-1) * t)
@@ -87,3 +162,6 @@ get_ocd_thres <- function(gamma, p) {
   off_s <- 8 * log(24 * p * gamma * log(2 * p, 2))
   setNames(c(diag, off_d, off_s), c('diag', 'off_d', 'off_s'))
 }
+
+
+

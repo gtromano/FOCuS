@@ -46,7 +46,7 @@ setMethod("FOCuS",
 
 setMethod("FOCuS",
           signature(data = "matrix", thres = "numeric"),
-          function (datasource, thres, a = 1, MC_thres = NA, mu0 = NA, training_data = NA, grid = NA, K = Inf)
+          function (datasource, thres, a = .7, nu = 2.1, MC_thres = NA, mu0 = NA, training_data = NA, grid = NA, K = Inf)
           {
             # checks on the data generating function
             if( !is.numeric(datasource))
@@ -74,34 +74,17 @@ setMethod("FOCuS",
                 stop("K must be a positive numeric")
             
             p <- nrow(datasource)
-            
-            
-            nu <- 2
 
-            P1 <- function(j) 2 * thres + (p * nu + 2 * sqrt(p * nu * thres))
-            P1 <- Vectorize(P1)
-            
-            P2 <- function(j) 2 * thres + a *  2 * j * log(p)
-            
-            
-            P3 <- function(j) {
-              cj <- qchisq(j/p, nu, lower.tail = F)
-              fcj <-  dchisq(cj, nu)
-              a * (2 * (thres + log(p))  + j * nu + 2*p*cj*fcj + 2 * sqrt((j * nu + 2*p*cj*fcj) * (thres + log(p))))
-            }
-            P3 <- Vectorize(P3)
-            
-            
-            
-            
-            get_threshold <- function(j) min(P1(j),
-                                             P2(j))#,
-                                             #P3(j))
-            get_threshold <- Vectorize(get_threshold)
-            
+
+
             
             if(is.na(MC_thres[1]))
-              thresholds <- get_threshold(1:nrow(datasource))
+              thresholds <- sapply(1:p, function (j) {
+                min(
+                  2 * thres + (p * nu + 2 * sqrt(p * nu * thres)),
+                  2 * thres + a *  2 * j * log(p)
+                  )
+              })
             else 
               thresholds <- MC_thres
             

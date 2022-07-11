@@ -34,7 +34,7 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnit
 # mc_thres <- apply(focus_thres, 2, quantile, probs = .93)
 
 
-foc0_thres <- 5.87
+foc0_thres <- 5.35
 increment <- .01
 
 avg_run_len <- 0
@@ -43,7 +43,7 @@ while (avg_run_len < target_arl) {
   foc0_thres <- foc0_thres + increment
   
   focus_res <- mclapply(Y_nc, function(y) {
-    res_focus0 <- FOCuS(y, foc0_thres, a = .7, mu0 = rep(0, 100))
+    res_focus0 <- FOCuS(y, foc0_thres, a = .7, nu = 2.1, mu0 = rep(0, 100))
     #res_focus0 <- FOCuS(y, Inf, MC_thres = mc_thres, mu0 = rep(0, 100))
     ifelse(res_focus0$t == -1, N, res_focus0$t)
   }, mc.cores = CORES)
