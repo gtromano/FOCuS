@@ -13,7 +13,7 @@ target_arl <- 4000
 # data with no change
 Y_nc <- lapply(1:100, function(i) generate_sequence(n = N, cp = 500, magnitude = 0, dens = 0, seed = i))                # to evaluate the average run length
 Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))     # to train the mu0 value
-Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = target_arl + 100, cp = 500, magnitude = 0, dens = 0, seed = i))       # to train the monte carlo treshold
+Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = target_arl + 300, cp = 500, magnitude = 0, dens = 0, seed = i))       # to train the monte carlo treshold
 
 
 ##################################
@@ -128,12 +128,28 @@ mean(runs)
 
 ocd_thres <- MC_ocd_v5(Y_monte_carlo, 1, "auto")
 
+# res <- mclapply(1:100, function(i) {
+#     y <- Y_nc[[i]]
+#     ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
+#     r <- ocd_detecting(y, ocd_det)
+#     r$t
+#   }, mc.cores = CORES)
+# mean(unlist(res))
+
 ################################
 ######### ocd est ##############
 ################################
 
 ocd_est_thres <- MC_ocd_v5(Y_monte_carlo, 1, "auto", training_data = Y_train)
-
+# res <- mclapply(1:100, function(i) {
+#     y <- Y_nc[[i]]
+#     y_tr <- Y_train[[i]]
+#
+#     ocd_det <- ocd_training(y_tr, ocd_est_thres)
+#     r <- ocd_detecting(y, ocd_det)
+#     r$t
+#   }, mc.cores = CORES)
+# mean(unlist(res))
 
 
 save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, ocd_est_thres, file = "simulations/multivariate/thres.RData")
