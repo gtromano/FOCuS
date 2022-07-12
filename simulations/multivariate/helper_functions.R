@@ -154,7 +154,7 @@ MC_ocd_v4 <- function (Y, beta, sparsity, training_data = NA, CORES = 16)
 }
 
 
-MC_ocd_v5 <- function (Y, beta, sparsity, training_data = NA, CORES = 16) 
+MC_ocd_v5 <- function (Y, beta, sparsity, training_data = NA, CORES = 16)
 {
   
   peak_stat <- mclapply(1:length(Y), function(rep) {
@@ -187,7 +187,7 @@ MC_ocd_v5 <- function (Y, beta, sparsity, training_data = NA, CORES = 16)
   cat("\n")
   thresh_est <- function(v) quantile(sort(v), .5)
   th_individual <- apply(peak_stat, 2, thresh_est)
-  th_multiplier <- thresh_est(apply(t(peak_stat)/th_individual, 
+  th_multiplier <- thresh_est(apply(t(peak_stat)/th_individual,
                                     2, max))
   th <- th_individual * th_multiplier
   names(th) <- colnames(peak_stat)
@@ -195,6 +195,38 @@ MC_ocd_v5 <- function (Y, beta, sparsity, training_data = NA, CORES = 16)
 }
 
 
+MC_ocd_v6 <- function (Y, beta, sparsity, training_data = NA, CORES = 16)
+{
+
+  peak_stat <- mclapply(1:length(Y), function(rep) {
+    cat(rep, " ")
+    ps <- c(0, 0, 0)
+    y <- Y[[rep]]
+    dim <- nrow(y)
+    A <- matrix(0, dim, 1)
+
+    if(is.na(training_data[1])){
+      mu0 <- rep(0, dim)
+    } else {
+      mu0 <- apply(training_data[[rep]], 1, mean)
+    }
+
+    tail <- matrix(0, dim, floor(log2(dim)) * 2 + 4)
+    for (i in 1:ncol(y)) {
+      x_new <- y[, i] - mu0
+      ret <- ocd_update(x_new, A, tail, beta, sparsity)
+      A <- ret$A
+      tail <- ret$tail
+      ps <- pmax(ps, ret$stat)
+    }
+    return(ps)
+  }, mc.cores = CORES)
+
+  peak_stat <- Reduce(rbind, peak_stat)
+  colnames(peak_stat) <- c("diag", "off_d", "off_s")
+
+  peak_stat
+}
 
 
 get_ocd_thres <- function(gamma, p) {
