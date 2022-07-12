@@ -158,3 +158,5 @@ ocd_est_thres <- MC_ocd_v5(Y_monte_carlo, 1, "auto", training_data = Y_train)
 
 
 save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, ocd_est_thres, file = "simulations/multivariate/thres.RData")
+
+load("simulations/multivariate/thres.RData")
