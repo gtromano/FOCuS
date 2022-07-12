@@ -33,7 +33,7 @@ focus0_res <- mclapply(Y_nc, function(y) {
 max_stats <- lapply(focus0_mc, function (r) apply(r, 1, max)) %>%
   Reduce(f = rbind)
 # this thresholds achieves an average run length of at least 4000
-foc0_thres <- apply(max_stats, 2, quantile, prob = .65)
+foc0_thres <- apply(max_stats, 2, quantile, prob = .69)
 
 runs <- sapply(focus0_res, function (stat) {
   for(t in seq_len(ncol(stat))) {
@@ -80,7 +80,7 @@ focus0_est_res <- mclapply(1:100, function(i) {
 max_stats <- lapply(focus0_est_mc, function (r) apply(r, 1, max)) %>%
   Reduce(f = rbind)
 
-foc0_est_thres <- apply(max_stats, 2, quantile, prob = .65)
+foc0_est_thres <- apply(max_stats, 2, quantile, prob = .61)
 
 runs <- sapply(focus0_est_res, function (stat) {
   for(t in seq_len(ncol(stat))) {
@@ -127,17 +127,24 @@ mean(runs)
 ###################################
 
 ocd_stat <- MC_ocd_v6(Y_monte_carlo, 1, "auto")
-ocd_thres <- apply(ocd_stat, 2, quantile, prob = .5)
 
-names(ocd_thres) <- colnames(ocd_stat)
+p <- exp(-1)
+avg_run_len <- 0
+while (avg_run_len < target_arl) {
+  ocd_thres <- apply(ocd_stat, 2, quantile, prob = p)
 
-# res <- mclapply(1:100, function(i) {
-#     y <- Y_nc[[i]]
-#     ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
-#     r <- ocd_detecting(y, ocd_det)
-#     r$t
-#   }, mc.cores = CORES)
-# mean(unlist(res))
+  names(ocd_thres) <- colnames(ocd_stat)
+
+  res <- mclapply(1:100, function(i) {
+      y <- Y_nc[[i]]
+      ocd_det <- ocd_known(ocd_thres, rep(0, 100), rep(1, 100))
+      r <- ocd_detecting(y, ocd_det)
+      r$t
+    }, mc.cores = CORES)
+  avg_run_len <- mean(unlist(res))
+  print(avg_run_len)
+  p <- min(1, p + 0.1)
+}
 
 ################################
 ######### ocd est ##############
@@ -145,19 +152,24 @@ names(ocd_thres) <- colnames(ocd_stat)
 
 ocd_est_stat <- MC_ocd_v6(Y_monte_carlo, 1, "auto", training_data = Y_train)
 
+p <- .5
+avg_run_len <- 0
+while(avg_run_len < target_arl) {
+  ocd_est_thres <- apply(ocd_est_stat, 2, quantile, prob = p)
+  names(ocd_est_thres) <- colnames(ocd_est_stat)
 
-ocd_est_thres <- apply(ocd_est_stat, 2, quantile, prob = .9)
-names(ocd_est_thres) <- colnames(ocd_est_stat)
-res <- mclapply(1:100, function(i) {
-    y <- Y_nc[[i]]
-    y_tr <- Y_train[[i]]
+  res <- mclapply(1:100, function(i) {
+      y <- Y_nc[[i]]
+      y_tr <- Y_train[[i]]
 
-    ocd_det <- ocd_training(y_tr, ocd_est_thres)
-    r <- ocd_detecting(y, ocd_det)
-    r$t
-  }, mc.cores = CORES)
-mean(unlist(res))
-
+      ocd_det <- ocd_training(y_tr, ocd_est_thres)
+      r <- ocd_detecting(y, ocd_det)
+      r$t
+    }, mc.cores = CORES)
+  avg_run_len <- mean(unlist(res))
+  p <- min(1, p + 0.1)
+  print(avg_run_len)
+}
 
 save(foc_thres, foc0_thres, foc0_est_thres, ocd_thres, ocd_est_thres, file = "simulations/multivariate/thres.RData")
 
