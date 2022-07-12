@@ -258,7 +258,7 @@ List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::lis
 
 /* ------------------------------------------------------------
  
- Offline multivariate FOCuS - Rcpp wrapper
+          Offline multivariate FOCuS - Rcpp wrapper
  
  -------------------------------------------------------------- */
 
@@ -300,26 +300,32 @@ List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const
     
     for (auto t = 0; t<nc; t++) { // t indexes time (the columns of the matrix) 
       
-      std::multiset<double> f_stats;     // initialize a multiset for storing the values of the focus statistics at each iteration
+      //std::multiset<double> f_stats;     // initialize a multiset for storing the values of the focus statistics at each iteration
+      auto f_max = 0.0;
+      auto f_sum = 0.0;
       
       for (auto j = 0; j<nr; j++) {      // j indexes the different sequences (the rows of the matrix)
         
         
         
         if (pre_change_ukn) {
-          // std::cout << "y: " << Y(j ,t) << " j: " << j << " t: " << t << std::endl;
+          //std::cout << "y: " << Y(j ,t) << " j: " << j << " t: " << t << std::endl;
           m_info[j] = FOCuS_step(m_info[j], Y(j, t), grid, K);
-          
           //print(info.Q1.front());
-        } else{
+        } else {
           m_info[j] = FOCuS_step_sim(m_info[j], Y(j, t) - mu0[j], grid, K);
-
-          
         }
         
-        f_stats.insert(m_info[j].global_max);
-        maxs_at_time_t(j, t) = m_info[j].global_max;
         
+        
+        if (m_info[j].global_max > f_max) {
+          f_max = m_info[j].global_max;
+        }
+        
+        f_sum += m_info[j].global_max;
+        
+        //f_stats.insert(m_info[j].global_max);
+        maxs_at_time_t(j, t) = m_info[j].global_max;
         
       }
       
@@ -331,33 +337,34 @@ List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const
       std::cout << std::endl << "_____" << std::endl;
       */
       
+      // std::cout << "done!" << " max: " << f_max << " sum: " << f_sum << std::endl;
       
-      // penalty regime 3 from Fish & al. (2022)
-      // auto P2 = [thres, t, nr, a](int j)
-      // {
-      //   return  a * thres + 2 *  a * j * log(nr);
-      // };
       
-      //auto j = 1;
-      auto j = 0;
-      auto S = 0.0;
-      // Fish & al. (2022) stopping condition 
-      for (auto s_ = f_stats.rbegin(); s_ != f_stats.rend(); s_++) {
-        
-        S += *s_;
-        
-        //std::cout << "S: " << S << " p2: " << thres[j] << " - ";
-        
-        if (S >= thres[j]) {
-          cp = t + 1;
+      if (f_max >= thres[0] || f_sum >= thres[1]) {
+        cp = t + 1;
           //break;
-          goto ending;   //// **** I KNOW THIS IS A GOTO STATEMENT BUT HERE WE NEED TO QUIT - see end of function ***** 
-        }
-         j++;
+        goto ending;   //// **** I KNOW THIS IS A GOTO STATEMENT BUT HERE WE NEED TO QUIT - see end of function *****
       }
+
+      // auto j = 0;
+      // auto S = 0.0;
+      // // Fish & al. (2022) stopping condition 
+      // for (auto s_ = f_stats.rbegin(); s_ != f_stats.rend(); s_++) {
+      //   
+      //   S += *s_;
+      //   
+      //   //std::cout << "S: " << S << " p2: " << thres[j] << " - ";
+      //   
+      //   if (S >= thres[j]) {
+      //     cp = t + 1;
+      //     //break;
+      //     goto ending;   //// **** I KNOW THIS IS A GOTO STATEMENT BUT HERE WE NEED TO QUIT - see end of function ***** 
+      //   }
+      //    j++;
+      // }
       
       
-      //std::cout << std::endl << "_________________________________" << std::endl;
+      // std::cout << std::endl << "_________________________________" << std::endl;
       
       
 
@@ -384,6 +391,6 @@ List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const
   ending:
   return List::create(Rcpp::Named("t") = cp,
                       //Rcpp::Named("Q1") = last_Q1,
-                      Rcpp::Named("maxs") = maxs_at_time_t
+                      Rcpp::Named("stats") = maxs_at_time_t
                       );
 }

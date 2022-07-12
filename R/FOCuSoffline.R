@@ -46,15 +46,15 @@ setMethod("FOCuS",
 
 setMethod("FOCuS",
           signature(data = "matrix", thres = "numeric"),
-          function (datasource, thres, a = .7, nu = 2.1, MC_thres = NA, mu0 = NA, training_data = NA, grid = NA, K = Inf)
+          function (datasource, thres, mu0 = NA, training_data = NA, grid = NA, K = Inf)
           {
             # checks on the data generating function
             if( !is.numeric(datasource))
               stop("datasource must be a vector or a matrix of observations")
 
             # checks on the threshold
-            if( !is.numeric(thres) | thres < 0)
-              stop("thres must be a positive numeric")
+            if( length(thres) < 2)
+              stop("thres must be a positive numeric vector or length 2, for the max and sum thresholds")
 
             # checks on the mu0
             if(!is.na(mu0[1])) {
@@ -78,32 +78,25 @@ setMethod("FOCuS",
 
 
             
-            if(is.na(MC_thres[1]))
-              thresholds <- sapply(1:p, function (j) {
-                min(
-                  2 * thres + (p * nu + 2 * sqrt(p * nu * thres)),
-                  2 * thres + a *  2 * j * log(p)
-                  )
-              })
-            else 
-              thresholds <- MC_thres
+            # if(is.na(MC_thres[1]))
+            #   thresholds <- sapply(1:p, function (j) {
+            #     min(
+            #       2 * thres + (p * nu + 2 * sqrt(p * nu * thres)),
+            #       2 * thres + a *  2 * j * log(p)
+            #       )
+            #   })
+            # else 
+            #   thresholds <- MC_thres
             
             
 
             #warning("Going multivariate!")
-            out <- .FoCUS_mult_offline(datasource, thresholds, mu0, training_data, grid, K)
+            out <- .FoCUS_mult_offline(datasource, thres, mu0, training_data, grid, K)
 
-            out$sortStat <- cumsum(sort(out$maxs[, ifelse(out$t == -1, ncol(datasource), out$t)], decreasing = T))
-            out$threshold <- thresholds
+            out$maxs <- apply(out$stats, 2, max)
+            out$sums <- apply(out$stats, 2, sum)
             
-            if (F) {
-              plot(1:p, P1(1:p), type = "l", col = 2)
-              lines(1:p, P3(1:p), col = 3)
-              lines(1:p, P2(1:p), col = 1)
-              lines(1:p, thresholds, col = 5, lty = 2, lwd = 2)
-              abline(v = which(out$sortStat >= out$threshold))
-            }
-            
+
             # running the function
             # out <- .FoCUS_offline(datasource, thres, mu0, training_data, grid, K)
             # out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
