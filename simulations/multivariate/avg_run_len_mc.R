@@ -128,7 +128,7 @@ mean(runs)
 
 ocd_stat <- MC_ocd_v6(Y_monte_carlo, 1, "auto")
 
-p <- exp(-1)
+p <- .75
 avg_run_len <- 0
 while (avg_run_len < target_arl) {
   ocd_thres <- apply(ocd_stat, 2, quantile, prob = p)
@@ -152,7 +152,7 @@ while (avg_run_len < target_arl) {
 
 ocd_est_stat <- MC_ocd_v6(Y_monte_carlo, 1, "auto", training_data = Y_train)
 
-p <- .5
+p <- .7
 avg_run_len <- 0
 while(avg_run_len < target_arl) {
   ocd_est_thres <- apply(ocd_est_stat, 2, quantile, prob = p)
