@@ -33,7 +33,7 @@ focus0_res <- mclapply(Y_nc, function(y) {
 max_stats <- lapply(focus0_mc, function (r) apply(r, 1, max)) %>%
   Reduce(f = rbind)
 # this thresholds achieves an average run length of at least 4000
-foc0_thres <- apply(max_stats, 2, quantile, prob = .69)
+foc0_thres <- apply(max_stats, 2, quantile, prob = .65)
 
 runs <- sapply(focus0_res, function (stat) {
   for(t in seq_len(ncol(stat))) {
@@ -80,7 +80,7 @@ focus0_est_res <- mclapply(1:100, function(i) {
 max_stats <- lapply(focus0_est_mc, function (r) apply(r, 1, max)) %>%
   Reduce(f = rbind)
 
-foc0_est_thres <- apply(max_stats, 2, quantile, prob = .61)
+foc0_est_thres <- apply(max_stats, 2, quantile, prob = .65)
 
 runs <- sapply(focus0_est_res, function (stat) {
   for(t in seq_len(ncol(stat))) {
