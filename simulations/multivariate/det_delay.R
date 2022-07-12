@@ -4,10 +4,19 @@ CORES <- 16
 
 
 
-run_simulation <- function(simu, REPS) {
+run_simulation <- function(simu, REPS, type = c("equal", "random")) {
   print(simu)
 
-  Y <- lapply(1:REPS, function(i) generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i))
+  type <- match.arg(type)
+
+  Y <- switch(type,
+              equal = lapply(1:REPS, function(i) generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i)),
+              random = lapply(1:REPS, function(i) {
+                mag <- rnorm(1, 0, simu$delta)
+                generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = mag, dens = simu$prop, seed = i)
+              })
+  )
+
 
   
   # FOCuS0 - oracle mean
@@ -72,8 +81,8 @@ run_simulation <- function(simu, REPS) {
 
 sim_grid <- expand.grid(
   delta = c(1, .5, .25, .1),  # magnitude of a change
-  prop = c(0.01, .05, .1, .15, .5),   # proportion of sequences with a change
-  changepoint = 500,
+  prop = c(0.01, .05, .1, .15, 1),   # proportion of sequences with a change
+  changepoint = 200,
   N = 4000
 )
 
@@ -84,9 +93,7 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnit
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r7_bis.RData"
-
-
+output_file <- "./simulations/multivariate/results/r8.RData"
 if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
@@ -100,8 +107,6 @@ if (T) {
 
 load(output_file)
 
-
-library(tidyverse)
 summ <- outDF %>%
   mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
   group_by(density, magnitude, algo) %>%
@@ -110,4 +115,34 @@ summ <- outDF %>%
 summ %>% pivot_wider(names_from = algo, values_from = fps, - avg_det_delay)
 (out_table <- summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps))
 
-write_csv(out_table, file = "./simulations/multivariate/results/summary.csv")
+write_csv(out_table, file = "./simulations/multivariate/results/summary_equal.csv")
+
+
+################################################
+#######   changes of random magnitudes #########
+################################################
+
+output_file <- "./simulations/multivariate/results/r8_random.RData"
+
+if (T) {
+  NREP <- 100
+  outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
+    simu <- sim_grid[i, ]
+    return(run_simulation(simu, NREP, type = "random"))
+  })
+
+  outDF <- Reduce(rbind, outDF)
+  save(outDF, file = output_file)
+}
+
+load(output_file)
+
+summ <- outDF %>%
+  mutate(det_delay = ifelse(est - real < 0, NA, est - real), false_positive = ifelse(is.na(det_delay), T, F)) %>%
+  group_by(density, magnitude, algo) %>%
+  summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
+
+summ %>% pivot_wider(names_from = algo, values_from = fps, - avg_det_delay)
+(out_table <- summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps))
+
+write_csv(out_table, file = "./simulations/multivariate/results/summary_random.csv")
