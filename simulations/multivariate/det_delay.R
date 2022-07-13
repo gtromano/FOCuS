@@ -11,7 +11,7 @@ run_simulation <- function(simu, REPS, type = c("equal", "random")) {
   Y <- switch(type,
               equal = lapply(1:REPS, function(i) generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i)),
               random = lapply(1:REPS, function(i) {
-                set.seed(1357 + i) 
+                set.seed(123 * i)
                 mag <- rnorm(1, 0, simu$delta)
                 generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = mag, dens = simu$prop, seed = i)
               })
