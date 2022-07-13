@@ -3,7 +3,6 @@ source("simulations/multivariate/helper_functions.R")
 CORES <- 16
 
 
-
 run_simulation <- function(simu, REPS, type = c("equal", "random")) {
   print(simu)
 
@@ -12,11 +11,11 @@ run_simulation <- function(simu, REPS, type = c("equal", "random")) {
   Y <- switch(type,
               equal = lapply(1:REPS, function(i) generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i)),
               random = lapply(1:REPS, function(i) {
+                set.seed(1357 + i) 
                 mag <- rnorm(1, 0, simu$delta)
                 generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = mag, dens = simu$prop, seed = i)
               })
   )
-
 
   
   # FOCuS0 - oracle mean
@@ -49,6 +48,17 @@ run_simulation <- function(simu, REPS, type = c("equal", "random")) {
   res <- unlist(res)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS", est = res, real = simu$changepoint, N = simu$N))
+  
+  # FOCuS - pre-change unkown - same number of observations of the pre-change mean unknown and estimated
+  res <- mclapply(1:REPS, function(i) {
+    y <- cbind(tail(Y_train[[i]], 300), Y[[i]])
+    
+    r <- FOCuS(y, foc_thres)
+    ifelse(r$t == -1, simu$N, r$t - 300)
+  }, mc.cores = CORES)
+  res <- unlist(res)
+  output <- rbind(output,
+                  data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS ext", est = res, real = simu$changepoint, N = simu$N))
   
   # ocd oracle
   res <- mclapply(1:REPS, function(i) {
@@ -113,7 +123,9 @@ summ <- outDF %>%
   summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
 
 summ %>% pivot_wider(names_from = algo, values_from = fps, - avg_det_delay)
-(out_table <- summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps))
+(out_table <- summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps)%>% 
+    relocate("ocd Inf", .after = magnitude) %>%
+    relocate("ocd est", .before = "FOCuS0 est"))
 
 write_csv(out_table, file = "./simulations/multivariate/results/summary_equal.csv")
 
@@ -121,6 +133,11 @@ write_csv(out_table, file = "./simulations/multivariate/results/summary_equal.cs
 ################################################
 #######   changes of random magnitudes #########
 ################################################
+
+load("simulations/multivariate/thres.RData")
+
+# training data for reconstructing the value of mu0
+Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))
 
 output_file <- "./simulations/multivariate/results/r8_random.RData"
 
@@ -143,6 +160,8 @@ summ <- outDF %>%
   summarise(avg_det_delay = mean(det_delay, na.rm = T), fps = sum(false_positive))
 
 summ %>% pivot_wider(names_from = algo, values_from = fps, - avg_det_delay)
-(out_table <- summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps))
+(out_table <- summ %>% pivot_wider(names_from = algo, values_from = avg_det_delay, - fps) %>% 
+    relocate("ocd Inf", .after = magnitude) %>%
+    relocate("ocd est", .before = "FOCuS0 est"))
 
 write_csv(out_table, file = "./simulations/multivariate/results/summary_random.csv")
