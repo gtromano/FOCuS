@@ -11,7 +11,7 @@ run_simulation <- function(simu, REPS, type = c("equal", "random")) {
   Y <- switch(type,
               equal = lapply(1:REPS, function(i) generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i)),
               random = lapply(1:REPS, function(i) {
-                set.seed(123 * i)
+                set.seed(500 * simu$delta * simu$prop + 1000 + i) # getting funky
                 mag <- rnorm(1, 0, simu$delta)
                 generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = mag, dens = simu$prop, seed = i)
               })
@@ -93,7 +93,7 @@ sim_grid <- expand.grid(
   delta = c(1, .5, .25, .1),  # magnitude of a change
   prop = c(0.01, .05, .1, .15, 1),   # proportion of sequences with a change
   changepoint = 200,
-  N = 5000
+  N = 4000
 )
 
 
@@ -103,7 +103,7 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnit
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r9.RData"
+output_file <- "./simulations/multivariate/results/r8.RData"
 if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
@@ -139,7 +139,7 @@ load("simulations/multivariate/thres.RData")
 # training data for reconstructing the value of mu0
 Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnitude = 0, dens = 0, seed = 600 + i))
 
-output_file <- "./simulations/multivariate/results/r9_random.RData"
+output_file <- "./simulations/multivariate/results/r8_random.RData"
 
 if (T) {
   NREP <- 100

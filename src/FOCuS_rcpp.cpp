@@ -116,6 +116,7 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
   Quadratic Q0, q1;
   Info info = {Q0, {q1}, 0};
   std::list<double> max_at_time_t;
+  std::list<int> nquads;
   
   try {
     // if we have previous training data for FOCuS pre-change-unknown, then updates the Q0 accordingly
@@ -134,6 +135,7 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
         info = FOCuS_step(std::move(info), y, grid, K);
         //print(info.Q1.front());
         max_at_time_t.push_back(info.global_max);
+        nquads.push_back(info.Q1.size());
         if (info.global_max >= thres) {
           cp = t;
           break;
@@ -144,6 +146,7 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
         t += 1;
         info = FOCuS_step_sim(std::move(info), y - mu0, grid, K);
         max_at_time_t.push_back(info.global_max);
+        nquads.push_back(info.Q1.size());
         if (info.global_max >= thres) {
           cp = t;
           break;
@@ -169,10 +172,11 @@ List FOCuS_offline(NumericVector Y, const double thres, const double& mu0, std::
   
   return List::create(Rcpp::Named("t") = cp,
                       Rcpp::Named("Q1") = last_Q1,
-                      Rcpp::Named("maxs") = max_at_time_t);
+                      Rcpp::Named("maxs") = max_at_time_t,
+                      Rcpp::Named("nquads") = nquads);
 }
 
-// [[Rcpp::export(.FOCuS_Melk)]]
+// [[Rcpp::export(FOCuS_Melk)]]
 List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::list<double>& grid, const double& K) {
   
   if (!std::isnan(grid.front())) {
@@ -197,12 +201,14 @@ List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::lis
   Quadratic q1;
   mInfo info = {{q1}, {q1}, 0};
   std::list<double> max_at_time_t;
-  
+  std::list<int> nquads;
+
   for (auto& y:Y) {
     t += 1;
     //std::cout << "\n time " << t << std::endl;
     info = FOCuS_step_melk(std::move(info), y - mu0, lgrid, rgrid, K);
     max_at_time_t.push_back(info.global_max);
+    nquads.push_back(info.Qright.size());
     if (info.global_max >= thres) {
       cp = t;
       break;
@@ -220,7 +226,8 @@ List FOCuS_melk(NumericVector Y, const double thres, const double& mu0, std::lis
   return List::create(Rcpp::Named("t") = cp,
                       Rcpp::Named("Qleft") = last_Qleft,
                       Rcpp::Named("Qright") = last_Qright,
-                      Rcpp::Named("maxs") = max_at_time_t);
+                      Rcpp::Named("maxs") = max_at_time_t,
+                      Rcpp::Named("nquads") = nquads);
 }
 
 
