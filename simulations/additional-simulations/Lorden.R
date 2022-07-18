@@ -17,41 +17,6 @@ for(i in 1:n){
 }
 return(quad.st)
 }
-#
-# ##find expected number of quadratics as we vary mu.
-# mus=c(1:10/100,0.1+1:10/25,0.5+1:5/10)
-#
-# K=50
-# maxqs=matrix(NA,nrow=K,ncol=length(mus))
-# meanqs=matrix(NA,nrow=K,ncol=length(mus))
-#
-# for(k in 1:K){
-# set.seed(k)
-# z=rnorm(1e6)
-# for(j in 1:length(mus)){
-#   out=Lorden(mus[j],z)
-#   maxqs[k,j]=max(out)
-#   meanqs[k,j]=mean(out)
-# }
-# cat(".")
-# if(k%%10==0) cat("\n")
-# }
-#
-#
-# savepdf <- function(file, width=16, height=10)
-# {
-#   fname <- paste(file,".pdf",sep="")
-#   pdf(fname, width=width/2.54, height=height/2.54,
-#       pointsize=10)
-#   par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(3.3,3.6,1.1,1.1))
-# }
-#
-# #savepdf("Quadratics",width=10,height=6)
-# ##
-# par(mfrow=c(1,2))
-# plot(mus,apply(meanqs,2,mean),log="y",ylab="Ave. Number of Quadratics",xlab="mu",type="l")
-# plot(mus,apply(maxqs,2,mean),log="y",ylab="Max Number of Quadratics",xlab="mu",type="l")
-# #dev.off()
 
 ###########################################################
 ###### comparison on the number of quadratics #############
@@ -60,38 +25,103 @@ return(quad.st)
 library(FOCuS)
 
 library(parallel)
-N <- 1e4
+N <- 1e6 + 4e4
 
 mus <- c(0.01, 0.05, 0.1, 0.5, 1)
 
-Y <- lapply(1:20, function(i) {
+Y <- lapply(1:50, function(i) {
   set.seed(i)
   rnorm(N)
 })
 
-totsim <- mclapply(Y, function (y) {
-  res_foc <- FOCuS_Melk(y, Inf, 0, NaN, NaN)
-  df <- data.frame(t = 1:N, nq = res_foc$nquads, algo = "FOCuS")
+df <- data.frame(t = integer(), nq = integer(), algo = character())
+
+for (i in 1:50) {
+
+  t <- c(1, 100, which(1:N %% 1e4 == 0)) # subsampling
+
+  y <- Y[[i]]
+
+  res_foc <- FOCuS_Melk(y, Inf, 0, NaN, NaN)$nquads - 1
+  df <- rbind(df, data.frame(t = t, nq = res_foc[t], algo = "FOCuS"))
 
   for (m in mus) {
-    res_Lor <- Lorden(m, y)
-    df <- rbind(df,
-                data.frame(t = 1:N, nq = res_Lor, algo = paste0("Lor ", m)))
-
+    res_Lor <- Lorden(m, y) - 1
+    df <- rbind(df, data.frame(t = t, nq = res_Lor[t], algo = paste0("Lor ", m)))
   }
-  df
-}, mc.cores = 4)
 
-df <- totsim[[1]]
-for (sim in totsim[-1]) {
-  df <- rbind(df, sim)
+  print(i)
+
 }
 
-rm(totsim, Y)
+theme_idris <- function() {
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "grey20"),
+    panel.border =  element_rect(fill = NA,
+                                 colour = "grey20")
+  )
+}
 
-library(ggplot2)
-ggplot(df, aes(x = t, y = nq, col = algo)) +
-  stat_summary(fun = mean, geom="line", alpha = 0.8) +
+
+
+library(isotone)
+library(tidyverse)
+
+
+
+# subsampling
+df_summ <- df %>% group_by(algo) %>%
+  summarise(t = t, iso = gpava(t, nq)$x)
+
+df_summ <- df_summ %>% group_by(algo, t) %>% summarise(mean = mean(iso))
+
+pava_est <- ggplot(df_summ, aes(x = t, y = mean, col = algo)) +
+  geom_line() +
   scale_y_log10() +
-  ylab("Number of quadratics") +
-  theme_bw()
+  ylab("Avg. Number of quadratics") +
+  xlim(0, 1e6) +
+  scale_color_manual(values = cbPalette) +
+  theme_idris()
+
+pava_est
+ggsave("simulations/additional-simulations/nquads_comp_iso.png", pava_est, width = 7, height = 4)
+
+
+###############################################
+
+new_df <- data.frame(t = integer(), fitted = integer(), algo = character())
+aaaa <- df %>% pivot_wider(values_from = nq, names_from = algo)
+
+for(algo in unique(df$algo)) {
+  bbbb <- Reduce(rbind, aaaa[algo])
+  res <- gpava(aaaa$t, bbbb)
+  
+  new_df <- rbind(new_df, data.frame(t = res$z, fitted = res$x, algo = algo))
+}
+
+pava_est <- ggplot(new_df, aes(x = t, y = fitted, col = algo)) +
+  geom_line() +
+  scale_y_log10() +
+  ylab("Avg. Number of quadratics") +
+  xlim(0, 1e6) +
+  scale_color_manual(values = cbPalette) +
+  theme_idris()
+
+pava_est
+
+
+cbPalette <- RColorBrewer::brewer.pal(7, "Paired")[c(2, 3, 4, 5, 6, 7)]
+final_plot <- ggplot(df, aes(x = t, y = nq, col = algo)) +
+  geom_smooth(span = 0.8, se = FALSE) +
+  scale_y_log10() +
+  ylab("Avg. Number of quadratics") +
+  scale_color_manual(values = cbPalette) +
+  theme_idris()
+
+final_plot
+
+ggsave("simulations/additional-simulations/nquads_comp.png", final_plot, width = 7, height = 4)
+ggsave("simulations/additional-simulations/nquads_comp_loglog.png", final_plot + scale_x_log10(), width = 7, height = 4)

@@ -237,5 +237,13 @@ get_ocd_thres <- function(gamma, p) {
   setNames(c(diag, off_d, off_s), c('diag', 'off_d', 'off_s'))
 }
 
-
-
+theme_idris <- function() {
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "grey20"),
+    panel.border =  element_rect(fill = NA,
+                                 colour = "grey20")
+  )
+}
