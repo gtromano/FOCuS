@@ -11,7 +11,10 @@ generate_sequence <- function(n = 1000, p = 100, cp = 200, sd = 1, magnitude = 1
   pre_change <- rep(0, p)#rnorm(p, mean = 0)
   #pre_change <- rnorm(p, mean = 0)
   
-  post_change <- pre_change + c(sample(c(magnitude, -magnitude), floor(p * dens), replace = T), rep(0, floor(p * (1-dens))))
+  #set.seed(5000 + magnitude * seed)
+  zi <- rnorm(floor(p * dens))
+  post_means <- magnitude * (zi / sum(abs(zi)))
+  post_change <- pre_change + c(post_means, rep(0, floor(p * (1-dens))))
   noise + cbind(matrix(pre_change, nr = p, nc = cp), matrix(post_change, nr = p, nc = n - cp))
 
 }
