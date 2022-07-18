@@ -81,14 +81,13 @@ df_summ <- df_summ %>% group_by(algo, t) %>% summarise(mean = mean(iso))
 pava_est <- ggplot(df_summ, aes(x = t, y = mean, col = algo)) +
   geom_line() +
   scale_y_log10() +
-  ylab("Avg. Number of quadratics") +
+  ylab("Ave. Number of Test Statistics/Quadratics") +
   xlim(0, 1e6) +
   scale_color_manual(values = cbPalette) +
   theme_idris()
 
 pava_est
 ggsave("simulations/additional-simulations/nquads_comp_iso.png", pava_est, width = 7, height = 4)
-
 
 ###############################################
 
@@ -112,6 +111,7 @@ pava_est <- ggplot(new_df, aes(x = t, y = fitted, col = algo)) +
 
 pava_est
 
+#############################################################################
 
 cbPalette <- RColorBrewer::brewer.pal(7, "Paired")[c(2, 3, 4, 5, 6, 7)]
 final_plot <- ggplot(df, aes(x = t, y = nq, col = algo)) +

@@ -6,11 +6,9 @@ CORES <- 16
 run_simulation <- function(simu, REPS) {
   print(simu)
 
-  type <- match.arg(type)
 
-  Y <- mclapply(1:REPS, function(i) generate_sequence(n = simu$N, cp =  simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i),
+  Y <- mclapply(1:REPS, function(i) generate_sequence(n = simu$N, cp = simu$changepoint, magnitude = simu$delta, dens = simu$prop, seed = i),
                 mc.cores = CORES)
-
   
   # FOCuS0 - oracle mean
   res <- mclapply(1:REPS, function(i) {
@@ -84,8 +82,8 @@ run_simulation <- function(simu, REPS) {
 
 
 sim_grid <- expand.grid(
-  delta = c(.25, .5, 1, 2),  # magnitude of a change
-  prop = c(0.01, .1,  1),   # proportion of sequences with a change
+  delta = c(2, 1, .5, 0.25),  # magnitude of a change
+  prop = c(0.01, 0.05, .1,  1),  # proportion of sequences with a change
   changepoint = 200,
   N = 4000
 )
