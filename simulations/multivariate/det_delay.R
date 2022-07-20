@@ -85,7 +85,7 @@ sim_grid <- expand.grid(
   delta = c(2, 1, .5, 0.25),  # magnitude of a change
   prop = c(0.01, 0.05, .1,  1),  # proportion of sequences with a change
   changepoint = 200,
-  N = 4000
+  N = 5000
 )
 
 
@@ -95,7 +95,7 @@ Y_train <- lapply(1:100, function(i) generate_sequence(n = 500, cp = 199, magnit
 
 load("simulations/multivariate/thres.RData")
 
-output_file <- "./simulations/multivariate/results/r9.RData"
+output_file <- "./simulations/multivariate/results/r10.RData"
 if (T) {
   NREP <- 100
   outDF <- lapply(seq_len(nrow(sim_grid)), function (i) {
