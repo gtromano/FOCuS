@@ -70,4 +70,4 @@ ggplot(plotDF %>% filter(algo != "FOCuS-t")) +
   scale_color_manual(values = cbPalette) +
   ylab("Run Length") +
   geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
-  theme_idris() + theme(legend.position = "none")
+  theme_idris() + theme(legend.position = "none") + hugefonts()

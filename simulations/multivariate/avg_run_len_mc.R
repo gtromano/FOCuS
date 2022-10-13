@@ -21,12 +21,12 @@ Y_monte_carlo <- lapply(1:100, function(i) generate_sequence(n = target_arl + 10
 ##################################
 
 focus0_mc <- mclapply(Y_monte_carlo, function(y) {
-  res <- FOCuS(y, c(Inf, Inf), mu0 = rep(0, 100))
+  res <- FOCuS_multi_JMLR(y, c(Inf, Inf), mu0 = rep(0, 100))
   rbind(res$maxs, res$sums)
 }, mc.cores = CORES)
 
 focus0_res <- mclapply(Y_nc, function(y) {
-  res <- FOCuS(y, c(Inf, Inf), mu0 = rep(0, 100))
+  res <- FOCuS_multi_JMLR(y, c(Inf, Inf), mu0 = rep(0, 100))
   rbind(res$maxs, res$sums)
 }, mc.cores = CORES)
 
@@ -63,7 +63,7 @@ focus0_est_mc <- mclapply(1:100, function(i) {
   y_tr <- Y_train[[i]]
   y <- Y_monte_carlo[[i]]
   mu0hat <- apply(y_tr, 1, mean)
-  res <- FOCuS(y, c(Inf, Inf), mu0 = mu0hat)
+  res <- FOCuS_multi_JMLR(y, c(Inf, Inf), mu0 = mu0hat)
   rbind(res$maxs, res$sums)
                          # applying cumulative sums
   }, mc.cores = CORES)
@@ -72,7 +72,7 @@ focus0_est_res <- mclapply(1:100, function(i) {
   y_tr <- Y_train[[i]]
   y <- Y_nc[[i]]
   mu0hat <- apply(y_tr, 1, mean)
-  res <- FOCuS(y, c(Inf, Inf), mu0 = mu0hat)
+  res <- FOCuS_multi_JMLR(y, c(Inf, Inf), mu0 = mu0hat)
   rbind(res$maxs, res$sums)
                          # applying cumulative sums
   }, mc.cores = CORES)
@@ -97,13 +97,13 @@ mean(runs)
 
 focus_mc <- mclapply(1:100, function(i) {
   y <- Y_monte_carlo[[i]]
-  res <- FOCuS(y, c(Inf, Inf))
+  res <- FOCuS_multi_JMLR(y, c(Inf, Inf))
   rbind(res$maxs, res$sums)
 }, mc.cores = CORES)
 
 focus_res <- mclapply(1:100, function(i) {
   y <- Y_nc[[i]]
-  res <- FOCuS(y, c(Inf, Inf))
+  res <- FOCuS_multi_JMLR(y, c(Inf, Inf))
   rbind(res$maxs, res$sums)
 }, mc.cores = CORES)
 

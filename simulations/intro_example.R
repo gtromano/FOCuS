@@ -63,7 +63,7 @@ mosumTR <- mclapply(data, MOSUM_offline_kirch, threshold = Inf, w = 50, mc.cores
 pageTR <- mclapply(data, PageCUSUM_offline_kirch, threshold = Inf, mc.cores = 6)
 
 
-tre_seq <- seq(0.5, 5, length.out = 100)
+tre_seq <- seq(0.5, 5, length.out = 50)
 avg_run_len <- matrix(nr = length(tre_seq), nc = 3)
 
 row.names(avg_run_len) <- tre_seq
@@ -84,7 +84,7 @@ pageT <- tre_seq[which(avg_run_len[, 3] == 2000)][1]
 
 
 ### this is the common noise
-set.seed(45)
+set.seed(42)
 base <- rnorm(2e3)
 
 #### case 1, length 2000, mag of 1 ###
@@ -120,7 +120,7 @@ mosumTR <- mclapply(data, MOSUM_offline_kirch, threshold = Inf, w = 50, mc.cores
 pageTR <- mclapply(data, PageCUSUM_offline_kirch, threshold = Inf, mc.cores = 6)
 
 
-tre_seq <- seq(2, 6, length.out = 100)
+tre_seq <- seq(2, 6, length.out = 50)
 avg_run_len <- matrix(nr = length(tre_seq), nc = 3)
 
 row.names(avg_run_len) <- tre_seq
@@ -175,20 +175,20 @@ anomalies_plot <- function (y, t, real, estimatedFOCuS, estimatedHTM, truechange
   realdf <- data.frame(x1 = real, y1 = ymin, y2 = ymin - len)
   realdf <- realdf %>% mutate(yc = (y1 + y2)/2, xst = truechange)
   realcps <- geom_segment(aes(x = x1, xend = x1, y = y1, yend = y2), data = realdf, col = 3)
-  s1 <- geom_segment(aes(x = xst, xend = x1, y = yc, yend = yc), data = realdf, col = "grey", lty = 2)
+  s1 <- geom_segment(aes(x = xst, xend = x1  - 1, y = yc, yend = yc), data = realdf, col = "grey", lty = 2)
 
   # est cps
   estdf <- data.frame(x1 = estimatedFOCuS, y1 = (ymin - len), y2 = (ymin - 2 * len))
   estdf <- estdf %>% mutate(yc = (y1 + y2)/2, xst = truechange)
   FOCuS_est = geom_segment(aes(x = x1, xend = x1, y = y1, yend = y2), data = estdf, col = 2)
-  s2 <- geom_segment(aes(x = xst, xend = x1, y = yc, yend = yc), data = estdf, col = "grey", lty = 2)
+  s2 <- geom_segment(aes(x = xst, xend = x1 - 1, y = yc, yend = yc), data = estdf, col = "grey", lty = 2)
 
 
   # est numenta
   estHTM <- data.frame(x1 = estimatedHTM, y1 =  (ymin - 2 * len), y2 = (ymin - 3 * len))
   estHTM <- estHTM %>% mutate(yc = (y1 + y2)/2, xst = truechange)
   HTM_est <- geom_segment(aes(x = x1, xend = x1, y = y1, yend = y2), data = estHTM, col = 4)
-  s3 <- geom_segment(aes(x = xst, xend = x1, y = yc, yend = yc), data = estHTM, col = "grey", lty = 2)
+  s3 <- geom_segment(aes(x = xst, xend = x1  - 1, y = yc, yend = yc), data = estHTM, col = "grey", lty = 2)
 
   exe <- ggplot(data.frame(t = t, y), aes(x = t, y = y)) +
     geom_line() +
@@ -205,15 +205,19 @@ anomalies_plot <- function (y, t, real, estimatedFOCuS, estimatedHTM, truechange
 p1 <- anomalies_plot(y1, 1:2000, res1c, res1m, res1p) +
   geom_vline(xintercept = 1000, col = "grey")
 
-ggsave(p1, filename = "simulations/intro_plot_1.png", width = 8, height = 2)
+ggsave(p1, filename = "simulations/intro_plot_1.png", width = 8, height = 2, dpi = 300, scale = .9)
 
 # second scenario
+if (res2m == -1) {
+  res2m <- 2e3 + 1
+}
 p2 <- anomalies_plot(y2, 1:2000, res2c, res2m, res2p) +
-  geom_vline(xintercept = 1000, col = "grey")
-ggsave(p2, filename = "simulations/intro_plot_2.png", width = 8, height = 2)
+  geom_vline(xintercept = 1000, col = "grey") +
+  xlim(0, 2e3)
+ggsave(p2, filename = "simulations/intro_plot_2.png", width = 8, height = 2, dpi = 300, scale = .9)
 
 # thirds scenario
 p3 <- anomalies_plot(y3, 1:1e4, res3c, res3m, res3p, truechange = 9e3) +
   geom_vline(xintercept = 9e3, col = "grey") +
   xlim(8000, 10000)
-ggsave(p3, filename = "simulations/intro_plot_3.png", width = 8, height = 2)
+ggsave(p3, filename = "simulations/intro_plot_3.png", width = 8, height = 2, dpi = 300, scale = .9)

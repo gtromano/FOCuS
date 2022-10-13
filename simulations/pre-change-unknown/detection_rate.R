@@ -128,7 +128,7 @@ detection_delay <-
   ylab("Detection Delay") +
   scale_y_log10() +
   scale_x_log10() +
-  theme_idris() #+ theme(legend.position = "none")
+  theme_idris() + theme(legend.position = "none") + hugefonts()
 detection_delay
 
 
@@ -156,9 +156,9 @@ comp_table <- comp_table[, c(1, 8:12)] %>%
 data_label <- comp_table %>%
   filter(magnitude == max(comp_table$magnitude)) %>%
   mutate(label = as.character(ratio))
+data_label <- data_label[-1, ]
 
-
-cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(1, 4, 5, 6)]
+cbPalette <- RColorBrewer::brewer.pal(6, "Paired")[c(4, 5, 6)]
 ggplot(comp_table %>% filter(!(ratio %in% c("FOCuS/FOCuS-t", "FOCuS/FOCuS0 1000")))) +
         geom_hline(yintercept = 0, col = "grey", lty = 2) +
         geom_line(aes(x = magnitude, y = rval, col = ratio)) +
@@ -167,7 +167,7 @@ ggplot(comp_table %>% filter(!(ratio %in% c("FOCuS/FOCuS-t", "FOCuS/FOCuS0 1000"
         ylim(-.5, .5) +
         ylab("log ratio") +
         scale_color_manual(values = cbPalette) +
-        theme_idris() + theme(legend.position = "none")
+        theme_idris() + theme(legend.position = "none") + hugefonts(18)
 
 
 # appendix plot

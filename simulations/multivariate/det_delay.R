@@ -13,7 +13,7 @@ run_simulation <- function(simu, REPS) {
   # FOCuS0 - oracle mean
   res <- mclapply(1:REPS, function(i) {
     y <- Y[[i]]
-    r <- FOCuS(y, foc0_thres, mu0 = rep(0, 100))
+    r <- FOCuS_multi_JMLR(y, foc0_thres, mu0 = rep(0, 100))
     ifelse(r$t == -1, simu$N, r$t)
   }, mc.cores = CORES)
   res <- unlist(res)
@@ -24,17 +24,17 @@ run_simulation <- function(simu, REPS) {
   res <- mclapply(1:REPS, function(i) {
     y <- Y[[i]]
     mu0hat <- apply(Y_train[[i]], 1, mean)
-    r <- FOCuS(y, foc0_est_thres, mu0 = mu0hat)
+    r <- FOCuS_multi_JMLR(y, foc0_est_thres, mu0 = mu0hat)
     ifelse(r$t == -1, simu$N, r$t)
   }, mc.cores = CORES)
   res <- unlist(res)
   output <- rbind(output,
                   data.frame(sim = 1:REPS, magnitude = simu$delta, density = simu$prop, algo = "FOCuS0 est", est = res, real = simu$changepoint, N = simu$N))
   
-  # FOCuS - pre-change unkown
+  # FOCuS_multi_JMLR - pre-change unkown
   res <- mclapply(1:REPS, function(i) {
     y <- Y[[i]]
-    r <- FOCuS(y, foc_thres)
+    r <- FOCuS_multi_JMLR(y, foc_thres)
     ifelse(r$t == -1, simu$N, r$t)
   }, mc.cores = CORES)
   res <- unlist(res)
@@ -45,7 +45,7 @@ run_simulation <- function(simu, REPS) {
   res <- mclapply(1:REPS, function(i) {
     y <- cbind(Y_train[[i]][, 201:ncol(Y_train[[i]])], Y[[i]])
     
-    r <- FOCuS(y, foc_thres)
+    r <- FOCuS_multi_JMLR(y, foc_thres)
     ifelse(r$t == -1, simu$N, r$t - 300)
   }, mc.cores = CORES)
   res <- unlist(res)
