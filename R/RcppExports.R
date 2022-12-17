@@ -29,6 +29,10 @@ CUSUM_offline <- function(Y, thres, mu0) {
     .Call(`_FOCuS_CUSUM_offline`, Y, thres, mu0)
 }
 
+.focus_offline_new_imp <- function(Z, threshold, theta0) {
+    .Call(`_FOCuS_focus_offline_new_imp`, Z, threshold, theta0)
+}
+
 #' Function to update list of intervals (up or down) 
 #'
 #' @param n number of datapoints

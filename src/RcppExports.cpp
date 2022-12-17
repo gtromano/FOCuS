@@ -112,6 +112,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// focus_offline_new_imp
+List focus_offline_new_imp(NumericVector Z, double threshold, double theta0);
+RcppExport SEXP _FOCuS_focus_offline_new_imp(SEXP ZSEXP, SEXP thresholdSEXP, SEXP theta0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    Rcpp::traits::input_parameter< double >::type theta0(theta0SEXP);
+    rcpp_result_gen = Rcpp::wrap(focus_offline_new_imp(Z, threshold, theta0));
+    return rcpp_result_gen;
+END_RCPP
+}
 // simpleMelkman
 List simpleMelkman(NumericVector x, bool onlyPrune, bool exportInR);
 RcppExport SEXP _FOCuS_simpleMelkman(SEXP xSEXP, SEXP onlyPruneSEXP, SEXP exportInRSEXP) {
@@ -146,6 +159,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_MOSUM_offline_kirch", (DL_FUNC) &_FOCuS_MOSUM_offline_kirch, 3},
     {"_FOCuS_PageCUSUM_offline", (DL_FUNC) &_FOCuS_PageCUSUM_offline, 4},
     {"_FOCuS_CUSUM_offline", (DL_FUNC) &_FOCuS_CUSUM_offline, 3},
+    {"_FOCuS_focus_offline_new_imp", (DL_FUNC) &_FOCuS_focus_offline_new_imp, 3},
     {"_FOCuS_simpleMelkman", (DL_FUNC) &_FOCuS_simpleMelkman, 3},
     {"_FOCuS_YuCUSUM_offline", (DL_FUNC) &_FOCuS_YuCUSUM_offline, 2},
     {NULL, NULL, 0}

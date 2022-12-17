@@ -27,13 +27,29 @@ setMethod("FOCuS",
             
             
             # running the function
-            if (is.matrix(datasource))
+            if (is.matrix(datasource)) {
               out <- .FoCUS_mult_offline(datasource, thres, mu0, training_data, grid, K)
-            else
-              out <- .FoCUS_offline(datasource, thres, mu0, training_data, grid, K)
-            out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
-            class(out) <-  c("FOCuSout", class(out))
-            class(out$Q1) <- c("PiecewiseQuadratic", class(out))
+            } else {
+              
+              if (is.na(grid) && is.infinite(K)) {
+                if (is.na(mu0)) # in the new implementation theta0 is passed as a NaN rather than an NA
+                  mu0 <- NaN
+                
+                # new implementation
+                out <- .focus_offline_new_imp(datasource, thres, mu0)
+                out$maxs <- out$maxs[1:out$t]
+                class(out) <-  c("FOCuSout", class(out))
+                
+                
+              } else {
+
+                out <- .FoCUS_offline(datasource, thres, mu0, training_data, grid, K)
+                out$changepoint <- out$t + out$Q1[[which.max(sapply(out$Q1, function(q) q$max))]]$a * 2
+                class(out) <-  c("FOCuSout", class(out))
+                class(out$Q1) <- c("PiecewiseQuadratic", class(out))
+                
+              }
+            }
             
             if (!is.null(out$warning_message))
               warning(out$warning_message)
