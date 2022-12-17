@@ -11,8 +11,6 @@ FOCuS(datasource, thres, ...)
 
 \item{thres}{The threshold for a detection.}
 
-\item{...}{Other additional arguments passed to the method.}
-
 \item{mu0}{The value of the pre-change mean, if known. Defaulting to \code{NA}. When \code{NA}, the pre-change-mean unknown recursion will be employed. Pre-change mean is therefore estimated iteratively.}
 
 \item{grid}{A vector of values of change magnitudes for enabling the FOCuS grid approximation. Defaults to \code{NA}, such that by default FOCuS runs exactly. See \strong{Details}.}

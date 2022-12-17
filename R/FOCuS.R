@@ -4,7 +4,6 @@
 #' 
 #' @param datasource Either a data generating function, for an online analysis, or a vector of observations, for offline testing. See \strong{Details}.
 #' @param thres The threshold for a detection.
-#' @param ... Other additional arguments passed to the method. 
 #' @param mu0 The value of the pre-change mean, if known. Defaulting to \code{NA}. When \code{NA}, the pre-change-mean unknown recursion will be employed. Pre-change mean is therefore estimated iteratively.
 #' @param grid A vector of values of change magnitudes for enabling the FOCuS grid approximation. Defaults to \code{NA}, such that by default FOCuS runs exactly. See \strong{Details}.
 #' @param K The value of the bi-weight cost function. Defaulting to \code{Inf}. This is to provide robustness to outliers. FOCuS will ignore point outliers larger then K.

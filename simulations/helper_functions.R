@@ -4,7 +4,14 @@ library(parallel)
 library(ggpubr)
 library(mosum)
 
-
+hugefonts <- function (size = 18) {
+ theme(text=element_text(size=size), #change font size of all text
+        axis.text=element_text(size=size), #change font size of axis text
+        axis.title=element_text(size=size), #change font size of axis titles
+        plot.title=element_text(size=size), #change font size of plot title
+        legend.text=element_text(size=size), #change font size of legend text
+        legend.title=element_text(size=size)) #change font size of legend title
+}
 theme_idris <- function() {
   theme(
     panel.grid.major = element_blank(),

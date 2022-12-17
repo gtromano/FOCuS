@@ -9,8 +9,12 @@
     .Call(`_FOCuS_FOCuS_offline`, Y, thres, mu0, training_data, grid, K)
 }
 
-.FOCuS_Melk <- function(Y, thres, mu0, grid, K) {
+FOCuS_Melk <- function(Y, thres, mu0, grid, K) {
     .Call(`_FOCuS_FOCuS_melk`, Y, thres, mu0, grid, K)
+}
+
+.FoCUS_mult_offline <- function(Y, thres, mu0, training_data, grid, K) {
+    .Call(`_FOCuS_FOCuS_mult_offline`, Y, thres, mu0, training_data, grid, K)
 }
 
 MOSUM_offline_kirch <- function(Y, thres, W) {

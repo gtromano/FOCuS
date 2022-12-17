@@ -62,7 +62,7 @@ if (T) {
 }
 
 ### ggplot ###
-load("simulations/pre-change-known/results/avg_run_len_NEW5.RData")
+load("simulations/pre-change-known/results/avg_run_len_NEW7.RData")
 plotDF <- as.data.frame(avg_run_len) %>%
    add_column(threshold = thre_seq) %>%
    pivot_longer(names_to = "algo", values_to = "avg_run_len", - threshold)
@@ -78,4 +78,4 @@ ggplot(plotDF %>% filter(algo != "FOCuSmelk", avg_run_len < 1.5e6)) +
    ylab("Run Length") +
    geom_hline(yintercept = 1e6, col = "grey", lty = 2) +
    theme_idris() +
-   theme(legend.position = "none")
+   theme(legend.position = "none") + hugefonts()

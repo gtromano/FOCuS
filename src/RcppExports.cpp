@@ -56,6 +56,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// FOCuS_mult_offline
+List FOCuS_mult_offline(NumericMatrix Y, const std::vector<double>& thres, const std::vector<double>& mu0, std::vector<double>& training_data, std::list<double>& grid, const double& K);
+RcppExport SEXP _FOCuS_FOCuS_mult_offline(SEXP YSEXP, SEXP thresSEXP, SEXP mu0SEXP, SEXP training_dataSEXP, SEXP gridSEXP, SEXP KSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type thres(thresSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type mu0(mu0SEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type training_data(training_dataSEXP);
+    Rcpp::traits::input_parameter< std::list<double>& >::type grid(gridSEXP);
+    Rcpp::traits::input_parameter< const double& >::type K(KSEXP);
+    rcpp_result_gen = Rcpp::wrap(FOCuS_mult_offline(Y, thres, mu0, training_data, grid, K));
+    return rcpp_result_gen;
+END_RCPP
+}
 // MOSUM_offline_kirch
 List MOSUM_offline_kirch(NumericVector Y, const double thres, std::vector<int> W);
 RcppExport SEXP _FOCuS_MOSUM_offline_kirch(SEXP YSEXP, SEXP thresSEXP, SEXP WSEXP) {
@@ -126,6 +142,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_FOCuS_FOCuS", (DL_FUNC) &_FOCuS_FOCuS, 5},
     {"_FOCuS_FOCuS_offline", (DL_FUNC) &_FOCuS_FOCuS_offline, 6},
     {"_FOCuS_FOCuS_melk", (DL_FUNC) &_FOCuS_FOCuS_melk, 5},
+    {"_FOCuS_FOCuS_mult_offline", (DL_FUNC) &_FOCuS_FOCuS_mult_offline, 6},
     {"_FOCuS_MOSUM_offline_kirch", (DL_FUNC) &_FOCuS_MOSUM_offline_kirch, 3},
     {"_FOCuS_PageCUSUM_offline", (DL_FUNC) &_FOCuS_PageCUSUM_offline, 4},
     {"_FOCuS_CUSUM_offline", (DL_FUNC) &_FOCuS_CUSUM_offline, 3},
