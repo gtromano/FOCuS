@@ -88,6 +88,11 @@ struct Cost {
   std::vector<std::unique_ptr<Piece>> ps;
   double opt = 0;
   int k = 0; // index of the last optimal piece in the vector
+  Cost(std::vector<std::unique_ptr<Piece>> pieces, double opt_val, int opt_idx) {
+    ps = std::move(pieces);
+    opt = opt_val;
+    k = opt_idx;
+  }
 };
 
 struct Info {
@@ -95,23 +100,13 @@ struct Info {
   Cost Ql;
   Cost Qr;
   void update(const double& y, std::function<std::unique_ptr<Piece>(double, int, double)> newP, const double& thres, const double& theta0, const bool& adp_max_check);
-  Info(std::function<std::unique_ptr<Piece>(double, int, double)> newP) {
-    // initialization of the info vector. Default size  20.
-    std::vector<std::unique_ptr<Piece>> initpsl;
-    for (auto i = 0; i<50; i++) {
-      initpsl.push_back(std::move(newP(0.0, 0, 0.0)));
+  Info(std::function<std::unique_ptr<Piece>(double, int, double)> newP) 
+    : Ql(std::vector<std::unique_ptr<Piece>>(50), 0.0, 0), Qr(std::vector<std::unique_ptr<Piece>>(50), 0.0, 0), cs()
+  {
+    for (auto i = 0; i < 50; i++) {
+      Ql.ps[i] = std::move(newP(0.0, 0, 0.0));
+      Qr.ps[i] = std::move(newP(0.0, 0, 0.0));
     }
-    std::vector<std::unique_ptr<Piece>> initpsr;
-    for (auto i = 0; i<50; i++) {
-      initpsr.push_back(std::move(newP(0.0, 0, 0.0)));
-    }
-    Cost initQl(std::move(initpsl), 0.0, 0);
-    Cost initQr(std::move(initpsr), 0.0, 0);
-    Ql = std::move(initQl);
-    Qr = std::move(initQr);
-    
-    CUSUM initcusum;
-    cs = initcusum;
   }
 };
 

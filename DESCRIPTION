@@ -1,7 +1,7 @@
 Package: FOCuS
 Type: Package
 Title: Fast Online Changepoint Detection via Functional Pruning CUSUM statistics
-Version: 1.5.1
+Version: 1.5.2
 Date: 2022-06-20
 Authors@R: c(person("Gaetano", "Romano", email = "g.romano@lancaster.ac.uk", role = c("aut", "cre")), person("Idris", "Eckley", role = c("aut")), person("Paul", "Fearnhead", role = c("aut")), person("Guillem", "Rigaill", role = c("aut", "ctb")))
 Maintainer: Gaetano Romano <g.romano@lancaster.ac.uk>

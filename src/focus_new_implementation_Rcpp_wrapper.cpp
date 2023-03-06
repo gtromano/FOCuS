@@ -25,6 +25,15 @@ long get_changepoint (const Cost& Q, const CUSUM& cs, const double& theta0) {
 }
 
 
+Rcpp::List unpack_cost(const Cost& cost) {
+  Rcpp::List pieces;
+  for (int i = 0; i < cost.k; i++) {
+    const auto& p = cost.ps[i];
+    pieces.push_back(Rcpp::NumericVector::create(Rcpp::Named("St") = p->St, Rcpp::Named("tau") = p->tau, Rcpp::Named("m0") = p->m0, Rcpp::Named("Mdiff") = p->Mdiff));
+  }
+  return pieces;
+}
+
 // [[Rcpp::export(.focus_offline_new_imp)]]
 List focus_offline_new_imp (NumericVector Z, double threshold, double theta0) {
   
@@ -73,8 +82,14 @@ List focus_offline_new_imp (NumericVector Z, double threshold, double theta0) {
       
   }
   
+  auto cs = List::create(Rcpp::Named("Sn") = info.cs.Sn,
+                         Rcpp::Named("n") = info.cs.n);
+  
   return List::create(Rcpp::Named("maxs") = stat,
                       Rcpp::Named("t") = info.cs.n,
-                      Rcpp::Named("changepoint") = cp);
+                      Rcpp::Named("changepoint") = cp,
+                      Rcpp::Named("Ql") = unpack_cost(info.Ql),
+                      Rcpp::Named("Qr") = unpack_cost(info.Qr),
+                      Rcpp::Named("cs") = cs);
   
 }
