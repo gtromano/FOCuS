@@ -20,7 +20,7 @@
 
 setGeneric(
   "FOCuS_multi_JMLR",
-  def = function(datasource, thres, ...) standardGeneric("FOCuS")
+  def = function(datasource, thres, ...) standardGeneric("FOCuS_multi_JMLR")
 )
 
 setMethod("FOCuS_multi_JMLR",
